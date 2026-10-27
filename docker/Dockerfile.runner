@@ -1,0 +1,20 @@
+# Cryptographically pinned base image digest: python:3.11-slim
+FROM python:3.11-slim@sha256:9635410349cba3531fabde484e07f14e625abb40e1bc8b23fffa046cb497ce2d
+
+# Prevent interactive prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Install testing framework and repository dependencies from locked requirements
+COPY docker/requirements-runner.txt /tmp/requirements-runner.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-runner.txt && rm /tmp/requirements-runner.txt
+
+# Create non-root unprivileged test user (UID 1000)
+RUN useradd -u 1000 -m -s /bin/bash testpilot
+
+WORKDIR /workspace
+ENV PYTHONPATH=/workspace
+
+USER testpilot
+CMD ["pytest", "--version"]

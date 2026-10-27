@@ -48,6 +48,9 @@ class ActiveAnalysisContext(BaseModel):
     arbitration_results: list[dict[str, Any]] = Field(default_factory=list, description="Three-valued arbitration verdicts")
     sourcegraph_status: str = Field(default="Local AST Fallback", description="Code intelligence backend status")
     rag_status: str = Field(default="Ready", description="Repository RAG vector store status")
+    workflow_id: Optional[str] = Field(default=None, description="Linked multi-stage workflow ID")
+    base_commit_hash: Optional[str] = Field(default=None, description="Immutable 40-char base commit SHA")
+    target_commit_hash: Optional[str] = Field(default=None, description="Immutable 40-char target commit SHA")
     completed_stages: list[str] = Field(default_factory=list, description="List of completed stage names")
     current_stage: str = Field(default="evolution", description="Active workflow stage")
     created_at: str = Field(
@@ -237,6 +240,59 @@ class AnalysisContextManager:
 
         use_id = analysis_id or self._context.analysis_id or f"run-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{uuid.uuid4().hex[:6]}"
 
+        # Resolve immutable commits & initialize workflow storage
+        from testpilot.core.workflow_context import (
+            StageStatus,
+            WorkflowContext,
+            WorkflowStorageManager,
+        )
+
+        wf_mgr = WorkflowStorageManager()
+        canonical_repo_id = wf_mgr.sanitize_repo_id(resolved_name, repo_path)
+        try:
+            base_sha = wf_mgr.resolve_immutable_commit(repo_path, base_ref)
+        except Exception:
+            base_sha = hashlib.sha256(f"{resolved_name}_{base_ref}".encode()).hexdigest()[:40]
+
+        try:
+            target_sha = wf_mgr.resolve_immutable_commit(repo_path, target_ref or "HEAD")
+        except Exception:
+            target_sha = hashlib.sha256(f"{resolved_name}_{target_ref}".encode()).hexdigest()[:40]
+
+        is_clean, _ = wf_mgr.check_working_tree_clean(repo_path)
+        existing_wf = wf_mgr.get_active_workflow()
+        if existing_wf and (existing_wf.repo_id == canonical_repo_id or existing_wf.workflow_id == self._context.workflow_id):
+            wf = existing_wf
+            wf_id = wf.workflow_id
+            wf.base_commit_hash = base_sha
+            wf.target_commit_hash = target_sha
+            wf.is_dirty = not is_clean
+        else:
+            wf_id = f"wf-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{uuid.uuid4().hex[:6]}"
+            wf = WorkflowContext.create_initial(
+                repo_id=canonical_repo_id,
+                repo_path=str(repo_path),
+                repo_name=resolved_name,
+                base_commit_hash=base_sha,
+                target_commit_hash=target_sha,
+                is_dirty=not is_clean,
+                workflow_id=wf_id,
+            )
+        wf.evolution_run_id = use_id
+        evo_meta = wf.stages["evolution"]
+        evo_meta.status = StageStatus.COMPLETED
+        evo_meta.run_id = use_id
+        evo_meta.completed_at = datetime.now(timezone.utc).isoformat()
+        evo_meta.summary = {
+            "changed_files_count": len(changed_files),
+            "changed_symbols_count": len(changed_symbols),
+            "prioritized_tests_count": len(prioritized_tests),
+        }
+        # Mark impact analysis ready
+        wf.stages["impact"].status = StageStatus.READY
+        wf.stages["impact"].upstream_run_id = use_id
+        wf_mgr.save_workflow(wf)
+
         self._context = ActiveAnalysisContext(
             analysis_id=use_id,
             repo_path=str(repo_path),
@@ -262,7 +318,10 @@ class AnalysisContextManager:
             generated_tests=[],
             execution_results=[],
             arbitration_results=[],
+            workflow_id=wf_id,
+            base_commit_hash=base_sha,
+            target_commit_hash=target_sha,
             completed_stages=["evolution"],
-            current_stage="ast",
+            current_stage="impact",
         )
         return self._context

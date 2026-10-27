@@ -39,7 +39,21 @@ class ASTDiffParser:
         try:
             tree = ast.parse(source_code, filename=file_path)
         except SyntaxError as e:
-            raise ValueError(f"Failed to parse AST for {file_path}: {e}") from e
+            # Python < 3.12 compatibility fallback: sanitize PEP 695 type alias statements, generic parameters, and unparenthesized exceptions
+            out_lines = []
+            for line in source_code.splitlines():
+                if re.match(r"^\s*type\s+[A-Za-z0-9_]+", line):
+                    m = re.match(r"^(\s*)type\s+([A-Za-z0-9_]+)", line)
+                    out_lines.append(f"{m.group(1)}{m.group(2)} = None" if m else line)
+                else:
+                    out_lines.append(line)
+            sanitized = "\n".join(out_lines)
+            sanitized = re.sub(r"(\b(?:def|class)\s+[A-Za-z0-9_]+)\[(?:[^\[\]]|\[[^\[\]]*\])*\]", r"\1", sanitized)
+            sanitized = re.sub(r"(?m)^(\s*except\s+)([A-Za-z0-9_.]+(?:\s*,\s*[A-Za-z0-9_.]+)+)\s*:", r"\1(\2):", sanitized)
+            try:
+                tree = ast.parse(sanitized, filename=file_path)
+            except SyntaxError:
+                raise ValueError(f"Failed to parse AST for {file_path}: {e}") from e
 
         source_lines = source_code.splitlines()
         extracted: list[ASTFunctionDef] = []

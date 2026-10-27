@@ -26,6 +26,8 @@ from testpilot.evolution.models import (
     ImpactType,
     PrioritizedTest,
     PriorityTier,
+    SemanticImpactAssessment,
+    SemanticImpactClassification,
 )
 from testpilot.sourcegraph.client import LocalCodeGraphFallback, SourcegraphClient
 
@@ -68,7 +70,8 @@ class RepositoryEvolutionEngine:
                 ["git", "show", f"{ref}:{file_path}"],
                 cwd=str(self.repo_root),
                 capture_output=True,
-                text=True,
+                encoding="utf-8",
+                errors="replace",
                 check=False,
             )
             if res.returncode == 0:
@@ -107,7 +110,8 @@ class RepositoryEvolutionEngine:
                 ["git", "rev-parse", "--is-inside-work-tree"],
                 cwd=str(self.repo_root),
                 capture_output=True,
-                text=True,
+                encoding="utf-8",
+                errors="replace",
                 check=False,
             )
             if check_repo.returncode != 0:
@@ -126,7 +130,8 @@ class RepositoryEvolutionEngine:
             ["git", "rev-parse", "--verify", b_ref],
             cwd=str(self.repo_root),
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
         if verify_b.returncode != 0:
@@ -137,27 +142,29 @@ class RepositoryEvolutionEngine:
                 ["git", "rev-parse", "--verify", t_ref],
                 cwd=str(self.repo_root),
                 capture_output=True,
-                text=True,
+                encoding="utf-8",
+                errors="replace",
                 check=False,
             )
             if verify_t.returncode != 0:
                 raise InvalidGitReferenceError(f"Invalid target reference: '{t_ref}'")
 
         if is_working_tree:
-            diff_args = ["git", "diff", "--unified=3", "-M", b_ref]
-            stat_args = ["git", "diff", "--stat", "-M", b_ref]
-            status_args = ["git", "diff", "--name-status", "-M", b_ref]
+            diff_args = ["git", "--no-pager", "diff", "--unified=3", "-M", b_ref]
+            stat_args = ["git", "--no-pager", "diff", "--stat", "-M", b_ref]
+            status_args = ["git", "--no-pager", "diff", "--name-status", "-M", b_ref]
         else:
             diff_range = f"{b_ref}..{t_ref}"
-            diff_args = ["git", "diff", "--unified=3", "-M", diff_range]
-            stat_args = ["git", "diff", "--stat", "-M", diff_range]
-            status_args = ["git", "diff", "--name-status", "-M", diff_range]
+            diff_args = ["git", "--no-pager", "diff", "--unified=3", "-M", diff_range]
+            stat_args = ["git", "--no-pager", "diff", "--stat", "-M", diff_range]
+            status_args = ["git", "--no-pager", "diff", "--name-status", "-M", diff_range]
 
         diff_res = subprocess.run(
             diff_args,
             cwd=str(self.repo_root),
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
         diff_text = diff_res.stdout
@@ -166,7 +173,8 @@ class RepositoryEvolutionEngine:
             stat_args,
             cwd=str(self.repo_root),
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
         diff_stat = stat_res.stdout.strip()
@@ -175,7 +183,8 @@ class RepositoryEvolutionEngine:
             status_args,
             cwd=str(self.repo_root),
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
 
@@ -2087,6 +2096,27 @@ class RepositoryEvolutionEngine:
         )
         stage_timings["impact_graph_construction_ms"] = round((time.perf_counter() - t_stage) * 1000.0, 2)
 
+        # Step 3b: Evidence-Grounded Semantic Analysis & RAG
+        semantic_impacts: list[SemanticImpactAssessment] = []
+        if getattr(req, "enable_semantic_analysis", True):
+            t_stage = time.perf_counter()
+            try:
+                from testpilot.evolution.semantic import SemanticImpactAnalyzer
+                semantic_analyzer = SemanticImpactAnalyzer(
+                    repo_root=str(self.repo_root),
+                    sourcegraph_client=self.sourcegraph,
+                )
+                all_impact_nodes = direct_impacts + indirect_impacts
+                semantic_impacts = semantic_analyzer.analyze_impacts(
+                    changed_symbols=changed_symbols,
+                    impact_nodes=all_impact_nodes,
+                    enable_llm=getattr(req, "enable_llm_semantic", False),
+                )
+            except Exception as se:
+                warnings_notice = f"Semantic impact analysis notice: {se}"
+                logger.warning(warnings_notice)
+            stage_timings["semantic_analysis_ms"] = round((time.perf_counter() - t_stage) * 1000.0, 2)
+
         # Step 4: Prioritize tests
         t_stage = time.perf_counter()
         all_prioritized = self.prioritize_tests(
@@ -2167,6 +2197,27 @@ class RepositoryEvolutionEngine:
             "stage_timings": stage_timings,
         }
 
+        semantic_summary = {
+            "total_semantic_assessments": len(semantic_impacts),
+            "direct_behavioral_count": sum(
+                1 for s in semantic_impacts
+                if s.classification == SemanticImpactClassification.DIRECT_BEHAVIORAL_DEPENDENCY
+            ),
+            "indirect_behavioral_count": sum(
+                1 for s in semantic_impacts
+                if s.classification == SemanticImpactClassification.INDIRECT_BEHAVIORAL_DEPENDENCY
+            ),
+            "structural_only_count": sum(
+                1 for s in semantic_impacts
+                if s.classification == SemanticImpactClassification.STRUCTURAL_ONLY
+            ),
+            "uncertain_count": sum(
+                1 for s in semantic_impacts
+                if s.classification == SemanticImpactClassification.UNCERTAIN
+            ),
+            "verified_evidence_count": sum(1 for s in semantic_impacts if s.is_verified),
+        }
+
         return EvolutionReport(
             base_ref=req.base_ref,
             target_ref=req.target_ref or "HEAD",
@@ -2183,4 +2234,6 @@ class RepositoryEvolutionEngine:
             analysis_latency_ms=elapsed_ms,
             warnings=warnings,
             metrics=metrics,
+            semantic_impacts=semantic_impacts,
+            semantic_summary=semantic_summary,
         )

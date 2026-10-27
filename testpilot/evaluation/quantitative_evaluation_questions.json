@@ -1,0 +1,961 @@
+{
+  "title": "TestPilot Quantitative Evaluation Question Matrix",
+  "description": "Comprehensive 30-question quantitative evaluation matrix defining empirical metrics, mathematical formulas, required data schemas, aggregation policies, and answerability criteria for benchmarking change-aware regression test selection across heterogeneous repositories.",
+  "version": "1.0.0",
+  "project": "TestPilot AI",
+  "total_questions": 30,
+  "question_categories": [
+    {
+      "id": "category_a",
+      "name": "Category A — Test Selection Quality",
+      "question_range": "Q01–Q06",
+      "description": "Precision, recall, F1 score, test reduction, and baseline comparisons against independently validated relevant-test ground truth."
+    },
+    {
+      "id": "category_b",
+      "name": "Category B — Dependency and Impact Analysis",
+      "question_range": "Q07–Q12",
+      "description": "Accuracy of AST changed-symbol detection, direct-caller extraction, transitive call propagation, semantic classification, and evidence citations."
+    },
+    {
+      "id": "category_c",
+      "name": "Category C — Repository RAG and Evidence Retrieval",
+      "question_range": "Q13–Q18",
+      "description": "Retrieval precision/recall@K, Sourcegraph vs local fallback trade-offs, RAG test-selection ablation deltas, unsupported claim rates, and resilience."
+    },
+    {
+      "id": "category_d",
+      "name": "Category D — Test Generation and Ground Truth",
+      "question_range": "Q19–Q22",
+      "description": "Candidate test execution viability, mutation detection sensitivity (fault detection), historical bug reproduction, and human review throughput."
+    },
+    {
+      "id": "category_e",
+      "name": "Category E — Performance and Scalability",
+      "question_range": "Q23–Q25",
+      "description": "Wall-clock runtime, time savings over full regression, pipeline stage latency overhead, and computational resource scaling."
+    },
+    {
+      "id": "category_f",
+      "name": "Category F — Reliability and Generalization",
+      "question_range": "Q26–Q28",
+      "description": "Deterministic run-to-run consistency, cross-repository performance variation, and robustness across change types and language ecosystems."
+    },
+    {
+      "id": "category_g",
+      "name": "Category G — Evaluation Validity and Usability",
+      "question_range": "Q29–Q30",
+      "description": "Scientific benchmark auditability, revision reproducibility, provenance completeness, and automated evaluation completion rates."
+    }
+  ],
+  "evaluation_configurations": [
+    {
+      "id": "full_regression",
+      "name": "Full Regression",
+      "description": "Executes 100% of discovered tests in the eligible test universe. Yields upper bound on recall (100%) and lower bound on reduction (0%)."
+    },
+    {
+      "id": "naive_baseline",
+      "name": "Naive Baseline",
+      "description": "Heuristic token/filename matching (e.g. test_<symbol>.py). Emulates standard keyword-based CI selection."
+    },
+    {
+      "id": "testpilot",
+      "name": "TestPilot",
+      "description": "AST-qualified symbol identity, call graph traversal, and deterministic boundary analysis without external vector RAG."
+    },
+    {
+      "id": "testpilot_rag",
+      "name": "TestPilot + Repository RAG",
+      "description": "Combines deterministic AST boundary analysis with repository-isolated vector embedding retrieval for semantic context."
+    }
+  ],
+  "aggregation_policy": {
+    "zero_denominator_handling": "Explicit null (displays as N/A in UI), never fabricated or treated as 0.0 or 1.0.",
+    "missing_ground_truth_policy": "Excluded from aggregate scoring; missing ground truth is never penalized as a zero score.",
+    "ground_truth_independence": "Ground truth caller sets must be verified independently of TestPilot prediction models.",
+    "micro_averaging": "Sum raw TP, FP, FN counts across all eligible runs before computing overall precision, recall, and F1.",
+    "macro_averaging": "Calculate per-repository metric rates first, then report their unweighted arithmetic mean.",
+    "fault_detection_separation": "Mutant kill rate and fault-detection metrics are strictly separated from test selection precision and recall."
+  },
+  "questions": [
+    {
+      "id": "Q01",
+      "category": "Category A — Test Selection Quality",
+      "question": "What is the test-selection precision of each evaluation configuration against independently validated relevant-test ground truth?",
+      "objective": "Quantify the proportion of selected tests that are genuinely relevant to modified code, assessing resistance to false-positive test executions.",
+      "metrics": [
+        {
+          "name": "Precision",
+          "definition": "Ratio of true positive selected tests to total selected tests.",
+          "formula": "TP / (TP + FP) if (TP + FP) > 0 else null",
+          "unit": "percentage",
+          "required_data": ["predicted_selected_tests", "ground_truth_expected_tests"]
+        }
+      ],
+      "required_data": ["case_id", "configuration", "predicted_tests", "ground_truth_callers"],
+      "methodology": "For each evaluated benchmark case, compare predicted test identifiers against verified ground truth test callers. Compute TP as the intersection and FP as predicted tests outside ground truth.",
+      "formula": "TP / (TP + FP) if (TP + FP) > 0 else null",
+      "unit": "percentage",
+      "comparison": "Side-by-side comparison across full_regression, naive_baseline, testpilot, and testpilot_rag.",
+      "aggregation": "Micro: sum(TP) / (sum(TP) + sum(FP)); Macro: average of per-repository precisions.",
+      "interpretation": "Higher precision indicates fewer wasted test executions. A value of null indicates no tests were selected.",
+      "limitations": "Incomplete ground truth in real-world repositories can artificially penalize precision if relevant callers were omitted from ground truth.",
+      "answerability_requirements": "Requires benchmark cases with verified ground_truth.is_verified == true and at least one configuration selecting >= 1 test.",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/evaluation_runs.json"
+    },
+    {
+      "id": "Q02",
+      "category": "Category A — Test Selection Quality",
+      "question": "What is the test-selection recall of each evaluation configuration against independently validated relevant-test ground truth?",
+      "objective": "Measure the completeness of regression test selection in identifying all tests required to exercise changed behaviors.",
+      "metrics": [
+        {
+          "name": "Recall",
+          "definition": "Ratio of true positive selected tests to total ground truth relevant tests.",
+          "formula": "TP / (TP + FN) if (TP + FN) > 0 else null",
+          "unit": "percentage",
+          "required_data": ["predicted_selected_tests", "ground_truth_expected_tests"]
+        }
+      ],
+      "required_data": ["case_id", "configuration", "predicted_tests", "ground_truth_callers"],
+      "methodology": "Intersect predicted tests with verified ground truth callers (TP). Compute FN as ground truth tests omitted from the selection.",
+      "formula": "TP / (TP + FN) if (TP + FN) > 0 else null",
+      "unit": "percentage",
+      "comparison": "Benchmark Full Regression (100% recall upper bound) against Naive Baseline, TestPilot, and TestPilot + Repository RAG.",
+      "aggregation": "Micro: sum(TP) / (sum(TP) + sum(FN)); Macro: average of per-repository recalls.",
+      "interpretation": "High recall ensures regression safety. Values below 100% represent missed regression risks.",
+      "limitations": "Recall can only be computed when ground truth contains at least one verified test caller (|GT| > 0).",
+      "answerability_requirements": "Requires benchmark cases with verified ground truth caller sets containing >= 1 test.",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/evaluation_runs.json"
+    },
+    {
+      "id": "Q03",
+      "category": "Category A — Test Selection Quality",
+      "question": "What is the F1 score achieved by each evaluation configuration across evaluated benchmark cases?",
+      "objective": "Assess the balanced trade-off between precision (minimizing false positives) and recall (minimizing missed regressions).",
+      "metrics": [
+        {
+          "name": "F1 Score",
+          "definition": "Harmonic mean of precision and recall.",
+          "formula": "2 * (Precision * Recall) / (Precision + Recall) if (Precision + Recall) > 0 else null",
+          "unit": "percentage",
+          "required_data": ["precision", "recall"]
+        }
+      ],
+      "required_data": ["tp", "fp", "fn"],
+      "methodology": "Compute precision and recall from verified counts, then take their harmonic mean. Return null if both precision and recall are zero or undefined.",
+      "formula": "2 * (Precision * Recall) / (Precision + Recall) if (Precision + Recall) > 0 else null",
+      "unit": "percentage",
+      "comparison": "Evaluate across all 4 configurations to identify the optimal balance point.",
+      "aggregation": "Micro: computed from micro precision and micro recall; Macro: average of per-repository F1 scores.",
+      "interpretation": "F1 balances precision and recall; prevents strategies that maximize one at the catastrophic expense of the other from appearing superior.",
+      "limitations": "Weights precision and recall equally, whereas safety-critical CI may prioritize recall over precision.",
+      "answerability_requirements": "Requires both precision and recall to be computable on valid ground truth.",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/evaluation_runs.json"
+    },
+    {
+      "id": "Q04",
+      "category": "Category A — Test Selection Quality",
+      "question": "What percentage test reduction is achieved relative to the eligible test universe for each configuration?",
+      "objective": "Quantify the reduction in test executions achieved by selection strategies compared to running the entire test suite.",
+      "metrics": [
+        {
+          "name": "Test Reduction Percentage",
+          "definition": "Percentage of tests in the eligible test universe omitted from execution.",
+          "formula": "(Total_Tests - Selected_Tests) / Total_Tests * 100 if Total_Tests > 0 else null",
+          "unit": "percentage",
+          "required_data": ["total_tests", "selected_tests_count"]
+        }
+      ],
+      "required_data": ["total_tests", "selected_count"],
+      "methodology": "Count discovered eligible tests across repository test suites. Subtract the count of selected tests, divide by total tests, and multiply by 100.",
+      "formula": "(Total_Tests - Selected_Tests) / Total_Tests * 100 if Total_Tests > 0 else null",
+      "unit": "percentage",
+      "comparison": "Full Regression achieves 0% reduction by definition. Compare TestPilot, Naive Baseline, and TestPilot + Repository RAG.",
+      "aggregation": "Micro: (sum(Total_Tests) - sum(Selected_Tests)) / sum(Total_Tests) * 100; Macro: mean of per-repo reduction rates.",
+      "interpretation": "Higher reduction indicates greater CI compute efficiency, provided recall remains high.",
+      "limitations": "High reduction is meaningless or harmful if essential tests are missed (low recall).",
+      "answerability_requirements": "Requires non-empty test discovery (Total_Tests > 0).",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/evaluation_runs.json"
+    },
+    {
+      "id": "Q05",
+      "category": "Category A — Test Selection Quality",
+      "question": "How does TestPilot compare directly against the Naive Baseline in selection quality and runtime?",
+      "objective": "Determine whether AST-qualified symbol identity provides statistically significant precision gains over simple token/name matching without sacrificing recall or incurring excessive runtime latency.",
+      "metrics": [
+        {
+          "name": "Precision Delta",
+          "definition": "Absolute difference in precision between TestPilot and Naive Baseline.",
+          "formula": "Precision_TestPilot - Precision_Naive",
+          "unit": "percentage_points",
+          "required_data": ["precision_testpilot", "precision_naive"]
+        },
+        {
+          "name": "Recall Delta",
+          "definition": "Absolute difference in recall between TestPilot and Naive Baseline.",
+          "formula": "Recall_TestPilot - Recall_Naive",
+          "unit": "percentage_points",
+          "required_data": ["recall_testpilot", "recall_naive"]
+        },
+        {
+          "name": "Latency Ratio",
+          "definition": "Ratio of TestPilot selection runtime to Naive Baseline runtime.",
+          "formula": "Latency_TestPilot / Latency_Naive if Latency_Naive > 0 else null",
+          "unit": "ratio",
+          "required_data": ["latency_testpilot", "latency_naive"]
+        }
+      ],
+      "required_data": ["testpilot_metrics", "naive_metrics", "runtime_latencies"],
+      "methodology": "Execute both TestPilot and Naive Baseline on identical benchmark cases with pinned revisions. Compute differences in precision, recall, F1, and wall-clock execution time.",
+      "formula": "Precision_TestPilot - Precision_Naive",
+      "unit": "percentage_points",
+      "comparison": "Direct paired difference: TestPilot vs Naive Baseline.",
+      "aggregation": "Paired difference of aggregate micro and macro metrics across repositories.",
+      "interpretation": "Positive precision delta demonstrates elimination of name collision false positives. Negative recall delta indicates potential recall loss on dynamic dispatch.",
+      "limitations": "Heuristic token matching performance varies dramatically based on repository naming conventions.",
+      "answerability_requirements": "Requires both configurations to be evaluated on the same benchmark cases.",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/evaluation_runs.json"
+    },
+    {
+      "id": "Q06",
+      "category": "Category A — Test Selection Quality",
+      "question": "What is the change in selection quality and runtime when Repository RAG is enabled?",
+      "objective": "Quantify the marginal benefit and runtime overhead of semantic vector retrieval over deterministic AST selection alone.",
+      "metrics": [
+        {
+          "name": "RAG Recall Improvement",
+          "definition": "Gain in recall when augmenting TestPilot with Repository RAG.",
+          "formula": "Recall_TestPilot_RAG - Recall_TestPilot",
+          "unit": "percentage_points",
+          "required_data": ["recall_testpilot_rag", "recall_testpilot"]
+        },
+        {
+          "name": "RAG Runtime Overhead",
+          "definition": "Additional latency incurred by embedding query and vector store search.",
+          "formula": "Latency_TestPilot_RAG - Latency_TestPilot",
+          "unit": "milliseconds",
+          "required_data": ["latency_testpilot_rag", "latency_testpilot"]
+        }
+      ],
+      "required_data": ["testpilot_metrics", "testpilot_rag_metrics", "retrieval_latencies"],
+      "methodology": "Run paired benchmark evaluations with RAG disabled vs RAG enabled with ChromaDB and Ollama embeddings on identical revisions.",
+      "formula": "Recall_TestPilot_RAG - Recall_TestPilot",
+      "unit": "percentage_points",
+      "comparison": "TestPilot + Repository RAG vs Core TestPilot.",
+      "aggregation": "Mean delta across all benchmark runs with active vector stores.",
+      "interpretation": "Positive recall delta indicates successful recovery of non-explicitly referenced tests. Large positive latency indicates vector indexing overhead.",
+      "limitations": "Requires indexed vector stores and active embedding models for each subject repository.",
+      "answerability_requirements": "Requires execution of the TestPilot + Repository RAG configuration with verified vector index.",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/evaluation_runs.json"
+    },
+    {
+      "id": "Q07",
+      "category": "Category B — Dependency and Impact Analysis",
+      "question": "What are the precision and recall of changed-symbol detection across modified Git revisions?",
+      "objective": "Evaluate how accurately the repository evolution engine extracts modified functions, methods, and classes from raw Git diffs.",
+      "metrics": [
+        {
+          "name": "Symbol Detection Precision",
+          "definition": "Ratio of genuinely modified symbols detected to total symbols reported as changed.",
+          "formula": "TP_symbols / (TP_symbols + FP_symbols) if (TP_symbols + FP_symbols) > 0 else null",
+          "unit": "percentage",
+          "required_data": ["detected_changed_symbols", "ground_truth_changed_symbols"]
+        },
+        {
+          "name": "Symbol Detection Recall",
+          "definition": "Ratio of genuinely modified symbols detected to total ground truth modified symbols.",
+          "formula": "TP_symbols / (TP_symbols + FN_symbols) if (TP_symbols + FN_symbols) > 0 else null",
+          "unit": "percentage",
+          "required_data": ["detected_changed_symbols", "ground_truth_changed_symbols"]
+        }
+      ],
+      "required_data": ["git_diff_hunks", "ast_symbol_spans", "ground_truth_changed_symbols"],
+      "methodology": "Compare symbols extracted by RepositoryEvolutionEngine against manual AST diff annotations of added, modified, and deleted constructs.",
+      "formula": "TP_symbols / (TP_symbols + FP_symbols) if (TP_symbols + FP_symbols) > 0 else null",
+      "unit": "percentage",
+      "comparison": "AST diff analysis vs ground truth symbol changes.",
+      "aggregation": "Micro sum of symbol counts across commit pairs.",
+      "interpretation": "High precision avoids initiating blast radius exploration on irrelevant code; high recall ensures all modifications are tracked.",
+      "limitations": "Non-code changes (docstrings, comments, whitespace) must be filtered to prevent false positives.",
+      "answerability_requirements": "Requires benchmark cases with ground_truth.expected_changed_symbols annotated.",
+      "status": "not_measured",
+      "result_source": "testpilot/evolution/engine.py"
+    },
+    {
+      "id": "Q08",
+      "category": "Category B — Dependency and Impact Analysis",
+      "question": "What are the precision and recall of direct-caller identification from AST call-graph extraction?",
+      "objective": "Measure how effectively static AST call site extraction identifies functions and methods that directly invoke changed symbols.",
+      "metrics": [
+        {
+          "name": "Direct Caller Precision",
+          "definition": "Ratio of true callers identified to total candidate callers extracted.",
+          "formula": "TP_callers / (TP_callers + FP_callers) if (TP_callers + FP_callers) > 0 else null",
+          "unit": "percentage",
+          "required_data": ["extracted_callers", "verified_callers"]
+        },
+        {
+          "name": "Direct Caller Recall",
+          "definition": "Ratio of true callers identified to all verified callers in the codebase.",
+          "formula": "TP_callers / (TP_callers + FN_callers) if (TP_callers + FN_callers) > 0 else null",
+          "unit": "percentage",
+          "required_data": ["extracted_callers", "verified_callers"]
+        }
+      ],
+      "required_data": ["ast_call_sites", "enclosing_functions", "ground_truth_callers"],
+      "methodology": "Traverse AST to extract Call nodes. Resolve receiver types and qualified names. Compare extracted callers with manually verified call graph edges.",
+      "formula": "TP_callers / (TP_callers + FP_callers) if (TP_callers + FP_callers) > 0 else null",
+      "unit": "percentage",
+      "comparison": "Static AST caller extraction vs verified call graph ground truth.",
+      "aggregation": "Micro pooled sum of caller identifications across repositories.",
+      "interpretation": "High precision reflects receiver disambiguation; low recall indicates unhandled dynamic calls or aliases.",
+      "limitations": "Dynamic dispatch, reflection (getattr), and monkey-patching cannot be fully resolved statically.",
+      "answerability_requirements": "Requires call graph verification ground truth for target symbols.",
+      "status": "not_measured",
+      "result_source": "testpilot/ast_engine/treesitter_parser.py"
+    },
+    {
+      "id": "Q09",
+      "category": "Category B — Dependency and Impact Analysis",
+      "question": "What is the accuracy of identifying transitive dependency impact through multi-hop call hierarchies?",
+      "objective": "Quantify the correctness of downstream impact propagation across call chains of depth >= 2.",
+      "metrics": [
+        {
+          "name": "Transitive Impact Accuracy",
+          "definition": "Fraction of multi-hop impacted symbols correctly identified without over-expansion.",
+          "formula": "Correctly_Identified_Transitive / Total_Verified_Transitive if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["transitive_impact_set", "ground_truth_impacted_symbols"]
+        }
+      ],
+      "required_data": ["call_graph_edges", "transitive_depth", "ground_truth_impacted_symbols"],
+      "methodology": "Propagate impact across call graph edges up to max_depth=3. Check whether all ground_truth.expected_impacted_symbols are present.",
+      "formula": "Correctly_Identified_Transitive / Total_Verified_Transitive if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "1-hop direct callers vs 2-hop and 3-hop transitive propagation.",
+      "aggregation": "Macro average accuracy grouped by call chain depth.",
+      "interpretation": "Assesses whether blast radius expansion captures distant regressions without exploding candidate test set sizes.",
+      "limitations": "Deep call graphs in large frameworks can lead to rapid blast radius explosion if unconstrained.",
+      "answerability_requirements": "Requires benchmark cases with ground_truth.expected_impacted_symbols containing transitive targets.",
+      "status": "not_measured",
+      "result_source": "testpilot/evolution/engine.py"
+    },
+    {
+      "id": "Q10",
+      "category": "Category B — Dependency and Impact Analysis",
+      "question": "What is the semantic dependency classification performance against independently reviewed labels?",
+      "objective": "Evaluate the precision, recall, and specificity of classifying dependencies as structural, architectural, or behavioral contracts.",
+      "metrics": [
+        {
+          "name": "Semantic Classification Agreement",
+          "definition": "Cohen's kappa or accuracy between predicted dependency types and expert-labeled dependency types.",
+          "formula": "Correctly_Classified_Dependencies / Total_Evaluated_Dependencies if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["predicted_dependency_type", "ground_truth_dependency_type"]
+        }
+      ],
+      "required_data": ["semantic_dependency_records", "expert_labeled_contracts"],
+      "methodology": "Compare semantic dependency classifications produced by SemanticEvolutionEngine against expert-reviewed dependency annotations.",
+      "formula": "Correctly_Classified_Dependencies / Total_Evaluated_Dependencies if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "Rule-based AST typing vs LLM-assisted semantic dependency classification.",
+      "aggregation": "Pooled accuracy across all evaluated dependency pairs.",
+      "interpretation": "High agreement confirms that semantic dependency classifiers accurately distinguish hard structural dependencies from soft conceptual linkages.",
+      "limitations": "Expert agreement on semantic dependency boundaries can be subjective without formal specifications.",
+      "answerability_requirements": "Requires curated dataset of labeled structural vs semantic dependency pairs.",
+      "status": "not_measured",
+      "result_source": "testpilot/evolution/semantic.py"
+    },
+    {
+      "id": "Q11",
+      "category": "Category B — Dependency and Impact Analysis",
+      "question": "What is the coverage and validity of evidence references supporting impact claims?",
+      "objective": "Determine the proportion of selected tests or impacted symbols that have verifiable AST call sites, diff hunks, or specification citations.",
+      "metrics": [
+        {
+          "name": "Evidence Validity Rate",
+          "definition": "Percentage of generated evidence records pointing to existing, verifiable file paths and symbol names.",
+          "formula": "Valid_Evidence_Records / Total_Evidence_Records * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["evidence_records", "filesystem_paths", "ast_symbols"]
+        }
+      ],
+      "required_data": ["evidence_records", "file_paths", "symbol_identifiers"],
+      "methodology": "Inspect every TestSelectionEvidence object in evaluation runs. Verify that referenced files exist, symbols are present at stated line numbers, and callers invoke target symbols.",
+      "formula": "Valid_Evidence_Records / Total_Evidence_Records * 100 if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "Deterministic AST evidence validity vs LLM-generated rationale validity.",
+      "aggregation": "Micro sum: total valid evidence items / total evidence items * 100.",
+      "interpretation": "Ensures explainability is grounded in code reality rather than fabricated explanations.",
+      "limitations": "Valid syntax and file paths do not guarantee semantic necessity of the test selection.",
+      "answerability_requirements": "Requires evaluation runs with non-empty evidence_records lists.",
+      "status": "not_measured",
+      "result_source": "testpilot/evaluation/models.py"
+    },
+    {
+      "id": "Q12",
+      "category": "Category B — Dependency and Impact Analysis",
+      "question": "What is the accuracy of associations between changed symbols, affected code, and relevant tests?",
+      "objective": "Measure end-to-end alignment accuracy between modified source symbols, impacted business logic, and test assertions.",
+      "metrics": [
+        {
+          "name": "End-to-End Association Accuracy",
+          "definition": "Proportion of complete change-impact-test triplets that are factually validated.",
+          "formula": "Valid_Triplets / Total_Generated_Triplets * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["change_impact_test_triplets", "ground_truth_triplets"]
+        }
+      ],
+      "required_data": ["changed_symbols", "impacted_symbols", "selected_tests", "ground_truth"],
+      "methodology": "Audit the full traceability chain: changed symbol -> intermediate caller -> selected test. Verify each link in the chain against code AST.",
+      "formula": "Valid_Triplets / Total_Generated_Triplets * 100 if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "Direct symbol-to-test matching vs multi-step impact chain association.",
+      "aggregation": "Macro average association accuracy across benchmark suites.",
+      "interpretation": "High triplet accuracy proves that tests were selected for the right structural reason, not by coincidence.",
+      "limitations": "Difficult to evaluate automatically when multiple changes occur in a single commit.",
+      "answerability_requirements": "Requires isolated single-concern commits or benchmark cases with atomic change ground truth.",
+      "status": "not_measured",
+      "result_source": "testpilot/evolution/engine.py"
+    },
+    {
+      "id": "Q13",
+      "category": "Category C — Repository RAG and Evidence Retrieval",
+      "question": "What is the retrieval precision@K of Repository RAG when querying for relevant tests and documentation?",
+      "objective": "Measure the fraction of top-K retrieved code and test chunks that are genuinely relevant to the change context.",
+      "metrics": [
+        {
+          "name": "Precision@K",
+          "definition": "Number of relevant retrieved chunks in the top-K results divided by K.",
+          "formula": "Relevant_Chunks_in_Top_K / K",
+          "unit": "ratio",
+          "required_data": ["retrieved_chunks", "ground_truth_relevant_chunks", "K"]
+        }
+      ],
+      "required_data": ["rag_queries", "retrieved_chunk_ids", "ground_truth_chunk_labels", "K"],
+      "methodology": "Query RepoVectorStore with diff summaries and changed symbol names. For K in [3, 5, 10], compute what proportion of returned chunks match ground truth relevant files and tests.",
+      "formula": "Relevant_Chunks_in_Top_K / K",
+      "unit": "ratio",
+      "comparison": "Evaluate across K=3, K=5, and K=10; compare dense embeddings against BM25/keyword retrieval.",
+      "aggregation": "Mean Precision@K across all benchmark queries.",
+      "interpretation": "High Precision@K ensures that context windows are not diluted with irrelevant code chunks.",
+      "limitations": "Depends heavily on chunking strategy (function-level vs line-based) and embedding model domain knowledge.",
+      "answerability_requirements": "Requires indexed repository vector stores and annotated chunk relevance ground truth.",
+      "status": "not_measured",
+      "result_source": "testpilot/rag/repo_vector_store.py"
+    },
+    {
+      "id": "Q14",
+      "category": "Category C — Repository RAG and Evidence Retrieval",
+      "question": "What is the evidence recall@K of Repository RAG against ground-truth evidence requirements?",
+      "objective": "Determine the proportion of all necessary ground-truth supporting evidence captured within the top-K retrieved artifacts.",
+      "metrics": [
+        {
+          "name": "Recall@K",
+          "definition": "Number of relevant chunks in top-K divided by total relevant chunks in ground truth.",
+          "formula": "Relevant_Chunks_in_Top_K / Total_Ground_Truth_Relevant_Chunks if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["retrieved_chunks", "ground_truth_relevant_chunks", "K"]
+        }
+      ],
+      "required_data": ["retrieved_chunks", "ground_truth_evidence_set", "K"],
+      "methodology": "Count how many distinct ground truth evidence items appear in the top-K retrieved results. Divide by total required ground truth evidence items.",
+      "formula": "Relevant_Chunks_in_Top_K / Total_Ground_Truth_Relevant_Chunks if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "Measure recall progression as K increases from 1 to 20.",
+      "aggregation": "Macro average Recall@K across all evaluated benchmark scenarios.",
+      "interpretation": "Measures whether top-K retrieval is broad enough to catch all relevant tests or whether critical evidence falls outside the retrieval horizon.",
+      "limitations": "Large repositories with diffuse changes may require excessively large K to achieve high recall.",
+      "answerability_requirements": "Requires complete ground truth evidence inventories for each evaluated case.",
+      "status": "not_measured",
+      "result_source": "testpilot/rag/repo_vector_store.py"
+    },
+    {
+      "id": "Q15",
+      "category": "Category C — Repository RAG and Evidence Retrieval",
+      "question": "How does Sourcegraph retrieval compare to local AST/repository fallback in relevance, coverage, latency, and failure rate?",
+      "objective": "Evaluate the empirical trade-offs between remote enterprise code intelligence and zero-dependency local AST fallback.",
+      "metrics": [
+        {
+          "name": "Sourcegraph vs Local Latency Delta",
+          "definition": "Difference in search and reference extraction latency between Sourcegraph and LocalCodeGraphFallback.",
+          "formula": "Latency_Sourcegraph - Latency_Local_AST",
+          "unit": "milliseconds",
+          "required_data": ["sourcegraph_latency_ms", "local_ast_latency_ms"]
+        },
+        {
+          "name": "Caller Set Overlap",
+          "definition": "Jaccard similarity between caller sets discovered by Sourcegraph vs LocalCodeGraphFallback.",
+          "formula": "|Callers_SG ∩ Callers_Local| / |Callers_SG ∪ Callers_Local| if Union > 0 else null",
+          "unit": "ratio",
+          "required_data": ["sourcegraph_callers", "local_callers"]
+        }
+      ],
+      "required_data": ["sourcegraph_results", "local_fallback_results", "network_latencies"],
+      "methodology": "Execute identical symbol reference queries against live Sourcegraph OSS instance and against LocalCodeGraphFallback. Compare result sets, latency, and error rates.",
+      "formula": "null",
+      "unit": "comparative_profile",
+      "comparison": "Sourcegraph GraphQL API vs Local Tree-sitter / AST Fallback.",
+      "aggregation": "Paired summary across all symbol lookups.",
+      "interpretation": "Determines whether enterprise indexers justify network dependency and setup cost over self-contained local AST parsing.",
+      "limitations": "Subject to network variability and Sourcegraph container indexing latency.",
+      "answerability_requirements": "Requires access to both an active Sourcegraph endpoint and local repository files.",
+      "status": "not_measured",
+      "result_source": "testpilot/sourcegraph/client.py"
+    },
+    {
+      "id": "Q16",
+      "category": "Category C — Repository RAG and Evidence Retrieval",
+      "question": "What are the absolute and relative test-selection quality changes between TestPilot and TestPilot + Repository RAG?",
+      "objective": "Quantify whether semantic RAG retrieval recovers tests missed by static AST analysis (e.g. dynamic fixtures or config-driven tests).",
+      "metrics": [
+        {
+          "name": "Absolute Precision Delta",
+          "definition": "Precision(TestPilot_RAG) - Precision(TestPilot)",
+          "formula": "Precision_RAG - Precision_TestPilot",
+          "unit": "percentage_points",
+          "required_data": ["precision_rag", "precision_testpilot"]
+        },
+        {
+          "name": "Absolute Recall Delta",
+          "definition": "Recall(TestPilot_RAG) - Recall(TestPilot)",
+          "formula": "Recall_RAG - Recall_TestPilot",
+          "unit": "percentage_points",
+          "required_data": ["recall_rag", "recall_testpilot"]
+        }
+      ],
+      "required_data": ["testpilot_evaluation_runs", "testpilot_rag_evaluation_runs"],
+      "methodology": "Pairwise comparison of identical benchmark cases evaluated under TestPilot vs TestPilot + Repository RAG.",
+      "formula": "Recall_RAG - Recall_TestPilot",
+      "unit": "percentage_points",
+      "comparison": "TestPilot + Repository RAG vs Core TestPilot.",
+      "aggregation": "Micro and macro deltas across repositories.",
+      "interpretation": "A positive recall delta with minimal precision drop demonstrates that semantic retrieval adds real coverage without generating false positives.",
+      "limitations": "RAG effectiveness depends heavily on prompt version, chunk boundaries, and vector database embeddings.",
+      "answerability_requirements": "Requires benchmark runs completed under both configurations on identical pinned commits.",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/evaluation_runs.json"
+    },
+    {
+      "id": "Q17",
+      "category": "Category C — Repository RAG and Evidence Retrieval",
+      "question": "What is the rate of evaluated semantic or RAG claims lacking sufficient supporting evidence?",
+      "objective": "Quantify hallucination or unverified claim rate in semantic test selection explanations.",
+      "metrics": [
+        {
+          "name": "Unsupported Claim Rate",
+          "definition": "Proportion of LLM/RAG selection justifications that cite non-existent files, symbols, or fabricated call relationships.",
+          "formula": "Unsupported_Claims / Total_Evaluated_Claims * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["selection_claims", "ast_verification_results"]
+        }
+      ],
+      "required_data": ["llm_rationales", "code_evidence_citations", "ast_symbols"],
+      "methodology": "Extract all code symbols, file paths, and causal claims from RAG explanation outputs. Validate each citation against the repository AST. Flag non-existent or uncallable references.",
+      "formula": "Unsupported_Claims / Total_Evaluated_Claims * 100 if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "AST-grounded evidence vs pure LLM free-text reasoning.",
+      "aggregation": "Total unsupported claims divided by total claims across evaluated runs.",
+      "interpretation": "Measures hallucination resistance; zero unsupported claims indicates perfect evidence grounding.",
+      "limitations": "Requires parsing free-text or structured rationale fields into testable assertion claims.",
+      "answerability_requirements": "Requires evaluation runs with LLM-generated rationale strings enabled.",
+      "status": "not_measured",
+      "result_source": "testpilot/web/api.py"
+    },
+    {
+      "id": "Q18",
+      "category": "Category C — Repository RAG and Evidence Retrieval",
+      "question": "What are the retrieval success, timeout, fallback activation, and recovery rates for code intelligence and vector services?",
+      "objective": "Measure operational reliability and fault tolerance of external retrieval providers under varied network and load conditions.",
+      "metrics": [
+        {
+          "name": "Retrieval Success Rate",
+          "definition": "Percentage of retrieval requests completing within timeout without errors.",
+          "formula": "Successful_Requests / Total_Requests * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["request_counts", "success_counts"]
+        },
+        {
+          "name": "Fallback Activation Rate",
+          "definition": "Percentage of requests where external service failure triggered local AST fallback.",
+          "formula": "Fallback_Invocations / Total_Requests * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["fallback_counts", "total_requests"]
+        }
+      ],
+      "required_data": ["retrieval_logs", "error_types", "response_times"],
+      "methodology": "Monitor Sourcegraph and ChromaDB request telemetry during benchmark executions. Record timeouts, HTTP 5xx errors, fallback transitions, and successful fallbacks.",
+      "formula": "Successful_Requests / Total_Requests * 100 if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "Remote Sourcegraph vs Local ChromaDB vs Local AST Fallback.",
+      "aggregation": "Aggregate event counts across all benchmark runs.",
+      "interpretation": "High fallback activation demonstrates system resilience, preventing pipeline crashes when remote services fail.",
+      "limitations": "Telemetry depends on logging fidelity and timeout threshold settings.",
+      "answerability_requirements": "Requires logged retrieval operations across multiple benchmark executions.",
+      "status": "not_measured",
+      "result_source": "testpilot/sourcegraph/client.py"
+    },
+    {
+      "id": "Q19",
+      "category": "Category D — Test Generation and Ground Truth",
+      "question": "What are the parse, collection, and execution success rates of candidate tests synthesized for untested repositories?",
+      "objective": "Measure syntactic, import, and execution viability of automatically generated test suites across repositories with zero initial tests.",
+      "metrics": [
+        {
+          "name": "Parse Success Rate",
+          "definition": "Percentage of generated test files that compile and parse into valid AST without syntax errors.",
+          "formula": "Valid_AST_Tests / Total_Generated_Tests * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["generated_test_files", "ast_parse_results"]
+        },
+        {
+          "name": "Execution Pass Rate",
+          "definition": "Percentage of syntactically valid generated tests that pass cleanly on unmodified repository code.",
+          "formula": "Passing_Tests / Total_Syntactically_Valid_Tests * 100 if Valid > 0 else null",
+          "unit": "percentage",
+          "required_data": ["pytest_execution_results"]
+        }
+      ],
+      "required_data": ["generated_test_records", "pytest_stdout", "pytest_exit_codes"],
+      "methodology": "Generate candidate tests using AutoBenchmarkGenerator for repositories lacking existing test suites. Execute pytest in subprocess isolation and parse individual test outcomes.",
+      "formula": "Passing_Tests / Total_Generated_Tests * 100 if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "AutoBenchmarkGenerator template generation vs AST-driven signature inference.",
+      "aggregation": "Micro sum of test counts across all onboarded repositories.",
+      "interpretation": "High execution pass rate on unmodified code confirms generated tests are non-flaky baseline candidates.",
+      "limitations": "Passing on unmodified code does not prove test meaningfulness or fault sensitivity.",
+      "answerability_requirements": "Requires candidate test generation runs on at least one registered repository.",
+      "status": "not_measured",
+      "result_source": "testpilot/evaluation/auto_benchmark.py"
+    },
+    {
+      "id": "Q20",
+      "category": "Category D — Test Generation and Ground Truth",
+      "question": "What is the mutation detection rate (mutant kill rate) of test suites against valid, non-equivalent controlled mutations?",
+      "objective": "Quantify fault-detection capability independently from test-selection precision and recall.",
+      "metrics": [
+        {
+          "name": "Mutant Kill Rate",
+          "definition": "Percentage of valid, non-equivalent AST mutants detected (killed) by test suite execution.",
+          "formula": "Killed_Mutants / Valid_Mutants * 100 if Valid_Mutants > 0 else null",
+          "unit": "percentage",
+          "required_data": ["killed_mutants_count", "valid_mutants_count"]
+        }
+      ],
+      "required_data": ["mutation_records", "test_failure_logs", "mutant_ast_diffs"],
+      "methodology": "Apply controlled AST operator and comparison mutations using AutoBenchmarkGenerator.cross_check_mutation_sensitivity. Execute candidate tests against each mutant. Record kills, survivals, and crashes.",
+      "formula": "Killed_Mutants / Valid_Mutants * 100 if Valid_Mutants > 0 else null",
+      "unit": "percentage",
+      "comparison": "Mutant kill rate of full suite vs TestPilot selected subset vs generated candidate tests.",
+      "aggregation": "Micro sum: total killed mutants / total valid mutants * 100 across repositories.",
+      "interpretation": "Directly measures test assertion quality and bug-catching power. Distinguishes trivial tests from rigorous tests.",
+      "limitations": "Equivalent mutants (syntactically changed but semantically identical) can artificially suppress kill rates if not filtered.",
+      "answerability_requirements": "Requires execution of cross_check_mutation_sensitivity with at least 5 generated mutants.",
+      "status": "not_measured",
+      "result_source": "testpilot/evaluation/auto_benchmark.py"
+    },
+    {
+      "id": "Q21",
+      "category": "Category D — Test Generation and Ground Truth",
+      "question": "What is the historical bug reproduction rate across isolated Git worktrees of buggy and corrected revisions?",
+      "objective": "Determine the reliability of Method A ground truth validation in reproducing historical regressions before fix commits.",
+      "metrics": [
+        {
+          "name": "Bug Reproduction Rate",
+          "definition": "Percentage of historical bug cases where the regression test cleanly fails on buggy revision and passes on corrected revision.",
+          "formula": "Reproduced_Bugs / Attempted_Bug_Cases * 100 if Attempted > 0 else null",
+          "unit": "percentage",
+          "required_data": ["historical_bug_cases", "worktree_test_results"]
+        }
+      ],
+      "required_data": ["buggy_commit_sha", "corrected_commit_sha", "test_id", "worktree_logs"],
+      "methodology": "Create isolated Git worktrees for buggy and corrected commit SHAs. Execute regression test in subprocess isolation. Confirm failure on buggy commit and pass on corrected commit without environment crashes.",
+      "formula": "Reproduced_Bugs / Attempted_Bug_Cases * 100 if Attempted > 0 else null",
+      "unit": "percentage",
+      "comparison": "Historical bug validation success rate across commit distances (1 commit vs multi-commit fix).",
+      "aggregation": "Total reproduced cases divided by total submitted historical bug cases.",
+      "interpretation": "Validates Method A ground truth rigor: only bugs with reproducible before/after test evidence qualify as ground truth.",
+      "limitations": "Historical revisions may suffer from obsolete dependencies or incompatible runtime environments.",
+      "answerability_requirements": "Requires registration of at least one historical bug fix case with valid commit SHAs.",
+      "status": "not_measured",
+      "result_source": "testpilot/evaluation/auto_benchmark.py"
+    },
+    {
+      "id": "Q22",
+      "category": "Category D — Test Generation and Ground Truth",
+      "question": "What are the distribution rates of benchmark cases across ground-truth review statuses?",
+      "objective": "Monitor ground-truth pipeline health and human review throughput across registered repositories.",
+      "metrics": [
+        {
+          "name": "Validation Rate",
+          "definition": "Percentage of benchmark cases in VALIDATED status.",
+          "formula": "Validated_Cases / Total_Cases * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["review_status_counts", "total_cases_count"]
+        },
+        {
+          "name": "Stale Invalidation Rate",
+          "definition": "Percentage of benchmark cases marked STALE due to Git HEAD advancement.",
+          "formula": "Stale_Cases / Total_Cases * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["stale_cases_count", "total_cases_count"]
+        }
+      ],
+      "required_data": ["custom_benchmark_cases", "ground_truth_review_status"],
+      "methodology": "Query custom repository benchmark storage. Count cases across all 7 statuses: Candidate, Evidence Collection, Under Validation, Needs Human Review, Validated, Rejected, Stale.",
+      "formula": "Validated_Cases / Total_Cases * 100 if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "Distribution breakdown across candidate, under-review, validated, rejected, and stale.",
+      "aggregation": "Status percentage breakdown across all registered repositories.",
+      "interpretation": "High validation rate indicates a mature benchmark suite; high stale rate indicates need to re-validate against updated HEAD revisions.",
+      "limitations": "Review throughput depends on human auditor availability.",
+      "answerability_requirements": "Requires at least one registered repository with benchmark cases.",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/custom_repositories.json"
+    },
+    {
+      "id": "Q23",
+      "category": "Category E — Performance and Scalability",
+      "question": "What is the end-to-end execution time and time savings across all four evaluation configurations?",
+      "objective": "Quantify developer and CI pipeline time savings enabled by change-aware test selection compared to full regression runs.",
+      "metrics": [
+        {
+          "name": "CI Time Savings",
+          "definition": "Execution time of full test suite minus (selection latency + execution time of selected tests).",
+          "formula": "Time_Full_Suite - (Time_Selection + Time_Selected_Tests)",
+          "unit": "seconds",
+          "required_data": ["full_suite_runtime", "selection_latency", "selected_suite_runtime"]
+        },
+        {
+          "name": "Speedup Factor",
+          "definition": "Ratio of full regression time to selection pipeline plus selected test execution time.",
+          "formula": "Time_Full_Regression / Total_Pipeline_Time if Total > 0 else null",
+          "unit": "ratio",
+          "required_data": ["time_full_regression", "total_pipeline_time"]
+        }
+      ],
+      "required_data": ["baseline_latencies", "test_execution_runtimes"],
+      "methodology": "Measure wall-clock time for Full Regression execution. For TestPilot and Naive, sum selection latency and selected test execution duration.",
+      "formula": "Time_Full_Suite - (Time_Selection + Time_Selected_Tests)",
+      "unit": "seconds",
+      "comparison": "Full Regression vs Naive Baseline vs TestPilot vs TestPilot + Repository RAG.",
+      "aggregation": "Total cumulative time saved across all evaluated commits.",
+      "interpretation": "Demonstrates net practical developer productivity gains, accounting for selection overhead.",
+      "limitations": "In fast test suites (< 5 seconds), selection overhead can exceed test execution time.",
+      "answerability_requirements": "Requires recorded test execution runtimes in addition to selection algorithm latencies.",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/evaluation_runs.json"
+    },
+    {
+      "id": "Q24",
+      "category": "Category E — Performance and Scalability",
+      "question": "What is the time overhead attributable to inspection, AST analysis, semantic analysis, RAG retrieval, selection, and other pipeline stages?",
+      "objective": "Profile pipeline latency hotspots to identify optimization targets across AST parsing, vector search, and model inference.",
+      "metrics": [
+        {
+          "name": "Stage Latency Breakdown",
+          "definition": "Duration and percentage of total pipeline time consumed by each discrete analysis stage.",
+          "formula": "Stage_Latency_ms / Total_Pipeline_Latency_ms * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["evolution_latency_ms", "selection_latency_ms", "rag_latency_ms", "total_latency_ms"]
+        }
+      ],
+      "required_data": ["evaluation_metrics_latency_fields", "profiler_timestamps"],
+      "methodology": "Record high-resolution performance counters (time.perf_counter) before and after diff analysis, AST parsing, RAG retrieval, and test selection.",
+      "formula": "Stage_Latency_ms / Total_Pipeline_Latency_ms * 100 if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "Latency contribution of each stage across repository sizes.",
+      "aggregation": "Average stage breakdown percentages across benchmark runs.",
+      "interpretation": "Identifies architectural bottlenecks (e.g. whether AST parsing or embedding search dominates runtime).",
+      "limitations": "Sub-millisecond stages on small repositories are sensitive to operating system scheduling noise.",
+      "answerability_requirements": "Requires EvaluationRun objects with populated latency_ms fields.",
+      "status": "not_measured",
+      "result_source": "testpilot/evaluation/models.py"
+    },
+    {
+      "id": "Q25",
+      "category": "Category E — Performance and Scalability",
+      "question": "How do runtime, memory usage, and completion rate scale as repository size and test/dependency counts increase?",
+      "objective": "Evaluate computational complexity and resource scalability across codebases from hundreds to tens of thousands of files.",
+      "metrics": [
+        {
+          "name": "Latency Scaling Rate",
+          "definition": "Growth in selection latency relative to lines of code or total test count.",
+          "formula": "null",
+          "unit": "scaling_exponent",
+          "required_data": ["repo_loc", "total_tests", "selection_latency_ms"]
+        },
+        {
+          "name": "Completion Rate",
+          "definition": "Percentage of benchmark runs completing successfully without out-of-memory or timeout errors.",
+          "formula": "Completed_Runs / Total_Initiated_Runs * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["completed_runs", "initiated_runs"]
+        }
+      ],
+      "required_data": ["repository_size_metrics", "peak_memory_mb", "run_latencies"],
+      "methodology": "Benchmark TestPilot across repositories spanning small (< 1k LOC), medium (10k-50k LOC), and large (> 100k LOC) codebases (e.g. Flask, Django, Home Assistant). Plot latency vs LOC.",
+      "formula": "null",
+      "unit": "scaling_exponent",
+      "comparison": "Scaling curves of AST selection vs Naive Baseline vs Vector RAG.",
+      "aggregation": "Linear and log-log regression fit across repository scale tiers.",
+      "interpretation": "Sub-linear or linear scaling confirms viability for enterprise-scale monorepos.",
+      "limitations": "Memory profiling requires OS-specific process telemetry across platforms.",
+      "answerability_requirements": "Requires benchmark executions across at least 3 repositories of differing scale tiers.",
+      "status": "not_measured",
+      "result_source": "testpilot/benchmark/runner.py"
+    },
+    {
+      "id": "Q26",
+      "category": "Category F — Reliability and Generalization",
+      "question": "What is the consistency of selections and metrics across repeated runs with identical inputs and settings?",
+      "objective": "Verify deterministic reproducibility of test selection algorithms and benchmark evaluation pipelines.",
+      "metrics": [
+        {
+          "name": "Selection Jaccard Consistency",
+          "definition": "Jaccard similarity coefficient between selected test sets across repeated executions on identical commits.",
+          "formula": "|Selection_A ∩ Selection_B| / |Selection_A ∪ Selection_B| if Union > 0 else 1.0",
+          "unit": "ratio",
+          "required_data": ["run_1_selected_tests", "run_2_selected_tests"]
+        }
+      ],
+      "required_data": ["repeated_evaluation_runs", "case_ids", "seed_values"],
+      "methodology": "Execute the evaluation pipeline 5 consecutive times on identical commits and settings. Compute pairwise Jaccard similarity across selected test sets.",
+      "formula": "|Selection_A ∩ Selection_B| / |Selection_A ∪ Selection_B| if Union > 0 else 1.0",
+      "unit": "ratio",
+      "comparison": "Deterministic TestPilot (expected Jaccard = 1.0) vs LLM/RAG selection (temperature > 0).",
+      "aggregation": "Mean pairwise Jaccard consistency across all repeated trial pairs.",
+      "interpretation": "A Jaccard score of 1.0 proves 100% deterministic reproducibility, essential for CI confidence.",
+      "limitations": "Non-deterministic LLM temperatures can cause selection jitter if temperature is not pinned to 0.0.",
+      "answerability_requirements": "Requires at least 2 independent evaluation runs on identical input commits.",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/evaluation_runs.json"
+    },
+    {
+      "id": "Q27",
+      "category": "Category F — Reliability and Generalization",
+      "question": "What is the performance variation across independently evaluated repositories?",
+      "objective": "Assess cross-repository generalization and determine whether selection quality remains consistent across disparate architectures.",
+      "metrics": [
+        {
+          "name": "Precision Cross-Repo Standard Deviation",
+          "definition": "Standard deviation of macro precision rates across evaluated repositories.",
+          "formula": "sqrt(sum((Precision_i - Mean_Precision)^2) / (N - 1)) if N > 1 else null",
+          "unit": "percentage_std",
+          "required_data": ["per_repository_precisions", "N"]
+        },
+        {
+          "name": "Recall Cross-Repo Standard Deviation",
+          "definition": "Standard deviation of macro recall rates across evaluated repositories.",
+          "formula": "sqrt(sum((Recall_i - Mean_Recall)^2) / (N - 1)) if N > 1 else null",
+          "unit": "percentage_std",
+          "required_data": ["per_repository_recalls", "N"]
+        }
+      ],
+      "required_data": ["macro_repository_metrics", "repository_identifiers"],
+      "methodology": "Calculate macro precision, recall, and reduction for each evaluated repository. Compute standard deviation, interquartile range, and min-max spread.",
+      "formula": "sqrt(sum((Precision_i - Mean_Precision)^2) / (N - 1)) if N > 1 else null",
+      "unit": "percentage_std",
+      "comparison": "Cross-repository variance of TestPilot vs Naive Baseline.",
+      "aggregation": "Sample standard deviation across distinct repository records.",
+      "interpretation": "Low standard deviation indicates robust generalization; high variance points to architectural dependencies.",
+      "limitations": "Requires a diverse sample of at least 3 distinct repositories to compute meaningful variance.",
+      "answerability_requirements": "Requires evaluated benchmark runs across at least 3 distinct repositories.",
+      "status": "not_measured",
+      "result_source": "testpilot/evaluation/custom_manager.py"
+    },
+    {
+      "id": "Q28",
+      "category": "Category F — Reliability and Generalization",
+      "question": "How does test-selection accuracy vary across supported change types and languages/frameworks?",
+      "objective": "Identify architectural sensitivities and failure modes across syntactic change patterns and dynamic vs static language features.",
+      "metrics": [
+        {
+          "name": "Accuracy by Change Type",
+          "definition": "Precision and recall stratified by modification type (function modification, class refactoring, signature change, deletion).",
+          "formula": "null",
+          "unit": "comparative_distribution",
+          "required_data": ["change_type_labels", "per_case_metrics"]
+        }
+      ],
+      "required_data": ["diff_change_types", "target_languages", "case_evaluation_metrics"],
+      "methodology": "Tag each benchmark case by change type (e.g. signature modification vs body edit) and language (Python, TypeScript, Go). Group evaluation metrics by tag and compute subgroup averages.",
+      "formula": "null",
+      "unit": "comparative_distribution",
+      "comparison": "Change type stratification (Signature vs Body vs Import vs Deletion).",
+      "aggregation": "Subgroup means across change categories.",
+      "interpretation": "Reveals whether specific change categories (like class inheritance or dynamic kwargs) suffer systematic recall loss.",
+      "limitations": "Categorizing real-world multi-file commits into a single change type can oversimplify complex diffs.",
+      "answerability_requirements": "Requires benchmark cases annotated with change_type and language metadata.",
+      "status": "not_measured",
+      "result_source": "testpilot/evolution/models.py"
+    },
+    {
+      "id": "Q29",
+      "category": "Category G — Evaluation Validity and Usability",
+      "question": "What is the benchmark validity rate across ground-truth coverage, revision reproducibility, provenance completeness, and metric answerability?",
+      "objective": "Audit the scientific integrity of evaluation benchmarks to ensure no unvalidated, unpinned, or unanswerable benchmarks enter official reports.",
+      "metrics": [
+        {
+          "name": "Scientific Validity Score",
+          "definition": "Percentage of benchmark cases satisfying all 4 validity criteria: verified ground truth, pinned Git SHA, documented provenance, and non-empty test universe.",
+          "formula": "Fully_Valid_Cases / Total_Cases * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["benchmark_case_metadata", "ground_truth_verification_flags"]
+        }
+      ],
+      "required_data": ["case_is_verified", "commit_sha", "provenance_string", "total_tests"],
+      "methodology": "Audit every BenchmarkCase in storage. Verify: (1) is_verified is true, (2) base/target commit SHAs resolve in Git, (3) provenance field is non-empty, (4) total eligible tests > 0.",
+      "formula": "Fully_Valid_Cases / Total_Cases * 100 if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "Verified benchmark cases vs unverified candidate cases.",
+      "aggregation": "Proportion of valid cases across custom and authoritative benchmark stores.",
+      "interpretation": "Guarantees evaluation results are scientifically defensible and free from fabricated ground truth.",
+      "limitations": "Automated audit checks structure and flags; human review is required to verify provenance veracity.",
+      "answerability_requirements": "Audit can be performed immediately on any populated benchmark store.",
+      "status": "not_measured",
+      "result_source": "testpilot/evaluation/custom_models.py"
+    },
+    {
+      "id": "Q30",
+      "category": "Category G — Evaluation Validity and Usability",
+      "question": "What is the successful evaluation completion rate and frequency of manual intervention due to missing tests, unsupported environments, invalid ground truth, or execution failures?",
+      "objective": "Measure end-to-end automation reliability and developer friction when evaluating newly onboarded repositories.",
+      "metrics": [
+        {
+          "name": "Automated Completion Rate",
+          "definition": "Percentage of onboarded repositories that complete inspection, benchmark generation, and baseline evaluation without manual intervention.",
+          "formula": "Completed_Without_Intervention / Total_Onboarded_Repos * 100 if Total > 0 else null",
+          "unit": "percentage",
+          "required_data": ["repository_status_records", "manual_intervention_flags"]
+        },
+        {
+          "name": "Intervention Frequency by Cause",
+          "definition": "Categorized distribution of manual interventions (missing tests, environment crashes, unsupported language, invalid ground truth).",
+          "formula": "null",
+          "unit": "count_by_cause",
+          "required_data": ["error_status_messages", "excluded_repositories_reasons"]
+        }
+      ],
+      "required_data": ["repository_lifecycle_records", "status_messages", "excluded_repositories"],
+      "methodology": "Track onboarding and evaluation runs in CustomRepositoryBenchmarkManager. Log error events, excluded repository reasons, and human review requests.",
+      "formula": "Completed_Without_Intervention / Total_Onboarded_Repos * 100 if Total > 0 else null",
+      "unit": "percentage",
+      "comparison": "Zero-configuration automated repositories vs repositories requiring manual test setup.",
+      "aggregation": "Aggregate success percentage and failure reason counts across all registered repos.",
+      "interpretation": "Identifies real-world onboarding friction points and directs test framework compatibility improvements.",
+      "limitations": "Environmental issues (e.g. missing virtualenv dependencies) reflect user environment rather than core algorithm defects.",
+      "answerability_requirements": "Requires tracking records for at least 3 repository onboarding attempts.",
+      "status": "not_measured",
+      "result_source": "testbed/evaluation_store/custom_repositories.json"
+    }
+  ]
+}

@@ -14,7 +14,7 @@ from testpilot.rag.repo_vector_store import RepoCodeVectorStore
 
 @pytest.fixture
 def temp_repo_dir():
-    with tempfile.TemporaryDirectory() as tmpdir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
         root = Path(tmpdir)
         service_file = root / "service.py"
         service_file.write_text(

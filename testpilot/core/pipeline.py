@@ -104,6 +104,8 @@ class EvolutionStageResult(BaseModel):
     executable_commands: list[str] = Field(default_factory=list)
     semantic_validation_enabled: bool = False
     semantic_validation_results: list[dict[str, Any]] = Field(default_factory=list)
+    semantic_impacts: list[dict[str, Any]] = Field(default_factory=list)
+    semantic_summary: dict[str, Any] = Field(default_factory=dict)
     warning: Optional[str] = None
     warnings: list[str] = Field(default_factory=list)
 
@@ -439,6 +441,8 @@ class FullPipelineOrchestrator:
                 executable_commands=[t.execution_command for t in sorted_tests if t.execution_command],
                 semantic_validation_enabled=bool(req.enable_semantic_validation),
                 semantic_validation_results=semantic_results_summary,
+                semantic_impacts=[s.model_dump() for s in getattr(report, "semantic_impacts", [])],
+                semantic_summary=getattr(report, "semantic_summary", {}),
                 warnings=report.warnings,
             )
         except InvalidGitReferenceError as e:

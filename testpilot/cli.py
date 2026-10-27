@@ -878,6 +878,7 @@ def evolution_cmd(
     summary_table.add_row("Transitive Blast Radius", f"{len(report.impact_graph)} symbols impacted", f"{report.direct_impact_count} Direct, {report.indirect_impact_count} Indirect")
     summary_table.add_row("Total Discovered Tests", f"{report.total_discovered_tests} tests in repository", "Indexed test corpus")
     summary_table.add_row("Prioritized Regression Tests", f"{report.prioritized_test_count} tests identified", f"{len(report.critical_tests)} Critical, {len(report.high_priority_tests)} High")
+    summary_table.add_row("Semantic Impact Assessments", f"{len(report.semantic_impacts)} assessments", f"{len(report.direct_behavioral_impacts)} Direct, {len(report.indirect_behavioral_impacts)} Indirect, {len(report.structural_only_impacts)} Structural")
     summary_table.add_row("Event-Trigger Candidates", f"{len(report.event_trigger_candidates)} candidates", "Unconfirmed behavioral coverage")
     summary_table.add_row("Analysis Latency", f"{report.analysis_latency_ms:.1f} ms", "Real-time AST & graph indexing")
     console.print(summary_table)
@@ -1007,6 +1008,43 @@ def evolution_cmd(
                 missing,
             )
         console.print(candidate_table)
+
+    # 6. Evidence-Grounded Semantic Impact Assessments Table
+    if report.semantic_impacts:
+        sem_table = Table(
+            title=f"Evidence-Grounded Semantic Impact Assessments ({len(report.semantic_impacts)} Analyzed)",
+            show_lines=True,
+        )
+        sem_table.add_column("Rank / Tier", width=18, style="bold")
+        sem_table.add_column("Classification", width=28)
+        sem_table.add_column("Affected Symbol", style="bold yellow", width=24)
+        sem_table.add_column("Depth", width=8)
+        sem_table.add_column("Evidence Source", width=18)
+        sem_table.add_column("Explanation & RAG Evidence", style="dim", width=42)
+
+        sem_class_colors = {
+            "DIRECT_BEHAVIORAL_DEPENDENCY": "bold green",
+            "INDIRECT_BEHAVIORAL_DEPENDENCY": "bold cyan",
+            "STRUCTURAL_ONLY": "dim white",
+            "UNCERTAIN": "bold yellow",
+        }
+
+        for sem in report.semantic_impacts:
+            c_val = sem.classification.value if hasattr(sem.classification, "value") else str(sem.classification)
+            c_color = sem_class_colors.get(c_val, "white")
+            rank_str = f"#{sem.prioritization.rank} [{sem.prioritization.tier}]" if sem.prioritization else "N/A"
+            ev_summary = sem.explanation
+            if sem.relevant_tests:
+                ev_summary += f" [Tests: {', '.join(sem.relevant_tests[:2])}]"
+            sem_table.add_row(
+                rank_str,
+                f"[{c_color}]{c_val}[/{c_color}]",
+                sem.affected_symbol,
+                f"Hop {sem.structural_depth}",
+                sem.evidence_source.value if hasattr(sem.evidence_source, "value") else str(sem.evidence_source),
+                ev_summary,
+            )
+        console.print(sem_table)
 
 
 @app.command("pipeline")

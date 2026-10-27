@@ -35,7 +35,7 @@ class BaselineEvaluator:
             for py_path in base_dir.rglob("test_*.py"):
                 try:
                     tree = ast.parse(py_path.read_text(encoding="utf-8", errors="ignore"))
-                    rel_file = str(py_path.relative_to(self.repo_path))
+                    rel_file = str(py_path.relative_to(self.repo_path)).replace("\\", "/")
                     for node in ast.walk(tree):
                         if isinstance(node, ast.FunctionDef) and (
                             node.name.startswith("test_") or node.name.endswith("_test")

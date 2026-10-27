@@ -253,11 +253,15 @@ class RepoCodeVectorStore:
     ) -> list[dict[str, Any]]:
         """
         Semantic code retrieval from 'repo_code_store'.
-        Returns list of structured results with content, qualified_symbol, file_path, metadata, distance.
+        Returns list of structured results with content, qualified_symbol, file_path, metadata, distance,
+        and explicit provenance (start_line, end_line, retrieval_method).
         """
         if self.count() == 0:
             # Auto-index repository if store is empty
-            self.index_repository()
+            try:
+                self.index_repository()
+            except Exception:
+                pass
 
         total = self.count()
         if total == 0:
@@ -294,9 +298,125 @@ class RepoCodeVectorStore:
                 "qualified_symbol": meta.get("qualified_symbol", ""),
                 "symbol_name": meta.get("symbol_name", ""),
                 "symbol_type": meta.get("symbol_type", "function"),
-                "is_test": meta.get("is_test", False),
+                "is_test": bool(meta.get("is_test", False)),
+                "start_line": int(meta.get("start_line", 0)),
+                "end_line": int(meta.get("end_line", 0)),
+                "retrieval_method": "semantic_similarity",
                 "distance": round(float(dist), 4),
                 "metadata": meta,
             })
 
         return extracted
+
+    def find_exact_code_unit(
+        self,
+        symbol_name: str,
+        file_path: Optional[str] = None,
+    ) -> Optional[dict[str, Any]]:
+        """
+        Locates an exact AST code unit by symbol identity or file.
+        Distinguishes exact structural provenance from semantic similarity.
+        """
+        # Try direct file parsing first for authoritative up-to-date syntax
+        if file_path:
+            p = Path(file_path)
+            if not p.is_absolute():
+                p = self.repo_root / file_path
+            if p.exists() and p.is_file():
+                units = self.extract_code_units_from_file(p)
+                for u in units:
+                    if u.symbol_name == symbol_name or u.qualified_symbol == symbol_name:
+                        return {
+                            "source_id": u.id,
+                            "content": u.content,
+                            "file_path": u.file_path,
+                            "qualified_symbol": u.qualified_symbol,
+                            "symbol_name": u.symbol_name,
+                            "symbol_type": u.symbol_type,
+                            "is_test": u.is_test,
+                            "start_line": u.start_line,
+                            "end_line": u.end_line,
+                            "retrieval_method": "exact_structural",
+                            "distance": 0.0,
+                            "metadata": u.metadata,
+                        }
+
+        # Fallback to vector store exact metadata query
+        try:
+            where_clause: dict[str, Any] = {"symbol_name": symbol_name}
+            res = self.collection.get(where=where_clause, limit=1)
+            if res and res.get("ids") and len(res["ids"]) > 0:
+                doc = res["documents"][0] if res.get("documents") else ""
+                meta = res["metadatas"][0] if res.get("metadatas") else {}
+                return {
+                    "source_id": res["ids"][0],
+                    "content": doc,
+                    "file_path": meta.get("file_path", ""),
+                    "qualified_symbol": meta.get("qualified_symbol", ""),
+                    "symbol_name": meta.get("symbol_name", ""),
+                    "symbol_type": meta.get("symbol_type", "function"),
+                    "is_test": bool(meta.get("is_test", False)),
+                    "start_line": int(meta.get("start_line", 0)),
+                    "end_line": int(meta.get("end_line", 0)),
+                    "retrieval_method": "exact_structural",
+                    "distance": 0.0,
+                    "metadata": meta,
+                }
+        except Exception:
+            pass
+
+        return None
+
+    def retrieve_symbol_evidence(
+        self,
+        symbol_name: str,
+        file_path: Optional[str] = None,
+        include_callers: bool = True,
+        include_tests: bool = True,
+        top_k: int = 5,
+    ) -> list[dict[str, Any]]:
+        """
+        Targeted multi-tier retrieval for Repository Evolution:
+        1. Exact structural definition of the symbol (exact_structural)
+        2. Semantic similarity search across related methods/contracts (semantic_similarity)
+        3. Relevant automated tests and assertions (semantic_test_evidence)
+        Preserves complete provenance, deduplicates, and marks retrieval methods clearly.
+        """
+        evidence_results: list[dict[str, Any]] = []
+        seen_ids: set[str] = set()
+
+        # Tier 1: Exact structural definition
+        exact = self.find_exact_code_unit(symbol_name=symbol_name, file_path=file_path)
+        if exact:
+            seen_ids.add(exact["source_id"])
+            evidence_results.append(exact)
+
+        # Tier 2: Semantic code context & callers
+        if include_callers:
+            query = f"{symbol_name} caller invocation contract dataflow {file_path or ''}"
+            contexts = self.retrieve_code_context(query=query, top_k=top_k)
+            for c in contexts:
+                s_id = c.get("source_id", "")
+                if s_id and s_id not in seen_ids:
+                    seen_ids.add(s_id)
+                    evidence_results.append(c)
+
+        # Tier 3: Associated test units exercising this contract
+        if include_tests:
+            test_query = f"test_{symbol_name} assert {symbol_name} fixture"
+            try:
+                test_results = self.retrieve_code_context(
+                    query=test_query,
+                    top_k=min(top_k, 4),
+                    filters={"is_test": True},
+                )
+                for t in test_results:
+                    s_id = t.get("source_id", "")
+                    if s_id and s_id not in seen_ids:
+                        seen_ids.add(s_id)
+                        t["retrieval_method"] = "semantic_test_evidence"
+                        evidence_results.append(t)
+            except Exception:
+                pass
+
+        return evidence_results

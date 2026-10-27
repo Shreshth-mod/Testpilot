@@ -2,11 +2,16 @@ from testpilot.evolution.engine import (
     InvalidGitReferenceError,
     RepositoryEvolutionEngine,
 )
+from testpilot.evolution.semantic import (
+    DataFlowEvidence,
+    SemanticImpactAnalyzer,
+)
 from testpilot.evolution.models import (
     ChangedSymbol,
     ChangeType,
     EventMatchClassification,
     EvidenceItem,
+    EvidenceSourceType,
     EvidenceTrail,
     EvolutionReport,
     EvolutionRequest,
@@ -14,6 +19,10 @@ from testpilot.evolution.models import (
     ImpactType,
     PrioritizedTest,
     PriorityTier,
+    PrioritizationRank,
+    SemanticEvidenceRef,
+    SemanticImpactAssessment,
+    SemanticImpactClassification,
 )
 
 __all__ = [
@@ -30,4 +39,11 @@ __all__ = [
     "PriorityTier",
     "EventMatchClassification",
     "EvidenceItem",
+    "SemanticImpactClassification",
+    "EvidenceSourceType",
+    "SemanticEvidenceRef",
+    "PrioritizationRank",
+    "SemanticImpactAssessment",
+    "SemanticImpactAnalyzer",
+    "DataFlowEvidence",
 ]

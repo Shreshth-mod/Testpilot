@@ -18,15 +18,40 @@ from testpilot.evaluation.models import (
 )
 from testpilot.evaluation.storage import EvaluationStorage
 
+from testpilot.evaluation.custom_manager import CustomRepositoryBenchmarkManager
+from testpilot.evaluation.custom_models import (
+    BenchmarkSourceType,
+    CustomBenchmarkCase,
+    CustomRepositoryRecord,
+    GroundTruthReviewStatus,
+    GroundTruthValidationLevel,
+    PrepareBenchmarkRequest,
+    PrepareHistoricalBugRequest,
+    RegisterRepositoryRequest,
+    RepositoryStatus,
+    ReviewGroundTruthRequest,
+)
+
 __all__ = [
     "BaselineResult",
     "BaselineType",
     "BenchmarkCase",
+    "BenchmarkSourceType",
     "ComponentValidationResult",
+    "CustomBenchmarkCase",
+    "CustomRepositoryBenchmarkManager",
+    "CustomRepositoryRecord",
     "EvaluationEngine",
     "EvaluationMetrics",
     "EvaluationRun",
     "EvaluationStorage",
     "GroundTruth",
+    "GroundTruthReviewStatus",
+    "GroundTruthValidationLevel",
+    "PrepareBenchmarkRequest",
+    "PrepareHistoricalBugRequest",
+    "RegisterRepositoryRequest",
+    "RepositoryStatus",
+    "ReviewGroundTruthRequest",
     "TestSelectionEvidence",
 ]

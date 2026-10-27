@@ -225,34 +225,36 @@ def test_10_invalid_or_empty_search():
 def test_11_api_response_structure():
     api_client = TestClient(app)
 
-    # Status endpoint
+    # Removed endpoints should return 404
     r_status = api_client.get("/api/code-intel/status")
-    assert r_status.status_code == 200
-    st_json = r_status.json()
-    assert "status" in st_json
-    assert "engine_label" in st_json
-    assert "source" in st_json
-    assert "research_note" in st_json
+    assert r_status.status_code == 404
 
-    # Search endpoint
     r_search = api_client.get("/api/code-intel/search?query=calculate_order_totals&search_type=symbol")
-    assert r_search.status_code == 200
-    s_json = r_search.json()
+    assert r_search.status_code == 404
+
+    r_src = api_client.get("/api/code-intel/source?file_path=testbed/app/services/order_service.py&line_number=77")
+    assert r_src.status_code == 404
+
+    # Preserved Impact Analysis callers endpoints return 200
+    r_impact_callers = api_client.get("/api/impact/callers?symbol=calculate_order_totals")
+    assert r_impact_callers.status_code == 200
+    assert r_impact_callers.json()["symbol"] == "calculate_order_totals"
+    assert "callers" in r_impact_callers.json()
+
+    r_compat_callers = api_client.get("/api/code-intel/callers?symbol=calculate_order_totals")
+    assert r_compat_callers.status_code == 200
+    assert r_compat_callers.json()["symbol"] == "calculate_order_totals"
+
+    # Search via sourcegraph search endpoint returns 200
+    r_sg_search = api_client.get("/api/sourcegraph/search?query=calculate_order_totals&search_type=symbol")
+    assert r_sg_search.status_code == 200
+    s_json = r_sg_search.json()
     assert s_json["query"] == "calculate_order_totals"
     assert "definitions" in s_json
     assert "references" in s_json
     assert "relationships" in s_json
     assert "counts" in s_json
     assert "total_matches" in s_json
-
-    # Source snippet endpoint
-    r_src = api_client.get("/api/code-intel/source?file_path=testbed/app/services/order_service.py&line_number=77")
-    assert r_src.status_code == 200
-    src_json = r_src.json()
-    assert "lines" in src_json
-    assert src_json["line_number"] == 77
-    assert src_json["total_lines"] > 0
-    assert any(line["is_target"] for line in src_json["lines"])
 
     # Dedicated category endpoints
     r_defs = api_client.get("/api/sourcegraph/definitions?symbol=calculate_order_totals")
@@ -269,19 +271,27 @@ def test_12_ui_rendering_structure():
     assert html_file.exists()
     content = html_file.read_text(encoding="utf-8")
 
-    # Navbar item
-    assert 'id="tab-btn-code-intel"' in content
-    assert "Code Intelligence" in content
+    # Code Intelligence elements must be completely removed
+    assert 'id="tab-btn-code-intel"' not in content
+    assert 'id="tab-code-intel"' not in content
+    assert 'id="code-intel-status-pill"' not in content
+    assert 'id="code-intel-query"' not in content
+    assert 'id="code-intel-type"' not in content
+    assert 'id="code-intel-repo"' not in content
+    assert 'id="btn-code-intel-search"' not in content
+    assert 'id="code-intel-results-wrapper"' not in content
+    assert 'id="code-intel-source-modal"' not in content
 
-    # Tab panel
-    assert 'id="tab-code-intel"' in content
-    assert 'id="code-intel-status-pill"' in content
-    assert 'id="code-intel-query"' in content
-    assert 'id="code-intel-type"' in content
-    assert 'id="code-intel-repo"' in content
-    assert 'id="btn-code-intel-search"' in content
-    assert 'id="code-intel-results-wrapper"' in content
-    assert 'id="code-intel-source-modal"' in content
-
-    # Factual statement (Requirement 22)
-    assert "Code Intelligence exposes repository definitions and references used by TestPilot's impact analysis." in content
+    # All other tabs and critical UI components must remain intact
+    assert 'id="tab-btn-overview"' in content
+    assert 'id="tab-btn-evaluation"' in content
+    assert 'id="tab-btn-evolution"' in content
+    assert 'id="tab-btn-ast"' in content
+    assert 'id="tab-btn-blast"' in content
+    assert 'id="tab-btn-arbiter"' in content
+    assert 'id="tab-overview"' in content
+    assert 'id="tab-evaluation"' in content
+    assert 'id="tab-evolution"' in content
+    assert 'id="tab-ast"' in content
+    assert 'id="tab-blast"' in content
+    assert 'id="tab-arbiter"' in content

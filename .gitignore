@@ -44,3 +44,14 @@ reports/*.json
 reports/*.md
 !reports/.gitkeep
 
+# Benchmark clones
+testbed/evaluation_store/clones/
+
+# TestPilot local runtime workflows, snapshots, workspaces, and execution reports
+.testpilot/
+
+# Environment files and credentials
+.env
+.env.*
+*.local
+

@@ -7,6 +7,7 @@ Includes an autonomous local AST call-graph fallback when Docker is offline.
 
 import ast
 import os
+import time
 from pathlib import Path
 from typing import Any, Optional
 
@@ -110,14 +111,24 @@ class LocalCodeGraphFallback:
         if target_class_name:
             search_terms.add(target_class_name)
 
-        for py_file in self._get_python_files(root):
+        if not hasattr(self, "_file_ast_cache"):
+            self._file_ast_cache: dict[str, tuple[str, Optional[ast.AST]]] = {}
 
-            try:
-                source = py_file.read_text(encoding="utf-8", errors="ignore")
-                if not any(term in source for term in search_terms):
-                    continue
-                tree = ast.parse(source, filename=str(py_file))
-            except Exception:
+        for py_file in self._get_python_files(root):
+            file_key = str(py_file.resolve())
+            cached = self._file_ast_cache.get(file_key)
+            if cached is not None:
+                source, tree = cached
+            else:
+                try:
+                    source = py_file.read_text(encoding="utf-8", errors="ignore")
+                    tree = ast.parse(source, filename=str(py_file))
+                except Exception:
+                    source = ""
+                    tree = None
+                self._file_ast_cache[file_key] = (source, tree)
+
+            if not tree or not any(term in source for term in search_terms):
                 continue
 
             try:
@@ -625,25 +636,36 @@ class SourcegraphClient:
         ):
             return False
 
+        now = time.time()
+        if hasattr(self, "_is_alive_cache") and (now - getattr(self, "_is_alive_timestamp", 0)) < 15.0:
+            return self._is_alive_cache
+
         base_url = self.endpoint.split("/.api/")[0] if "/.api/" in self.endpoint else self.endpoint
+        is_live = False
         for target in [base_url, self.endpoint]:
             try:
-                resp = requests.get(target, timeout=self.timeout)
+                resp = requests.get(target, timeout=min(self.timeout, 0.5))
                 if resp.status_code < 500:
-                    return True
+                    is_live = True
+                    break
             except Exception:
                 pass
 
-        try:
-            resp = requests.post(
-                self.endpoint,
-                json={"query": "query SiteStatus { site { hasCodeIntelligence } }"},
-                headers={"Content-Type": "application/json"},
-                timeout=self.timeout,
-            )
-            return resp.status_code < 500
-        except Exception:
-            return False
+        if not is_live:
+            try:
+                resp = requests.post(
+                    self.endpoint,
+                    json={"query": "query SiteStatus { site { hasCodeIntelligence } }"},
+                    headers={"Content-Type": "application/json"},
+                    timeout=min(self.timeout, 0.5),
+                )
+                is_live = resp.status_code < 500
+            except Exception:
+                is_live = False
+
+        self._is_alive_cache = is_live
+        self._is_alive_timestamp = now
+        return is_live
 
     def is_available(self) -> bool:
         """Check whether the Sourcegraph OSS instance is responsive and alive."""
