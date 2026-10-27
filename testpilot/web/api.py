@@ -42,6 +42,11 @@ from testpilot.evaluation import (
     RegisterRepositoryRequest,
     ReviewGroundTruthRequest,
 )
+from testpilot.evaluation.generation_models import (
+    GenerationJobRecord,
+    HistoricalBugCandidate,
+    RepositoryValidationSummary,
+)
 from testpilot.evolution import (
     EvolutionRequest,
     InvalidGitReferenceError,
@@ -2051,6 +2056,15 @@ def list_custom_repositories(active_only: bool = True) -> list[dict[str, Any]]:
     return [r.model_dump() for r in repos]
 
 
+@app.post("/api/evaluation/custom-suite/validate-repository")
+def validate_custom_repository_candidate(payload: dict[str, Any]) -> dict[str, Any]:
+    """Inspect and validate repository URL or local path before adding."""
+    path = payload.get("path", "")
+    auth_token = payload.get("auth_token")
+    summary = custom_repo_mgr.validate_repository_candidate(path, auth_token=auth_token)
+    return summary.model_dump()
+
+
 @app.post("/api/evaluation/custom-suite/repositories")
 def register_custom_repository(request: RegisterRepositoryRequest) -> dict[str, Any]:
     """Register a new repository in the benchmark suite and inspect its structure."""
@@ -2107,6 +2121,71 @@ def get_custom_repository_generated_tests(repo_id: str) -> list[dict[str, Any]]:
     try:
         tests = custom_repo_mgr.get_generated_tests(repo_id)
         return [t.model_dump() for t in tests]
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.post("/api/evaluation/custom-suite/repositories/{repo_id}/generation-jobs")
+def start_repository_generation_job(repo_id: str, payload: Optional[dict[str, Any]] = None) -> dict[str, Any]:
+    """Launch observable, durable test generation job in the background."""
+    max_targets = (payload or {}).get("max_targets", 15) if payload else 15
+    try:
+        job = custom_repo_mgr.start_generation_job(repo_id, max_targets=max_targets)
+        return job.model_dump()
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.get("/api/evaluation/custom-suite/repositories/{repo_id}/generation-jobs/latest")
+def get_latest_repository_generation_job(repo_id: str) -> Optional[dict[str, Any]]:
+    """Get the latest test generation job status for a repository."""
+    job = custom_repo_mgr.get_latest_generation_job(repo_id)
+    return job.model_dump() if job else None
+
+
+@app.get("/api/evaluation/custom-suite/generation-jobs/{job_id}")
+def get_generation_job_details(job_id: str) -> dict[str, Any]:
+    """Retrieve detailed state of a test generation job."""
+    job = custom_repo_mgr.get_generation_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Generation job '{job_id}' not found.")
+    return job.model_dump()
+
+
+@app.post("/api/evaluation/custom-suite/generation-jobs/{job_id}/cancel")
+def cancel_generation_job_route(job_id: str) -> dict[str, Any]:
+    """Cancel an in-flight generation job."""
+    success = custom_repo_mgr.cancel_generation_job(job_id)
+    return {"job_id": job_id, "cancelled": success}
+
+
+@app.post("/api/evaluation/custom-suite/repositories/{repo_id}/mine-historical-bugs")
+def mine_repository_historical_bugs(repo_id: str, payload: Optional[dict[str, Any]] = None) -> list[dict[str, Any]]:
+    """Mine candidate regression bug fixes from Git history."""
+    max_commits = (payload or {}).get("max_commits", 50) if payload else 50
+    max_candidates = (payload or {}).get("max_candidates", 10) if payload else 10
+    try:
+        candidates = custom_repo_mgr.mine_historical_bugs(repo_id, max_commits=max_commits, max_candidates=max_candidates)
+        return [c.model_dump() for c in candidates]
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.post("/api/evaluation/custom-suite/repositories/{repo_id}/validate-historical-bug")
+def validate_repository_historical_bug(repo_id: str, candidate_data: dict[str, Any]) -> dict[str, Any]:
+    """Validate a mined historical bug fix candidate and convert to ground truth benchmark case."""
+    try:
+        candidate = HistoricalBugCandidate(**candidate_data)
+        case = custom_repo_mgr.validate_and_register_historical_bug(repo_id, candidate)
+        return case.model_dump()
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
     except Exception as e:

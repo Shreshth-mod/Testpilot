@@ -39,6 +39,8 @@ where = ["."]
 include = ["testpilot*", "testbed*"]
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [".*", "build", "dist", "*.egg", "tests/fixtures", "fixtures"]
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::UserWarning",

@@ -24,29 +24,62 @@ class BaselineEvaluator:
         self.evolution_engine = RepositoryEvolutionEngine(repo_root=str(self.repo_path))
 
     def discover_all_tests(self, test_dirs: Optional[list[str]] = None) -> list[str]:
-        """Discovers all test function/method identifiers in the repository."""
+        """
+        Discovers all test function/method identifiers in the repository.
+        Supports:
+        - Python (pytest/unittest in test_*.py, *_test.py)
+        - JavaScript / TypeScript (Jest/Vitest/Mocha in *.test.js/ts/jsx/tsx, *.spec.js/ts/jsx/tsx)
+        """
         tests: list[str] = []
         search_dirs = test_dirs or ["tests", "test"]
         valid_dirs = [self.repo_path / d for d in search_dirs if (self.repo_path / d).is_dir()]
         if not valid_dirs:
             valid_dirs = [self.repo_path]
 
+        skip_dirs = {".git", ".venv", "venv", "node_modules", "dist", "build", ".next", "__pycache__", "vendor"}
+
         for base_dir in valid_dirs:
-            for py_path in base_dir.rglob("test_*.py"):
-                try:
-                    tree = ast.parse(py_path.read_text(encoding="utf-8", errors="ignore"))
-                    rel_file = str(py_path.relative_to(self.repo_path)).replace("\\", "/")
-                    for node in ast.walk(tree):
-                        if isinstance(node, ast.FunctionDef) and (
-                            node.name.startswith("test_") or node.name.endswith("_test")
-                        ):
-                            tests.append(f"{rel_file}::{node.name}")
-                        elif isinstance(node, ast.ClassDef) and node.name.startswith("Test"):
-                            for item in node.body:
-                                if isinstance(item, ast.FunctionDef) and item.name.startswith("test_"):
-                                    tests.append(f"{rel_file}::{node.name}::{item.name}")
-                except Exception:
-                    continue
+            # 1. Python test discovery
+            for py_pattern in ("test_*.py", "*_test.py"):
+                for py_path in base_dir.rglob(py_pattern):
+                    if any(sd in py_path.parts for sd in skip_dirs):
+                        continue
+                    try:
+                        content = py_path.read_text(encoding="utf-8", errors="ignore")
+                        tree = ast.parse(content)
+                        rel_file = str(py_path.relative_to(self.repo_path)).replace("\\", "/")
+                        for node in ast.walk(tree):
+                            if isinstance(node, ast.FunctionDef) and (
+                                node.name.startswith("test_") or node.name.endswith("_test")
+                            ):
+                                tests.append(f"{rel_file}::{node.name}")
+                            elif isinstance(node, ast.ClassDef) and (
+                                node.name.startswith("Test") or node.name.endswith("Test") or node.name.endswith("TestCase")
+                            ):
+                                for item in node.body:
+                                    if isinstance(item, ast.FunctionDef) and (
+                                        item.name.startswith("test_") or item.name.endswith("_test")
+                                    ):
+                                        tests.append(f"{rel_file}::{node.name}::{item.name}")
+                    except Exception:
+                        continue
+
+            # 2. JavaScript / TypeScript test discovery (Jest, Vitest, Mocha)
+            for js_pattern in ("*.test.js", "*.test.ts", "*.test.jsx", "*.test.tsx", "*.spec.js", "*.spec.ts", "*.spec.jsx", "*.spec.tsx"):
+                for js_path in base_dir.rglob(js_pattern):
+                    if any(sd in js_path.parts for sd in skip_dirs):
+                        continue
+                    try:
+                        content = js_path.read_text(encoding="utf-8", errors="ignore")
+                        rel_file = str(js_path.relative_to(self.repo_path)).replace("\\", "/")
+                        # Match test("...", ...) or it("...", ...)
+                        for match in re.finditer(r"""(?:test|it)\s*\(\s*["'`]([^"'`]+)["'`]""", content):
+                            test_name = match.group(1).strip()
+                            if test_name:
+                                tests.append(f"{rel_file}::{test_name}")
+                    except Exception:
+                        continue
+
         return sorted(set(tests))
 
     def run_full_regression(self, all_tests: list[str]) -> BaselineResult:

@@ -56,7 +56,9 @@ class LocalCodeGraphFallback:
         """Determines if an imported module name could correspond to the given target file path."""
         if not file_path or not module_str:
             return True
-        norm_path = file_path.replace("\\", "/").rstrip(".py")
+        norm_path = file_path.replace("\\", "/")
+        if norm_path.endswith(".py"):
+            norm_path = norm_path[:-3]
         if norm_path.endswith("/__init__"):
             norm_path = norm_path[:-9]
         path_parts = [p for p in norm_path.split("/") if p and p != "."]

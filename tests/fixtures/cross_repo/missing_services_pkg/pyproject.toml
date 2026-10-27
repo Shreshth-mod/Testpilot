@@ -1,0 +1,8 @@
+[project]
+name = "fixture-service-with-deps"
+version = "0.1.0"
+dependencies = [
+    "psycopg2-binary>=2.9.0",
+    "redis>=4.5.0",
+    "fastapi>=0.100.0",
+]

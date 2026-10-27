@@ -1,0 +1,17 @@
+[project]
+name = "fixture-calculator"
+version = "0.1.0"
+description = "Representative Python fixture package"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

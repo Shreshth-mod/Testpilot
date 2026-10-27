@@ -120,6 +120,8 @@ class CustomRepositoryRecord(BaseModel):
     canonical_path: str
     remote_url: Optional[str] = None
     is_remote: bool = False
+    is_private: bool = False
+    auth_type: Optional[str] = None
     is_git: bool = True
     detected_revision: Optional[str] = None
     current_branch: Optional[str] = None
@@ -136,6 +138,11 @@ class CustomRepositoryRecord(BaseModel):
     baseline_test_error: Optional[str] = None
     supported_language: bool = True
     unsupported_reason: Optional[str] = None
+    is_monorepo: bool = False
+    workspace_type: Optional[str] = None
+    manifests: list[str] = Field(default_factory=list)
+    stage_capabilities: dict[str, str] = Field(default_factory=dict)
+    compatibility_report: Optional[dict[str, Any]] = None
     generated_tests: list[GeneratedTestRecord] = Field(default_factory=list)
     generated_tests_count: int = 0
     validated_tests_count: int = 0
@@ -155,6 +162,9 @@ class RegisterRepositoryRequest(BaseModel):
 
     path: str = Field(..., description="Local directory path or remote GitHub repository URL")
     name: Optional[str] = None
+    auth_token: Optional[str] = Field(default=None, description="Personal Access Token for private repository (never persisted)")
+    branch: Optional[str] = None
+    source_type: Optional[str] = None
 
 
 class PrepareBenchmarkRequest(BaseModel):

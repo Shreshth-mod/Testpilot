@@ -4,6 +4,7 @@ Orchestrates custom repository registration, structure inspection, test discover
 independent benchmark ground truth preparation, baseline execution, and strict metric aggregation.
 """
 
+import base64
 import datetime
 import hashlib
 import json
@@ -17,8 +18,10 @@ import urllib.parse
 from pathlib import Path
 from typing import Any, Optional
 
+from testpilot.capabilities import CapabilityDetector, SupportLevel
 from testpilot.evaluation.auto_benchmark import AutoBenchmarkGenerator
 from testpilot.evaluation.baselines import BaselineEvaluator
+from testpilot.evaluation.bug_mining import HistoricalBugMiner
 from testpilot.evaluation.custom_models import (
     BenchmarkSourceType,
     CustomBenchmarkCase,
@@ -33,6 +36,13 @@ from testpilot.evaluation.custom_models import (
     ReviewGroundTruthRequest,
 )
 from testpilot.evaluation.engine import compute_metrics
+from testpilot.evaluation.generation_manager import GenerationJobManager
+from testpilot.evaluation.generation_models import (
+    GenerationJobRecord,
+    GenerationJobStatus,
+    HistoricalBugCandidate,
+    RepositoryValidationSummary,
+)
 from testpilot.evaluation.models import (
     BaselineResult,
     BaselineType,
@@ -80,6 +90,8 @@ class CustomRepositoryBenchmarkManager:
             self.workspace_dir = (self.storage_dir / "clones").resolve()
         self.workspace_dir.mkdir(parents=True, exist_ok=True)
 
+        self.generation_job_mgr = GenerationJobManager(storage_dir=str(self.storage_dir))
+
     def _ensure_storage(self) -> None:
         """Ensures the storage file exists with valid JSON structure."""
         if not self.repos_file.exists():
@@ -106,6 +118,12 @@ class CustomRepositoryBenchmarkManager:
             except Exception:
                 pass
         temp_file.rename(self.repos_file)
+
+    def update_repository_record(self, record: CustomRepositoryRecord) -> None:
+        """Atomically updates and saves a single repository record."""
+        records = self._load_all_records()
+        records[record.repo_id] = record
+        self._save_all_records(records)
 
     @classmethod
     def is_remote_url(cls, path_or_url: str) -> bool:
@@ -187,11 +205,16 @@ class CustomRepositoryBenchmarkManager:
         normalized_clone_url = f"https://github.com/{owner}/{repo_name}.git"
         return normalized_clone_url, owner, repo_name
 
-    def clone_or_reuse_remote_repo(self, url_str: str) -> tuple[Path, str, str]:
+    def clone_or_reuse_remote_repo(
+        self,
+        url_str: str,
+        auth_token: Optional[str] = None,
+        branch: Optional[str] = None,
+    ) -> tuple[Path, str, str]:
         """
         Safely clones a remote repository into the dedicated benchmark workspace
-        or reuses it if already present.
-
+        or reuses it if already present. Supports private repositories via token.
+        Credentials are never stored in git config, URLs, or on disk.
         Returns: (cloned_local_path, normalized_url, repo_name)
         """
         clone_url, owner, repo_name = self.parse_and_validate_remote_url(url_str)
@@ -209,18 +232,26 @@ class CustomRepositoryBenchmarkManager:
         # Check if already cloned
         if dest_dir.exists():
             if dest_dir.is_dir() and (dest_dir / ".git").exists():
-                # Reusing existing clone safely without re-downloading or overwriting
                 return dest_dir, clone_url, repo_name
             else:
                 raise ValueError(
                     f"Destination directory '{dest_dir.name}' exists in benchmark workspace but is not a valid Git repository."
                 )
 
-        # Invoke git clone safely without shell interpolation
-        cmd = ["git", "--no-pager", "clone", "--depth", "50", clone_url, str(dest_dir)]
+        # Invoke git clone safely without exposing authorization material in process arguments
+        cmd = ["git", "--no-pager", "clone", "--depth", "50"]
+        if branch and branch.strip():
+            cmd.extend(["--branch", branch.strip()])
+        cmd.extend([clone_url, str(dest_dir)])
+
         env = dict(os.environ)
         # Prevent git from hanging waiting for interactive user credentials
         env["GIT_TERMINAL_PROMPT"] = "0"
+        if auth_token and auth_token.strip():
+            b64_auth = base64.b64encode(f"x-access-token:{auth_token.strip()}".encode()).decode()
+            env["GIT_CONFIG_COUNT"] = "1"
+            env["GIT_CONFIG_KEY_0"] = "http.extraHeader"
+            env["GIT_CONFIG_VALUE_0"] = f"AUTHORIZATION: basic {b64_auth}"
 
         try:
             proc = subprocess.run(
@@ -238,17 +269,27 @@ class CustomRepositoryBenchmarkManager:
         except Exception as e:
             if dest_dir.exists():
                 shutil.rmtree(dest_dir, ignore_errors=True)
-            raise RuntimeError(f"Failed to clone repository: {str(e)}")
+            clean_e = re.sub(r"[a-zA-Z0-9_\-]{20,}", "[REDACTED_SECRET]", str(e))
+            raise RuntimeError(f"Failed to clone repository: {clean_e}")
+        finally:
+            env.clear()
 
         if proc.returncode != 0:
             if dest_dir.exists():
                 shutil.rmtree(dest_dir, ignore_errors=True)
-            err_msg = (proc.stderr or proc.stdout or "").strip()
+            raw_err = (proc.stderr or proc.stdout or "").strip()
+            err_msg = re.sub(r"[a-zA-Z0-9_\-]{20,}", "[REDACTED_SECRET]", raw_err)
             if "Authentication failed" in err_msg or "could not read Username" in err_msg or "terminal prompts disabled" in err_msg:
-                raise PermissionError(
-                    f"Authentication required or repository is private: '{clone_url}'. "
-                    "Only public GitHub repositories are currently supported without credentials."
-                )
+                if auth_token:
+                    raise PermissionError(
+                        f"Authentication failed for '{clone_url}'. "
+                        "The provided GitHub Personal Access Token was rejected. Please verify token permissions."
+                    )
+                else:
+                    raise PermissionError(
+                        f"Authentication required or repository is private: '{clone_url}'. "
+                        "Please provide a GitHub Personal Access Token with repository read permissions."
+                    )
             elif "Repository not found" in err_msg or "not found" in err_msg.lower():
                 raise FileNotFoundError(
                     f"Remote repository not found: '{clone_url}'. Please verify owner and repository name."
@@ -322,7 +363,11 @@ class CustomRepositoryBenchmarkManager:
                         return existing
 
             # 2. Clone or safely reuse existing clone in benchmark workspace
-            cloned_path, remote_url, default_name = self.clone_or_reuse_remote_repo(req.path)
+            cloned_path, remote_url, default_name = self.clone_or_reuse_remote_repo(
+                req.path,
+                auth_token=req.auth_token,
+                branch=req.branch,
+            )
             canonical_path = cloned_path.resolve()
             name = (req.name or "").strip() or default_name
         else:
@@ -343,6 +388,8 @@ class CustomRepositoryBenchmarkManager:
             canonical_path=str(canonical_path),
             remote_url=remote_url,
             is_remote=is_remote,
+            is_private=bool(req.auth_token),
+            auth_type="token" if req.auth_token else None,
             is_active=True,
             status=RepositoryStatus.REGISTERED,
             status_message=(
@@ -359,6 +406,288 @@ class CustomRepositoryBenchmarkManager:
         records[repo_id] = record
         self._save_all_records(records)
         return record
+
+    def validate_repository_candidate(
+        self,
+        path_str: str,
+        auth_token: Optional[str] = None,
+    ) -> RepositoryValidationSummary:
+        """
+        Performs pre-flight inspection and validation for a repository candidate
+        (public Git URL, private Git URL with token, or local directory)
+        before saving. Returns structured validation summary.
+        """
+        is_remote = self.is_remote_url(path_str)
+        if is_remote:
+            try:
+                normalized_url, owner, repo_name = self.parse_and_validate_remote_url(path_str)
+            except Exception as e:
+                return RepositoryValidationSummary(
+                    source_type="public_git" if not auth_token else "private_git",
+                    repo_name="unknown",
+                    canonical_path="",
+                    is_valid=False,
+                    error_message=str(e),
+                )
+
+            # Test reachability with git ls-remote safely without exposing authorization material in process arguments
+            cmd = ["git", "--no-pager", "ls-remote", "--symref", normalized_url, "HEAD"]
+
+            env = dict(os.environ)
+            env["GIT_TERMINAL_PROMPT"] = "0"
+            if auth_token and auth_token.strip():
+                b64_auth = base64.b64encode(f"x-access-token:{auth_token.strip()}".encode()).decode()
+                env["GIT_CONFIG_COUNT"] = "1"
+                env["GIT_CONFIG_KEY_0"] = "http.extraHeader"
+                env["GIT_CONFIG_VALUE_0"] = f"AUTHORIZATION: basic {b64_auth}"
+            try:
+                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=15, env=env, check=False)
+                env.clear()
+                if proc.returncode != 0:
+                    raw_err = proc.stderr or proc.stdout or ""
+                    err = re.sub(r"[a-zA-Z0-9_\-]{20,}", "[REDACTED_SECRET]", raw_err)
+                    if "Authentication failed" in err or "could not read Username" in err or "terminal prompts disabled" in err:
+                        if auth_token:
+                            return RepositoryValidationSummary(
+                                source_type="private_git",
+                                repo_name=repo_name,
+                                remote_url=normalized_url,
+                                canonical_path="",
+                                private_access_status="auth_failed",
+                                is_valid=False,
+                                error_message="Authentication failed with provided token. Please verify token permissions (repo read access).",
+                            )
+                        else:
+                            return RepositoryValidationSummary(
+                                source_type="private_git",
+                                repo_name=repo_name,
+                                remote_url=normalized_url,
+                                canonical_path="",
+                                private_access_status="auth_required",
+                                is_valid=False,
+                                warnings=["Repository is private or requires authentication. Please supply a GitHub Personal Access Token."],
+                            )
+                    return RepositoryValidationSummary(
+                        source_type="public_git",
+                        repo_name=repo_name,
+                        remote_url=normalized_url,
+                        canonical_path="",
+                        is_valid=False,
+                        error_message=f"Git remote error: {err[:200]}",
+                    )
+
+                default_branch = "main"
+                commit_sha = None
+                for line in proc.stdout.splitlines():
+                    if "refs/heads/" in line and line.startswith("ref:"):
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            default_branch = parts[1].replace("refs/heads/", "")
+                    elif "HEAD" in line and not line.startswith("ref:"):
+                        commit_sha = line.split()[0]
+
+                safe_dirname = f"{owner.lower()}_{repo_name.lower()}"
+                dest_dir = (self.workspace_dir / safe_dirname).resolve()
+                existing_tests = 0
+                languages = ["Python"]
+                source_files_count = 0
+
+                if dest_dir.exists() and (dest_dir / ".git").exists():
+                    try:
+                        evaluator = BaselineEvaluator(repo_path=str(dest_dir))
+                        tests = evaluator.discover_all_tests()
+                        existing_tests = len(tests)
+                        py_files = list(dest_dir.rglob("*.py"))
+                        source_files_count = len(py_files)
+                    except Exception:
+                        pass
+
+                return RepositoryValidationSummary(
+                    source_type="private_git" if auth_token else "public_git",
+                    repo_name=repo_name,
+                    remote_url=normalized_url,
+                    canonical_path=str(dest_dir),
+                    branch=default_branch,
+                    commit_sha=commit_sha,
+                    languages=languages,
+                    test_framework="pytest",
+                    existing_tests_count=existing_tests,
+                    source_files_count=source_files_count,
+                    size_bytes=0,
+                    excluded_dirs=[".git", ".venv", "venv", "node_modules", "__pycache__"],
+                    private_access_status="authenticated" if auth_token else "not_required",
+                    is_valid=True,
+                    warnings=[] if existing_tests > 0 else ["No pre-existing tests detected in clone. Autonomous test generation recommended."],
+                )
+            except subprocess.TimeoutExpired:
+                return RepositoryValidationSummary(
+                    source_type="public_git",
+                    repo_name=repo_name,
+                    remote_url=normalized_url,
+                    canonical_path="",
+                    is_valid=False,
+                    error_message="Network timeout while contacting Git remote (15s limit).",
+                )
+            except Exception as e:
+                return RepositoryValidationSummary(
+                    source_type="public_git",
+                    repo_name=repo_name,
+                    remote_url=normalized_url,
+                    canonical_path="",
+                    is_valid=False,
+                    error_message=str(e),
+                )
+        else:
+            try:
+                canonical = self.normalize_repo_path(path_str)
+            except Exception as e:
+                return RepositoryValidationSummary(
+                    source_type="local_folder",
+                    repo_name=Path(path_str).name if path_str else "invalid",
+                    canonical_path="",
+                    is_valid=False,
+                    error_message=str(e),
+                )
+
+            is_git = (canonical / ".git").exists()
+            branch = None
+            commit_sha = None
+            if is_git:
+                try:
+                    b_proc = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=str(canonical), capture_output=True, text=True, check=False)
+                    branch = b_proc.stdout.strip() or "HEAD"
+                    c_proc = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(canonical), capture_output=True, text=True, check=False)
+                    commit_sha = c_proc.stdout.strip()
+                except Exception:
+                    pass
+
+            # Run deep capability inspection
+            compat_report = CapabilityDetector.generate_report(canonical)
+            langs = compat_report.ecosystem.detected_languages or ["Generic/Text"]
+            test_fw = ", ".join(compat_report.ecosystem.detected_test_frameworks) or ("pytest" if "Python" in langs else "none")
+
+            existing_tests = 0
+            try:
+                evaluator = BaselineEvaluator(repo_path=str(canonical))
+                existing_tests = len(evaluator.discover_all_tests())
+            except Exception:
+                pass
+
+            warnings = []
+            if not is_git:
+                warnings.append("Folder is not a Git repository. Commit-level diff tracking will be limited to snapshots.")
+            if existing_tests == 0:
+                warnings.append("No pre-existing tests detected. Autonomous test synthesis will be required.")
+            for reason in compat_report.blocking_reasons:
+                warnings.append(reason)
+
+            # File counts
+            source_count = 0
+            for root, dirs, files in os.walk(str(canonical)):
+                dirs[:] = [d for d in dirs if d not in CapabilityDetector.IGNORE_DIRS]
+                source_count += len(files)
+
+            return RepositoryValidationSummary(
+                source_type="local_folder",
+                repo_name=canonical.name,
+                remote_url=None,
+                canonical_path=str(canonical),
+                branch=branch,
+                commit_sha=commit_sha,
+                languages=langs,
+                test_framework=test_fw,
+                existing_tests_count=existing_tests,
+                source_files_count=source_count,
+                size_bytes=0,
+                excluded_dirs=sorted(list(CapabilityDetector.IGNORE_DIRS)),
+                is_monorepo=compat_report.ecosystem.workspace.is_monorepo,
+                workspace_type=compat_report.ecosystem.workspace.workspace_type,
+                manifests=[m.path for m in compat_report.ecosystem.manifests],
+                stage_capabilities={k: v.support_level.value for k, v in compat_report.stage_capabilities.items()},
+                compatibility_report=compat_report.model_dump(),
+                private_access_status="not_required",
+                is_valid=True,
+                warnings=warnings,
+            )
+
+    def start_generation_job(self, repo_id: str, max_targets: int = 15) -> GenerationJobRecord:
+        """Starts an observable, durable test generation job in the background."""
+        record = self.get_repository(repo_id)
+        if not record:
+            raise KeyError(f"Repository not found: {repo_id}")
+
+        # Enforce capability check: Do not start generation jobs for unsupported ecosystems
+        if record.stage_capabilities.get("test_generation") == "unsupported":
+            reason = "Autonomous test generation is not supported for this ecosystem."
+            missing = "Autonomous test generator adapter"
+            if record.compatibility_report:
+                cap_data = record.compatibility_report.get("stage_capabilities", {}).get("test_generation", {})
+                reason = cap_data.get("reason", reason)
+                missing = cap_data.get("missing_adapter", missing)
+            raise ValueError(
+                f"Cannot start generation job for repository '{record.name}': Autonomous test generation is UNSUPPORTED. "
+                f"{reason} (Missing adapter: {missing}). "
+                "Autonomous test generation currently requires Python pytest. For other ecosystems, "
+                "please use historical bug-fix ground truth or manual mapping."
+            )
+
+        job = self.generation_job_mgr.create_job(repo_id, record.detected_revision)
+        record.status = RepositoryStatus.GENERATING_TESTS
+        record.status_message = "Generation job running in background..."
+        self.update_repository_record(record)
+
+        self.generation_job_mgr.start_generation_async(job.job_id, record, self, max_targets=max_targets)
+        return job
+
+    def get_generation_job(self, job_id: str) -> Optional[GenerationJobRecord]:
+        return self.generation_job_mgr.get_job(job_id)
+
+    def get_latest_generation_job(self, repo_id: str) -> Optional[GenerationJobRecord]:
+        return self.generation_job_mgr.get_latest_job_for_repo(repo_id)
+
+    def cancel_generation_job(self, job_id: str) -> bool:
+        return self.generation_job_mgr.cancel_job(job_id)
+
+    def mine_historical_bugs(
+        self,
+        repo_id: str,
+        max_commits: int = 50,
+        max_candidates: int = 10,
+    ) -> list[HistoricalBugCandidate]:
+        record = self.get_repository(repo_id)
+        if not record:
+            raise KeyError(f"Repository not found: {repo_id}")
+        if not record.is_git:
+            raise ValueError(f"Repository '{record.name}' is not a Git repository. Historical bug mining requires Git commit history.")
+        miner = HistoricalBugMiner(record.canonical_path)
+        return miner.mine_candidate_bug_fixes(repo_id=repo_id, max_commits=max_commits, max_candidates=max_candidates)
+
+    def validate_and_register_historical_bug(
+        self,
+        repo_id: str,
+        candidate: HistoricalBugCandidate,
+    ) -> CustomBenchmarkCase:
+        record = self.get_repository(repo_id)
+        if not record:
+            raise KeyError(f"Repository not found: {repo_id}")
+        miner = HistoricalBugMiner(record.canonical_path)
+        validated_cand = miner.validate_bug_candidate(candidate)
+        case = miner.convert_candidate_to_benchmark_case(validated_cand)
+
+        existing_ids = {c.case_id for c in record.benchmark_cases}
+        if case.case_id in existing_ids:
+            record.benchmark_cases = [c if c.case_id != case.case_id else case for c in record.benchmark_cases]
+        else:
+            record.benchmark_cases.append(case)
+
+        validated_cases = [c for c in record.benchmark_cases if c.ground_truth.is_verified]
+        record.validated_benchmark_cases_count = len(validated_cases)
+        record.cases_awaiting_review_count = len([c for c in record.benchmark_cases if not c.ground_truth.is_verified])
+        if record.validated_benchmark_cases_count > 0 and record.status in (RepositoryStatus.BENCHMARK_PREPARATION_REQUIRED, RepositoryStatus.REGISTERED):
+            record.status = RepositoryStatus.READY_FOR_EVALUATION
+            record.status_message = f"{record.validated_benchmark_cases_count} benchmark cases ready for evaluation."
+        self.update_repository_record(record)
+        return case
 
     def inspect_repository(self, record: CustomRepositoryRecord | str) -> CustomRepositoryRecord:
         """
@@ -421,33 +750,39 @@ class CustomRepositoryBenchmarkManager:
         else:
             record.is_git = False
 
-        # 2. Source file and language scan
-        source_exts = {".py": "Python", ".ts": "TypeScript", ".js": "JavaScript", ".go": "Go", ".rs": "Rust"}
-        languages = set()
+        # 2. Comprehensive Ecosystem & Capability Detection
+        compat_report = CapabilityDetector.generate_report(repo_path)
+        record.compatibility_report = compat_report.model_dump()
+        record.stage_capabilities = {k: v.support_level.value for k, v in compat_report.stage_capabilities.items()}
+        record.is_monorepo = compat_report.ecosystem.workspace.is_monorepo
+        record.workspace_type = compat_report.ecosystem.workspace.workspace_type
+        record.manifests = [m.path for m in compat_report.ecosystem.manifests]
+        record.languages = compat_report.ecosystem.detected_languages or ["Python"]
+        record.test_framework = ", ".join(compat_report.ecosystem.detected_test_frameworks) or ("pytest" if "Python" in record.languages else "none")
+
+        # 3. Source file and test file counts
         source_count = 0
         test_file_count = 0
-
-        # Avoid walking into heavy/irrelevant dirs
-        skip_dirs = {".git", ".venv", "venv", "node_modules", "__pycache__", ".pytest_cache", ".tox", "build", "dist"}
-
         for root, dirs, files in os.walk(str(repo_path)):
-            dirs[:] = [d for d in dirs if d not in skip_dirs]
+            dirs[:] = [d for d in dirs if d not in CapabilityDetector.IGNORE_DIRS]
             rel_root = Path(root).relative_to(repo_path)
             for f in files:
-                ext = Path(f).suffix.lower()
-                if ext in source_exts:
-                    languages.add(source_exts[ext])
-                    if ext == ".py":
-                        source_count += 1
-                        if f.startswith("test_") or f.endswith("_test.py") or "test" in rel_root.parts:
-                            test_file_count += 1
+                source_count += 1
+                if (
+                    f.startswith("test_")
+                    or f.endswith("_test.py")
+                    or f.endswith(".test.js")
+                    or f.endswith(".test.ts")
+                    or f.endswith(".spec.js")
+                    or f.endswith(".spec.ts")
+                    or "test" in rel_root.parts
+                ):
+                    test_file_count += 1
 
-        record.languages = sorted(languages) if languages else ["Python"]
         record.source_files_count = source_count
         record.test_files_count = test_file_count
-        record.test_framework = "pytest"
 
-        # 3. Test discovery via BaselineEvaluator AST parser
+        # 4. Multi-language Test discovery via BaselineEvaluator
         try:
             evaluator = BaselineEvaluator(repo_path=str(repo_path))
             discovered = evaluator.discover_all_tests()
@@ -457,21 +792,21 @@ class CustomRepositoryBenchmarkManager:
             record.discovered_tests = []
             record.total_tests_count = 0
 
-        # 4. Check Language Support & Baseline Test Suite
+        # 5. Check Language Support & Baseline Test Suite
         if "Python" not in record.languages and record.languages:
             record.supported_language = False
-            record.unsupported_reason = f"Languages {record.languages} are not currently supported for automated pytest benchmark generation."
+            record.unsupported_reason = compat_report.summary
             record.status = RepositoryStatus.PARTIALLY_SUPPORTED
-            record.status_message = f"Repository contains {', '.join(record.languages)}, which are not supported for automated pytest generation."
+            record.status_message = compat_report.summary
+            record.baseline_test_status = "external_runner"
         else:
             record.supported_language = True
             record.unsupported_reason = None
-
-        # 5. Execute baseline test check when tests exist
-        auto_gen = AutoBenchmarkGenerator(repo_path=repo_path)
-        baseline_res = auto_gen.run_baseline_tests(record.discovered_tests)
-        record.baseline_test_status = baseline_res.get("status", "untested")
-        record.baseline_test_error = baseline_res.get("error")
+            # Run baseline tests only for Python pytest
+            auto_gen = AutoBenchmarkGenerator(repo_path=repo_path)
+            baseline_res = auto_gen.run_baseline_tests(record.discovered_tests)
+            record.baseline_test_status = baseline_res.get("status", "untested")
+            record.baseline_test_error = baseline_res.get("error")
 
         # 6. Check benchmark readiness
         validated_cases = [c for c in record.benchmark_cases if c.ground_truth.is_verified]
@@ -524,79 +859,87 @@ class CustomRepositoryBenchmarkManager:
         now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
         generator = AutoBenchmarkGenerator(repo_path=repo_path)
 
-        # Step 1: Synthesize tests
-        record.status = RepositoryStatus.GENERATING_TESTS
-        record.status_message = "Synthesizing behavioral regression tests for public symbols..."
-        record.updated_at = now_iso
-        records[repo_id] = record
-        self._save_all_records(records)
+        try:
+            # Step 1: Synthesize tests
+            record.status = RepositoryStatus.GENERATING_TESTS
+            record.status_message = "Synthesizing behavioral regression tests for public symbols..."
+            record.updated_at = now_iso
+            records[repo_id] = record
+            self._save_all_records(records)
 
-        gen_records = generator.generate_and_save_tests(max_targets=15)
-        if not gen_records:
-            record.status = RepositoryStatus.BENCHMARK_PREPARATION_REQUIRED
-            record.status_message = "No eligible public functions found for automatic test synthesis."
+            gen_records = generator.generate_and_save_tests(max_targets=15)
+            if not gen_records:
+                record.status = RepositoryStatus.BENCHMARK_PREPARATION_REQUIRED
+                record.status_message = "No eligible public functions found for automatic test synthesis."
+                records[repo_id] = record
+                self._save_all_records(records)
+                return record
+
+            # Step 2: Validate generated tests in isolated environment
+            record.status = RepositoryStatus.VALIDATING_TESTS
+            record.status_message = f"Validating {len(gen_records)} synthesized tests in isolated environment..."
+            records[repo_id] = record
+            self._save_all_records(records)
+
+            val_records = generator.validate_generated_tests(gen_records)
+
+            # Step 3: Cross-check mutation sensitivity
+            record.status = RepositoryStatus.BENCHMARK_UNDER_VALIDATION
+            record.status_message = "Cross-checking mutation sensitivity to prove tests detect code defects..."
+            records[repo_id] = record
+            self._save_all_records(records)
+
+            mut_records = generator.cross_check_mutation_sensitivity(val_records)
+
+            # Step 4: Construct independent benchmark cases
+            cases = generator.construct_benchmark_cases(repo_id, mut_records, is_git=record.is_git)
+
+            # Step 5: Update record with results
+            record.generated_tests = mut_records
+            record.generated_tests_count = len(mut_records)
+            record.validated_tests_count = len([t for t in mut_records if t.executes_successfully and not t.is_trivial])
+            record.mutation_sensitive_tests_count = len([t for t in mut_records if t.mutation_sensitive])
+
+            # Merge cases (avoiding duplicate case IDs)
+            existing_ids = {c.case_id for c in record.benchmark_cases}
+            for c in cases:
+                if c.case_id not in existing_ids:
+                    record.benchmark_cases.append(c)
+
+            # Refresh discovered tests via AST parser
+            evaluator = BaselineEvaluator(repo_path=str(repo_path))
+            record.discovered_tests = evaluator.discover_all_tests()
+            record.total_tests_count = len(record.discovered_tests)
+
+            validated_cases = [c for c in record.benchmark_cases if c.ground_truth.is_verified]
+            record.validated_benchmark_cases_count = len(validated_cases)
+            record.cases_awaiting_review_count = len([c for c in record.benchmark_cases if not c.ground_truth.is_verified])
+
+            if record.validated_benchmark_cases_count > 0:
+                record.status = RepositoryStatus.READY_FOR_EVALUATION
+                record.status_message = (
+                    f"Auto-generated {record.validated_tests_count} validated tests "
+                    f"({record.mutation_sensitive_tests_count} mutation-sensitive). "
+                    f"{record.validated_benchmark_cases_count} benchmark cases validated and ready for evaluation."
+                )
+            else:
+                record.status = RepositoryStatus.BENCHMARK_PREPARATION_REQUIRED
+                record.status_message = (
+                    f"Synthesized {record.generated_tests_count} tests, but none demonstrated mutation sensitivity. "
+                    "Manual review or independent benchmark preparation required."
+                )
+
+            record.updated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
             records[repo_id] = record
             self._save_all_records(records)
             return record
-
-        # Step 2: Validate generated tests in isolated environment
-        record.status = RepositoryStatus.VALIDATING_TESTS
-        record.status_message = f"Validating {len(gen_records)} synthesized tests in isolated environment..."
-        records[repo_id] = record
-        self._save_all_records(records)
-
-        val_records = generator.validate_generated_tests(gen_records)
-
-        # Step 3: Cross-check mutation sensitivity
-        record.status = RepositoryStatus.BENCHMARK_UNDER_VALIDATION
-        record.status_message = "Cross-checking mutation sensitivity to prove tests detect code defects..."
-        records[repo_id] = record
-        self._save_all_records(records)
-
-        mut_records = generator.cross_check_mutation_sensitivity(val_records)
-
-        # Step 4: Construct independent benchmark cases
-        cases = generator.construct_benchmark_cases(repo_id, mut_records, is_git=record.is_git)
-
-        # Step 5: Update record with results
-        record.generated_tests = mut_records
-        record.generated_tests_count = len(mut_records)
-        record.validated_tests_count = len([t for t in mut_records if t.executes_successfully and not t.is_trivial])
-        record.mutation_sensitive_tests_count = len([t for t in mut_records if t.mutation_sensitive])
-
-        # Merge cases (avoiding duplicate case IDs)
-        existing_ids = {c.case_id for c in record.benchmark_cases}
-        for c in cases:
-            if c.case_id not in existing_ids:
-                record.benchmark_cases.append(c)
-
-        # Refresh discovered tests via AST parser
-        evaluator = BaselineEvaluator(repo_path=str(repo_path))
-        record.discovered_tests = evaluator.discover_all_tests()
-        record.total_tests_count = len(record.discovered_tests)
-
-        validated_cases = [c for c in record.benchmark_cases if c.ground_truth.is_verified]
-        record.validated_benchmark_cases_count = len(validated_cases)
-        record.cases_awaiting_review_count = len([c for c in record.benchmark_cases if not c.ground_truth.is_verified])
-
-        if record.validated_benchmark_cases_count > 0:
-            record.status = RepositoryStatus.READY_FOR_EVALUATION
-            record.status_message = (
-                f"Auto-generated {record.validated_tests_count} validated tests "
-                f"({record.mutation_sensitive_tests_count} mutation-sensitive). "
-                f"{record.validated_benchmark_cases_count} benchmark cases validated and ready for evaluation."
-            )
-        else:
-            record.status = RepositoryStatus.BENCHMARK_PREPARATION_REQUIRED
-            record.status_message = (
-                f"Synthesized {record.generated_tests_count} tests, but none demonstrated mutation sensitivity. "
-                "Manual review or independent benchmark preparation required."
-            )
-
-        record.updated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        records[repo_id] = record
-        self._save_all_records(records)
-        return record
+        except Exception as e:
+            record.status = RepositoryStatus.FAILED
+            record.status_message = f"Automatic test generation failed: {str(e)}"
+            record.updated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            records[repo_id] = record
+            self._save_all_records(records)
+            raise
 
     def get_generated_tests(self, repo_id: str) -> list[GeneratedTestRecord]:
         """Retrieves detailed list of generated tests and their validation evidence."""

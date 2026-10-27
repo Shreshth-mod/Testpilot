@@ -1,509 +1,12 @@
 {
-  "repo_testpilot_api_test_repo_5imk0hmk_46cc7e7abf": {
-    "repo_id": "repo_testpilot_api_test_repo_5imk0hmk_46cc7e7abf",
-    "name": "API Test Repo",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_5imk0hmk",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "10be31a97239d8ccbd08889a105d6f21e594d6f7",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "evaluated",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 1,
-    "discovered_tests": [
-      "tests\\test_service.py::test_calculate_total_standard",
-      "tests\\test_service.py::test_compute_tax_standard",
-      "tests\\test_service.py::test_unrelated_feature"
-    ],
-    "total_tests_count": 3,
-    "test_framework": "pytest",
-    "baseline_test_status": "untested",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [],
-    "generated_tests_count": 0,
-    "validated_tests_count": 0,
-    "mutation_sensitive_tests_count": 0,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_test_repo_5imk0hmk_46cc7e7abf_case_1",
-        "name": "API Scenario 1",
-        "description": "",
-        "source_type": "manual_mapping",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_test_repo_5imk0hmk_46cc7e7abf_case_1",
-          "expected_changed_symbols": [
-            "compute_tax"
-          ],
-          "expected_impacted_symbols": [],
-          "expected_test_callers": [
-            "test_compute_tax_standard"
-          ],
-          "provenance": "Verified in test_15_and_16",
-          "notes": "",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {},
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 3,
-        "created_at": "2026-10-26T08:51:50.170501+00:00"
-      }
-    ],
-    "validated_benchmark_cases_count": 1,
-    "last_analyzed_at": "2026-10-26T08:51:49.918984+00:00",
-    "last_evaluated_at": "2026-10-26T08:51:51.834461+00:00",
-    "latest_evaluation_runs": {
-      "repo_testpilot_api_test_repo_5imk0hmk_46cc7e7abf_case_1": {
-        "run_id": "custom_run_repo_testpilot_api_test_repo_5imk0hmk_46cc7e7abf_case_1_1793004711",
-        "case_id": "repo_testpilot_api_test_repo_5imk0hmk_46cc7e7abf_case_1",
-        "repository": "API Test Repo",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "testpilot_version": "10be31a97239d8ccbd08889a105d6f21e594d6f7",
-        "python_version": "3.11.5",
-        "model": null,
-        "temperature": null,
-        "prompt_version": null,
-        "rag_status": "active",
-        "total_tests": 3,
-        "ground_truth_count": 1,
-        "baseline_results": {
-          "full_regression": {
-            "baseline_type": "full_regression",
-            "name": "Full Regression",
-            "selected_tests": [
-              "tests\\test_service.py::test_calculate_total_standard",
-              "tests\\test_service.py::test_compute_tax_standard",
-              "tests\\test_service.py::test_unrelated_feature"
-            ],
-            "selected_count": 3,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Standard CI approach: executes 100% of tests. Zero reduction."
-          },
-          "naive_name_matching": {
-            "baseline_type": "naive_name_matching",
-            "name": "Naive Name Matching",
-            "selected_tests": [
-              "tests\\test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 1,
-            "total_tests": 3,
-            "latency_ms": 1.26,
-            "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
-          },
-          "testpilot": {
-            "baseline_type": "testpilot",
-            "name": "TestPilot (Qualified Identity)",
-            "selected_tests": [
-              "tests\\test_service.py::test_calculate_total_standard"
-            ],
-            "selected_count": 1,
-            "total_tests": 3,
-            "latency_ms": 20.7,
-            "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
-          },
-          "testpilot_rag": {
-            "baseline_type": "testpilot_rag",
-            "name": "TestPilot + Repository RAG",
-            "selected_tests": [
-              "tests\\test_service.py::test_calculate_total_standard"
-            ],
-            "selected_count": 1,
-            "total_tests": 3,
-            "latency_ms": 1413.89,
-            "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
-          },
-          "testpilot_sourcegraph": {
-            "baseline_type": "testpilot_sourcegraph",
-            "name": "TestPilot + Sourcegraph",
-            "selected_tests": [],
-            "selected_count": 0,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "metrics": {
-          "full_regression": {
-            "tp": 1,
-            "fp": 2,
-            "fn": 0,
-            "precision": 0.3333,
-            "recall": 1.0,
-            "f1": 0.5,
-            "test_reduction_pct": 0.0,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "naive_name_matching": {
-            "tp": 1,
-            "fp": 0,
-            "fn": 0,
-            "precision": 1.0,
-            "recall": 1.0,
-            "f1": 1.0,
-            "test_reduction_pct": 66.67,
-            "latency_ms": 1.26,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 1.26,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot": {
-            "tp": 0,
-            "fp": 1,
-            "fn": 1,
-            "precision": 0.0,
-            "recall": 0.0,
-            "f1": null,
-            "test_reduction_pct": 66.67,
-            "latency_ms": 201.02,
-            "evolution_latency_ms": 20.7,
-            "selection_latency_ms": 20.81,
-            "total_latency_ms": 201.02,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_rag": {
-            "tp": 0,
-            "fp": 1,
-            "fn": 1,
-            "precision": 0.0,
-            "recall": 0.0,
-            "f1": null,
-            "test_reduction_pct": 66.67,
-            "latency_ms": 1615.09,
-            "evolution_latency_ms": 20.7,
-            "selection_latency_ms": 1434.88,
-            "total_latency_ms": 1615.09,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_sourcegraph": {
-            "tp": 0,
-            "fp": 0,
-            "fn": 0,
-            "precision": null,
-            "recall": null,
-            "f1": null,
-            "test_reduction_pct": null,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": false,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "evidence_records": [
-          {
-            "test_name": "test_calculate_total_standard",
-            "changed_symbol": "calculate_total",
-            "qualified_symbol": "calculate_total",
-            "caller_relationship": "HIGH",
-            "ast_evidence": "Tests direct caller 'calculate_total' impacted by 'compute_tax'",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.55,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          }
-        ],
-        "timestamp": "2026-10-26T08:51:51.834461+00:00",
-        "status": "completed",
-        "notes": "Evaluation of API Scenario 1"
-      }
-    },
-    "created_at": "2026-10-26T08:51:49.917880+00:00",
-    "updated_at": "2026-10-26T08:51:52.148673+00:00"
-  },
-  "repo_testpilot_api_test_repo_338i0_ca_67ba3f1715": {
-    "repo_id": "repo_testpilot_api_test_repo_338i0_ca_67ba3f1715",
-    "name": "API Test Repo",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_338i0_ca",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "20fedda8b34912edbfd822fd65a3b3d3b0b50bc4",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "evaluated",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 1,
-    "discovered_tests": [
-      "tests/test_service.py::test_calculate_total_standard",
-      "tests/test_service.py::test_compute_tax_standard",
-      "tests/test_service.py::test_unrelated_feature"
-    ],
-    "total_tests_count": 3,
-    "test_framework": "pytest",
-    "baseline_test_status": "untested",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [],
-    "generated_tests_count": 0,
-    "validated_tests_count": 0,
-    "mutation_sensitive_tests_count": 0,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_test_repo_338i0_ca_67ba3f1715_case_1",
-        "name": "API Scenario 1",
-        "description": "",
-        "source_type": "manual_mapping",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_test_repo_338i0_ca_67ba3f1715_case_1",
-          "expected_changed_symbols": [
-            "compute_tax"
-          ],
-          "expected_impacted_symbols": [],
-          "expected_test_callers": [
-            "test_compute_tax_standard"
-          ],
-          "provenance": "Verified in test_15_and_16",
-          "notes": "",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {},
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 3,
-        "created_at": "2026-10-26T08:54:43.404745+00:00"
-      }
-    ],
-    "validated_benchmark_cases_count": 1,
-    "last_analyzed_at": "2026-10-26T08:54:43.173842+00:00",
-    "last_evaluated_at": "2026-10-26T08:54:45.577267+00:00",
-    "latest_evaluation_runs": {
-      "repo_testpilot_api_test_repo_338i0_ca_67ba3f1715_case_1": {
-        "run_id": "custom_run_repo_testpilot_api_test_repo_338i0_ca_67ba3f1715_case_1_1793004885",
-        "case_id": "repo_testpilot_api_test_repo_338i0_ca_67ba3f1715_case_1",
-        "repository": "API Test Repo",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "testpilot_version": "20fedda8b34912edbfd822fd65a3b3d3b0b50bc4",
-        "python_version": "3.11.5",
-        "model": null,
-        "temperature": null,
-        "prompt_version": null,
-        "rag_status": "active",
-        "total_tests": 3,
-        "ground_truth_count": 1,
-        "baseline_results": {
-          "full_regression": {
-            "baseline_type": "full_regression",
-            "name": "Full Regression",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard",
-              "tests/test_service.py::test_unrelated_feature"
-            ],
-            "selected_count": 3,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Standard CI approach: executes 100% of tests. Zero reduction."
-          },
-          "naive_name_matching": {
-            "baseline_type": "naive_name_matching",
-            "name": "Naive Name Matching",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1.05,
-            "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
-          },
-          "testpilot": {
-            "baseline_type": "testpilot",
-            "name": "TestPilot (Qualified Identity)",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 19.76,
-            "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
-          },
-          "testpilot_rag": {
-            "baseline_type": "testpilot_rag",
-            "name": "TestPilot + Repository RAG",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1426.47,
-            "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
-          },
-          "testpilot_sourcegraph": {
-            "baseline_type": "testpilot_sourcegraph",
-            "name": "TestPilot + Sourcegraph",
-            "selected_tests": [],
-            "selected_count": 0,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "metrics": {
-          "full_regression": {
-            "tp": 1,
-            "fp": 2,
-            "fn": 0,
-            "precision": 0.3333,
-            "recall": 1.0,
-            "f1": 0.5,
-            "test_reduction_pct": 0.0,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "naive_name_matching": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 1.05,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 1.05,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 695.58,
-            "evolution_latency_ms": 19.76,
-            "selection_latency_ms": 19.88,
-            "total_latency_ms": 695.58,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_rag": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 2122.2,
-            "evolution_latency_ms": 19.76,
-            "selection_latency_ms": 1446.5,
-            "total_latency_ms": 2122.2,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_sourcegraph": {
-            "tp": 0,
-            "fp": 0,
-            "fn": 0,
-            "precision": null,
-            "recall": null,
-            "f1": null,
-            "test_reduction_pct": null,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": false,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "evidence_records": [
-          {
-            "test_name": "test_calculate_total_standard",
-            "changed_symbol": "calculate_total",
-            "qualified_symbol": "calculate_total",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'calculate_total' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          },
-          {
-            "test_name": "test_compute_tax_standard",
-            "changed_symbol": "compute_tax",
-            "qualified_symbol": "compute_tax",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'compute_tax' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          }
-        ],
-        "timestamp": "2026-10-26T08:54:45.577267+00:00",
-        "status": "completed",
-        "notes": "Evaluation of API Scenario 1"
-      }
-    },
-    "created_at": "2026-10-26T08:54:43.173842+00:00",
-    "updated_at": "2026-10-26T08:54:45.919182+00:00"
-  },
   "repo_testbed_3f495ea183": {
     "repo_id": "repo_testbed_3f495ea183",
     "name": "TestPilot Testbed",
     "canonical_path": "C:\\Users\\shres\\OneDrive\\Desktop\\TestPilot\\testbed",
     "remote_url": null,
     "is_remote": false,
+    "is_private": false,
+    "auth_type": null,
     "is_git": false,
     "detected_revision": null,
     "current_branch": null,
@@ -522,6 +25,11 @@
     "baseline_test_error": null,
     "supported_language": true,
     "unsupported_reason": null,
+    "is_monorepo": false,
+    "workspace_type": null,
+    "manifests": [],
+    "stage_capabilities": {},
+    "compatibility_report": null,
     "generated_tests": [],
     "generated_tests_count": 0,
     "validated_tests_count": 0,
@@ -541,6 +49,8 @@
     "canonical_path": "C:\\Users\\shres\\OneDrive\\Desktop\\TestPilot",
     "remote_url": null,
     "is_remote": false,
+    "is_private": false,
+    "auth_type": null,
     "is_git": true,
     "detected_revision": "1c1cd83b8daa2b74019fa2a95ecf6027493ffc4d",
     "current_branch": "main",
@@ -787,6 +297,11 @@
     "baseline_test_error": null,
     "supported_language": true,
     "unsupported_reason": null,
+    "is_monorepo": false,
+    "workspace_type": null,
+    "manifests": [],
+    "stage_capabilities": {},
+    "compatibility_report": null,
     "generated_tests": [],
     "generated_tests_count": 0,
     "validated_tests_count": 0,
@@ -2374,789 +1889,20 @@
     "created_at": "2026-10-26T08:56:49.677442+00:00",
     "updated_at": "2026-10-26T20:04:03.913799+00:00"
   },
-  "repo_testpilot_api_test_repo_ku8ryv4x_48d75a0b54": {
-    "repo_id": "repo_testpilot_api_test_repo_ku8ryv4x_48d75a0b54",
-    "name": "API Test Repo",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_ku8ryv4x",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "5d9ab4fea712d08eedbe7515d9184300faebdd72",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "evaluated",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 1,
-    "discovered_tests": [
-      "tests/test_service.py::test_calculate_total_standard",
-      "tests/test_service.py::test_compute_tax_standard",
-      "tests/test_service.py::test_unrelated_feature"
-    ],
-    "total_tests_count": 3,
-    "test_framework": "pytest",
-    "baseline_test_status": "untested",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [],
-    "generated_tests_count": 0,
-    "validated_tests_count": 0,
-    "mutation_sensitive_tests_count": 0,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_test_repo_ku8ryv4x_48d75a0b54_case_1",
-        "name": "API Scenario 1",
-        "description": "",
-        "source_type": "manual_mapping",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_test_repo_ku8ryv4x_48d75a0b54_case_1",
-          "expected_changed_symbols": [
-            "compute_tax"
-          ],
-          "expected_impacted_symbols": [],
-          "expected_test_callers": [
-            "test_compute_tax_standard"
-          ],
-          "provenance": "Verified in test_15_and_16",
-          "notes": "",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {},
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 3,
-        "created_at": "2026-10-26T09:04:35.392438+00:00"
-      }
-    ],
-    "validated_benchmark_cases_count": 1,
-    "last_analyzed_at": "2026-10-26T09:04:34.967581+00:00",
-    "last_evaluated_at": "2026-10-26T09:04:37.573526+00:00",
-    "latest_evaluation_runs": {
-      "repo_testpilot_api_test_repo_ku8ryv4x_48d75a0b54_case_1": {
-        "run_id": "custom_run_repo_testpilot_api_test_repo_ku8ryv4x_48d75a0b54_case_1_1793005477",
-        "case_id": "repo_testpilot_api_test_repo_ku8ryv4x_48d75a0b54_case_1",
-        "repository": "API Test Repo",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "testpilot_version": "5d9ab4fea712d08eedbe7515d9184300faebdd72",
-        "python_version": "3.11.5",
-        "model": null,
-        "temperature": null,
-        "prompt_version": null,
-        "rag_status": "active",
-        "total_tests": 3,
-        "ground_truth_count": 1,
-        "baseline_results": {
-          "full_regression": {
-            "baseline_type": "full_regression",
-            "name": "Full Regression",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard",
-              "tests/test_service.py::test_unrelated_feature"
-            ],
-            "selected_count": 3,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Standard CI approach: executes 100% of tests. Zero reduction."
-          },
-          "naive_name_matching": {
-            "baseline_type": "naive_name_matching",
-            "name": "Naive Name Matching",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1.04,
-            "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
-          },
-          "testpilot": {
-            "baseline_type": "testpilot",
-            "name": "TestPilot (Qualified Identity)",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 18.34,
-            "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
-          },
-          "testpilot_rag": {
-            "baseline_type": "testpilot_rag",
-            "name": "TestPilot + Repository RAG",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1428.34,
-            "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
-          },
-          "testpilot_sourcegraph": {
-            "baseline_type": "testpilot_sourcegraph",
-            "name": "TestPilot + Sourcegraph",
-            "selected_tests": [],
-            "selected_count": 0,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "metrics": {
-          "full_regression": {
-            "tp": 1,
-            "fp": 2,
-            "fn": 0,
-            "precision": 0.3333,
-            "recall": 1.0,
-            "f1": 0.5,
-            "test_reduction_pct": 0.0,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "naive_name_matching": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 1.04,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 1.04,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 694.33,
-            "evolution_latency_ms": 18.34,
-            "selection_latency_ms": 18.46,
-            "total_latency_ms": 694.33,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_rag": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 2122.82,
-            "evolution_latency_ms": 18.34,
-            "selection_latency_ms": 1446.95,
-            "total_latency_ms": 2122.82,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_sourcegraph": {
-            "tp": 0,
-            "fp": 0,
-            "fn": 0,
-            "precision": null,
-            "recall": null,
-            "f1": null,
-            "test_reduction_pct": null,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": false,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "evidence_records": [
-          {
-            "test_name": "test_calculate_total_standard",
-            "changed_symbol": "calculate_total",
-            "qualified_symbol": "calculate_total",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'calculate_total' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          },
-          {
-            "test_name": "test_compute_tax_standard",
-            "changed_symbol": "compute_tax",
-            "qualified_symbol": "compute_tax",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'compute_tax' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          }
-        ],
-        "timestamp": "2026-10-26T09:04:37.573526+00:00",
-        "status": "completed",
-        "notes": "Evaluation of API Scenario 1"
-      }
-    },
-    "created_at": "2026-10-26T09:04:34.966584+00:00",
-    "updated_at": "2026-10-26T09:04:38.004514+00:00"
-  },
-  "repo_testpilot_api_test_repo_4_rv0lub_d61e69c044": {
-    "repo_id": "repo_testpilot_api_test_repo_4_rv0lub_d61e69c044",
-    "name": "API Test Repo",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_4_rv0lub",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "dc8dfdb948d24288488481d1987b1c9d4bdf6e7e",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "evaluated",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 1,
-    "discovered_tests": [
-      "tests/test_service.py::test_calculate_total_standard",
-      "tests/test_service.py::test_compute_tax_standard",
-      "tests/test_service.py::test_unrelated_feature"
-    ],
-    "total_tests_count": 3,
-    "test_framework": "pytest",
-    "baseline_test_status": "untested",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [],
-    "generated_tests_count": 0,
-    "validated_tests_count": 0,
-    "mutation_sensitive_tests_count": 0,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_test_repo_4_rv0lub_d61e69c044_case_1",
-        "name": "API Scenario 1",
-        "description": "",
-        "source_type": "manual_mapping",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_test_repo_4_rv0lub_d61e69c044_case_1",
-          "expected_changed_symbols": [
-            "compute_tax"
-          ],
-          "expected_impacted_symbols": [],
-          "expected_test_callers": [
-            "test_compute_tax_standard"
-          ],
-          "provenance": "Verified in test_15_and_16",
-          "notes": "",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {},
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 3,
-        "created_at": "2026-10-26T16:53:28.066950+00:00"
-      }
-    ],
-    "validated_benchmark_cases_count": 1,
-    "last_analyzed_at": "2026-10-26T16:53:27.610334+00:00",
-    "last_evaluated_at": "2026-10-26T16:53:30.555350+00:00",
-    "latest_evaluation_runs": {
-      "repo_testpilot_api_test_repo_4_rv0lub_d61e69c044_case_1": {
-        "run_id": "custom_run_repo_testpilot_api_test_repo_4_rv0lub_d61e69c044_case_1_1793033610",
-        "case_id": "repo_testpilot_api_test_repo_4_rv0lub_d61e69c044_case_1",
-        "repository": "API Test Repo",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "testpilot_version": "dc8dfdb948d24288488481d1987b1c9d4bdf6e7e",
-        "python_version": "3.11.5",
-        "model": null,
-        "temperature": null,
-        "prompt_version": null,
-        "rag_status": "active",
-        "total_tests": 3,
-        "ground_truth_count": 1,
-        "baseline_results": {
-          "full_regression": {
-            "baseline_type": "full_regression",
-            "name": "Full Regression",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard",
-              "tests/test_service.py::test_unrelated_feature"
-            ],
-            "selected_count": 3,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Standard CI approach: executes 100% of tests. Zero reduction."
-          },
-          "naive_name_matching": {
-            "baseline_type": "naive_name_matching",
-            "name": "Naive Name Matching",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1.48,
-            "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
-          },
-          "testpilot": {
-            "baseline_type": "testpilot",
-            "name": "TestPilot (Qualified Identity)",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 25.77,
-            "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
-          },
-          "testpilot_rag": {
-            "baseline_type": "testpilot_rag",
-            "name": "TestPilot + Repository RAG",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1633.59,
-            "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
-          },
-          "testpilot_sourcegraph": {
-            "baseline_type": "testpilot_sourcegraph",
-            "name": "TestPilot + Sourcegraph",
-            "selected_tests": [],
-            "selected_count": 0,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "metrics": {
-          "full_regression": {
-            "tp": 1,
-            "fp": 2,
-            "fn": 0,
-            "precision": 0.3333,
-            "recall": 1.0,
-            "f1": 0.5,
-            "test_reduction_pct": 0.0,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "naive_name_matching": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 1.48,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 1.48,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 762.09,
-            "evolution_latency_ms": 25.77,
-            "selection_latency_ms": 25.96,
-            "total_latency_ms": 762.09,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_rag": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 2395.85,
-            "evolution_latency_ms": 25.77,
-            "selection_latency_ms": 1659.72,
-            "total_latency_ms": 2395.85,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_sourcegraph": {
-            "tp": 0,
-            "fp": 0,
-            "fn": 0,
-            "precision": null,
-            "recall": null,
-            "f1": null,
-            "test_reduction_pct": null,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": false,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "evidence_records": [
-          {
-            "test_name": "test_calculate_total_standard",
-            "changed_symbol": "calculate_total",
-            "qualified_symbol": "calculate_total",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'calculate_total' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          },
-          {
-            "test_name": "test_compute_tax_standard",
-            "changed_symbol": "compute_tax",
-            "qualified_symbol": "compute_tax",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'compute_tax' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          }
-        ],
-        "timestamp": "2026-10-26T16:53:30.555350+00:00",
-        "status": "completed",
-        "notes": "Evaluation of API Scenario 1"
-      }
-    },
-    "created_at": "2026-10-26T16:53:27.606683+00:00",
-    "updated_at": "2026-10-26T16:53:31.034381+00:00"
-  },
-  "repo_testpilot_api_test_repo_nbymm96k_6ece070ba7": {
-    "repo_id": "repo_testpilot_api_test_repo_nbymm96k_6ece070ba7",
-    "name": "API Test Repo",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_nbymm96k",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "d900030f744112332ab22cdecbc17bb119e8cc77",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "evaluated",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 1,
-    "discovered_tests": [
-      "tests/test_service.py::test_calculate_total_standard",
-      "tests/test_service.py::test_compute_tax_standard",
-      "tests/test_service.py::test_unrelated_feature"
-    ],
-    "total_tests_count": 3,
-    "test_framework": "pytest",
-    "baseline_test_status": "untested",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [],
-    "generated_tests_count": 0,
-    "validated_tests_count": 0,
-    "mutation_sensitive_tests_count": 0,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_test_repo_nbymm96k_6ece070ba7_case_1",
-        "name": "API Scenario 1",
-        "description": "",
-        "source_type": "manual_mapping",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_test_repo_nbymm96k_6ece070ba7_case_1",
-          "expected_changed_symbols": [
-            "compute_tax"
-          ],
-          "expected_impacted_symbols": [],
-          "expected_test_callers": [
-            "test_compute_tax_standard"
-          ],
-          "provenance": "Verified in test_15_and_16",
-          "notes": "",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {},
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 3,
-        "created_at": "2026-10-26T16:56:49.400864+00:00"
-      }
-    ],
-    "validated_benchmark_cases_count": 1,
-    "last_analyzed_at": "2026-10-26T16:56:48.957204+00:00",
-    "last_evaluated_at": "2026-10-26T16:56:51.579506+00:00",
-    "latest_evaluation_runs": {
-      "repo_testpilot_api_test_repo_nbymm96k_6ece070ba7_case_1": {
-        "run_id": "custom_run_repo_testpilot_api_test_repo_nbymm96k_6ece070ba7_case_1_1793033811",
-        "case_id": "repo_testpilot_api_test_repo_nbymm96k_6ece070ba7_case_1",
-        "repository": "API Test Repo",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "testpilot_version": "d900030f744112332ab22cdecbc17bb119e8cc77",
-        "python_version": "3.11.5",
-        "model": null,
-        "temperature": null,
-        "prompt_version": null,
-        "rag_status": "active",
-        "total_tests": 3,
-        "ground_truth_count": 1,
-        "baseline_results": {
-          "full_regression": {
-            "baseline_type": "full_regression",
-            "name": "Full Regression",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard",
-              "tests/test_service.py::test_unrelated_feature"
-            ],
-            "selected_count": 3,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Standard CI approach: executes 100% of tests. Zero reduction."
-          },
-          "naive_name_matching": {
-            "baseline_type": "naive_name_matching",
-            "name": "Naive Name Matching",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1.12,
-            "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
-          },
-          "testpilot": {
-            "baseline_type": "testpilot",
-            "name": "TestPilot (Qualified Identity)",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 19.61,
-            "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
-          },
-          "testpilot_rag": {
-            "baseline_type": "testpilot_rag",
-            "name": "TestPilot + Repository RAG",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1387.85,
-            "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
-          },
-          "testpilot_sourcegraph": {
-            "baseline_type": "testpilot_sourcegraph",
-            "name": "TestPilot + Sourcegraph",
-            "selected_tests": [],
-            "selected_count": 0,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "metrics": {
-          "full_regression": {
-            "tp": 1,
-            "fp": 2,
-            "fn": 0,
-            "precision": 0.3333,
-            "recall": 1.0,
-            "f1": 0.5,
-            "test_reduction_pct": 0.0,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "naive_name_matching": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 1.12,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 1.12,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 717.32,
-            "evolution_latency_ms": 19.61,
-            "selection_latency_ms": 19.78,
-            "total_latency_ms": 717.32,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_rag": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 2105.34,
-            "evolution_latency_ms": 19.61,
-            "selection_latency_ms": 1407.79,
-            "total_latency_ms": 2105.34,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_sourcegraph": {
-            "tp": 0,
-            "fp": 0,
-            "fn": 0,
-            "precision": null,
-            "recall": null,
-            "f1": null,
-            "test_reduction_pct": null,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": false,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "evidence_records": [
-          {
-            "test_name": "test_calculate_total_standard",
-            "changed_symbol": "calculate_total",
-            "qualified_symbol": "calculate_total",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'calculate_total' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          },
-          {
-            "test_name": "test_compute_tax_standard",
-            "changed_symbol": "compute_tax",
-            "qualified_symbol": "compute_tax",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'compute_tax' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          }
-        ],
-        "timestamp": "2026-10-26T16:56:51.578507+00:00",
-        "status": "completed",
-        "notes": "Evaluation of API Scenario 1"
-      }
-    },
-    "created_at": "2026-10-26T16:56:48.955149+00:00",
-    "updated_at": "2026-10-26T16:56:52.023051+00:00"
-  },
   "repo_shreshth-mod_finmath_db2b8f524f": {
     "repo_id": "repo_shreshth-mod_finmath_db2b8f524f",
     "name": "FinMath",
     "canonical_path": "C:\\Users\\shres\\OneDrive\\Desktop\\TestPilot\\testbed\\evaluation_store\\clones\\shreshth-mod_finmath",
     "remote_url": "https://github.com/Shreshth-mod/FinMath.git",
     "is_remote": true,
+    "is_private": false,
+    "auth_type": null,
     "is_git": true,
     "detected_revision": "4939da59e66ff93039036a4026712947f59f5baf",
     "current_branch": "main",
     "is_active": true,
-    "status": "generating_tests",
-    "status_message": "Synthesizing behavioral regression tests for public symbols...",
+    "status": "evaluated",
+    "status_message": "Evaluation completed for 1 benchmark case(s).",
     "languages": [
       "Python"
     ],
@@ -3193,6 +1939,11 @@
     "baseline_test_error": null,
     "supported_language": true,
     "unsupported_reason": null,
+    "is_monorepo": false,
+    "workspace_type": null,
+    "manifests": [],
+    "stage_capabilities": {},
+    "compatibility_report": null,
     "generated_tests": [
       {
         "test_id": "tests/generated/test_autogen_app.py::test_init_state_nominal_contract",
@@ -3655,10 +2406,10 @@
     ],
     "validated_benchmark_cases_count": 1,
     "last_analyzed_at": "2026-10-26T17:02:57.367843+00:00",
-    "last_evaluated_at": "2026-10-26T17:59:27.905400+00:00",
+    "last_evaluated_at": "2026-10-27T10:53:07.736455+00:00",
     "latest_evaluation_runs": {
       "repo_shreshth-mod_finmath_db2b8f524f_case_1": {
-        "run_id": "custom_run_repo_shreshth-mod_finmath_db2b8f524f_case_1_1793037567",
+        "run_id": "custom_run_repo_shreshth-mod_finmath_db2b8f524f_case_1_1793098387",
         "case_id": "repo_shreshth-mod_finmath_db2b8f524f_case_1",
         "repository": "FinMath",
         "base_commit": "HEAD~1",
@@ -3716,25 +2467,33 @@
             ],
             "selected_count": 4,
             "total_tests": 23,
-            "latency_ms": 9.72,
+            "latency_ms": 10.48,
             "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
           },
           "testpilot": {
             "baseline_type": "testpilot",
             "name": "TestPilot (Qualified Identity)",
-            "selected_tests": [],
-            "selected_count": 0,
+            "selected_tests": [
+              "tests/generated/test_autogen_app.py::test_fmt_inr_boundary_conditions",
+              "tests/generated/test_autogen_app.py::test_fmt_inr_invalid_type_exception",
+              "tests/generated/test_autogen_app.py::test_fmt_inr_nominal_contract"
+            ],
+            "selected_count": 3,
             "total_tests": 23,
-            "latency_ms": 3246.95,
+            "latency_ms": 229.57,
             "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
           },
           "testpilot_rag": {
             "baseline_type": "testpilot_rag",
             "name": "TestPilot + Repository RAG",
-            "selected_tests": [],
-            "selected_count": 0,
+            "selected_tests": [
+              "tests/generated/test_autogen_app.py::test_fmt_inr_boundary_conditions",
+              "tests/generated/test_autogen_app.py::test_fmt_inr_invalid_type_exception",
+              "tests/generated/test_autogen_app.py::test_fmt_inr_nominal_contract"
+            ],
+            "selected_count": 3,
             "total_tests": 23,
-            "latency_ms": 1532.36,
+            "latency_ms": 40674.72,
             "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
           },
           "testpilot_sourcegraph": {
@@ -3771,40 +2530,40 @@
             "recall": 1.0,
             "f1": 0.8571,
             "test_reduction_pct": 82.61,
-            "latency_ms": 9.72,
+            "latency_ms": 10.48,
             "evolution_latency_ms": 0.0,
             "selection_latency_ms": 0.0,
-            "total_latency_ms": 9.72,
+            "total_latency_ms": 10.48,
             "is_evaluated": true,
             "notes": ""
           },
           "testpilot": {
-            "tp": 0,
+            "tp": 3,
             "fp": 0,
-            "fn": 3,
-            "precision": null,
-            "recall": 0.0,
-            "f1": null,
-            "test_reduction_pct": 100.0,
-            "latency_ms": 3403.43,
-            "evolution_latency_ms": 3246.95,
-            "selection_latency_ms": 3247.01,
-            "total_latency_ms": 3403.43,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "test_reduction_pct": 86.96,
+            "latency_ms": 422.49,
+            "evolution_latency_ms": 229.57,
+            "selection_latency_ms": 229.77,
+            "total_latency_ms": 422.49,
             "is_evaluated": true,
             "notes": ""
           },
           "testpilot_rag": {
-            "tp": 0,
+            "tp": 3,
             "fp": 0,
-            "fn": 3,
-            "precision": null,
-            "recall": 0.0,
-            "f1": null,
-            "test_reduction_pct": 100.0,
-            "latency_ms": 4935.85,
-            "evolution_latency_ms": 3246.95,
-            "selection_latency_ms": 4779.43,
-            "total_latency_ms": 4935.85,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "test_reduction_pct": 86.96,
+            "latency_ms": 41097.46,
+            "evolution_latency_ms": 229.57,
+            "selection_latency_ms": 40904.73,
+            "total_latency_ms": 41097.46,
             "is_evaluated": true,
             "notes": ""
           },
@@ -3824,1017 +2583,62 @@
             "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
           }
         },
-        "evidence_records": [],
-        "timestamp": "2026-10-26T17:59:27.905400+00:00",
+        "evidence_records": [
+          {
+            "test_name": "test_fmt_inr_boundary_conditions",
+            "changed_symbol": "fmt_inr",
+            "qualified_symbol": "fmt_inr",
+            "caller_relationship": "CRITICAL",
+            "ast_evidence": "Direct test of changed symbol 'fmt_inr' in app.py",
+            "sourcegraph_evidence": null,
+            "match_quality": "ast_qualified",
+            "confidence": 0.95,
+            "uncertainty": "low",
+            "resolution_engine": "AST/Tree-sitter Qualified"
+          },
+          {
+            "test_name": "test_fmt_inr_invalid_type_exception",
+            "changed_symbol": "fmt_inr",
+            "qualified_symbol": "fmt_inr",
+            "caller_relationship": "CRITICAL",
+            "ast_evidence": "Direct test of changed symbol 'fmt_inr' in app.py",
+            "sourcegraph_evidence": null,
+            "match_quality": "ast_qualified",
+            "confidence": 0.95,
+            "uncertainty": "low",
+            "resolution_engine": "AST/Tree-sitter Qualified"
+          },
+          {
+            "test_name": "test_fmt_inr_nominal_contract",
+            "changed_symbol": "fmt_inr",
+            "qualified_symbol": "fmt_inr",
+            "caller_relationship": "CRITICAL",
+            "ast_evidence": "Direct test of changed symbol 'fmt_inr' in app.py",
+            "sourcegraph_evidence": null,
+            "match_quality": "ast_qualified",
+            "confidence": 0.95,
+            "uncertainty": "low",
+            "resolution_engine": "AST/Tree-sitter Qualified"
+          }
+        ],
+        "timestamp": "2026-10-27T10:53:07.736455+00:00",
         "status": "completed",
         "notes": "Behavioral regression test scenario for app.fmt_inr in app.py"
       }
     },
     "created_at": "2026-10-26T17:02:54.621230+00:00",
-    "updated_at": "2026-10-26T20:01:56.153882+00:00"
+    "updated_at": "2026-10-27T10:53:07.736455+00:00"
   },
-  "repo_testpilot_api_autogen_osp2vzcy_431ade9e80": {
-    "repo_id": "repo_testpilot_api_autogen_osp2vzcy_431ade9e80",
-    "name": "testpilot_api_autogen_osp2vzcy",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_autogen_osp2vzcy",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "59027b961665245a05cea958586a644c1e85cf16",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "generating_tests",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 0,
-    "discovered_tests": [],
-    "total_tests_count": 0,
-    "test_framework": "pytest",
-    "baseline_test_status": "no_tests",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [],
-    "generated_tests_count": 0,
-    "validated_tests_count": 0,
-    "mutation_sensitive_tests_count": 0,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [],
-    "validated_benchmark_cases_count": 0,
-    "last_analyzed_at": "2026-10-26T17:18:46.741582+00:00",
-    "last_evaluated_at": null,
-    "latest_evaluation_runs": {},
-    "created_at": "2026-10-26T17:18:46.738583+00:00",
-    "updated_at": "2026-10-26T20:04:14.976926+00:00"
-  },
-  "repo_testpilot_api_autogen_d2h8j9ub_02e2604f7c": {
-    "repo_id": "repo_testpilot_api_autogen_d2h8j9ub_02e2604f7c",
-    "name": "testpilot_api_autogen_d2h8j9ub",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_autogen_d2h8j9ub",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "cd75087703aec1ecde0caec916e844efb4942eb8",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "benchmark_preparation_required",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 0,
-    "discovered_tests": [
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract"
-    ],
-    "total_tests_count": 9,
-    "test_framework": "pytest",
-    "baseline_test_status": "no_tests",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_nominal_contract",
-        "intended_behavior": "Verify add_values executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: add_values(a, b)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": false,
-        "rejection_reason": "Test did not detect controlled code mutation (passed on faulty version)",
-        "created_at": "2026-10-26T17:22:40Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_boundary_conditions",
-        "intended_behavior": "Verify add_values handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: a, b",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": false,
-        "rejection_reason": "Test did not detect controlled code mutation (passed on faulty version)",
-        "created_at": "2026-10-26T17:22:40Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_invalid_type_exception",
-        "intended_behavior": "Verify add_values enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on add_values",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": false,
-        "rejection_reason": "Test did not detect controlled code mutation (passed on faulty version)",
-        "created_at": "2026-10-26T17:22:40Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_nominal_contract",
-        "intended_behavior": "Verify multiply_values executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: multiply_values(x, y)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": false,
-        "rejection_reason": "Test did not detect controlled code mutation (passed on faulty version)",
-        "created_at": "2026-10-26T17:22:40Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_boundary_conditions",
-        "intended_behavior": "Verify multiply_values handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: x, y",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": false,
-        "rejection_reason": "Test did not detect controlled code mutation (passed on faulty version)",
-        "created_at": "2026-10-26T17:22:40Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_invalid_type_exception",
-        "intended_behavior": "Verify multiply_values enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on multiply_values",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": false,
-        "rejection_reason": "Test did not detect controlled code mutation (passed on faulty version)",
-        "created_at": "2026-10-26T17:22:40Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_nominal_contract",
-        "intended_behavior": "Verify divide_positive executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: divide_positive(val, divisor)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": false,
-        "rejection_reason": "Test did not detect controlled code mutation (passed on faulty version)",
-        "created_at": "2026-10-26T17:22:40Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_boundary_conditions",
-        "intended_behavior": "Verify divide_positive handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: val, divisor",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": false,
-        "rejection_reason": "Test did not detect controlled code mutation (passed on faulty version)",
-        "created_at": "2026-10-26T17:22:40Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_invalid_type_exception",
-        "intended_behavior": "Verify divide_positive enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on divide_positive",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": false,
-        "rejection_reason": "Test did not detect controlled code mutation (passed on faulty version)",
-        "created_at": "2026-10-26T17:22:40Z"
-      }
-    ],
-    "generated_tests_count": 9,
-    "validated_tests_count": 9,
-    "mutation_sensitive_tests_count": 0,
-    "cases_awaiting_review_count": 3,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_autogen_d2h8j9ub_02e2604f7c_case_1",
-        "name": "Add Values Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.add_values in mathlib/calc.py",
-        "source_type": "behavioral_contract",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_d2h8j9ub_02e2604f7c_case_1",
-          "expected_changed_symbols": [
-            "add_values"
-          ],
-          "expected_impacted_symbols": [
-            "add_values"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception"
-          ],
-          "provenance": "AST nominal contract for mathlib/calc.py:add_values (awaiting mutation review)",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": false
-        },
-        "validation_level": "proposed_awaiting_review",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.add_values",
-          "mutation_sensitive": false,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 0.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T17:23:07Z"
-      },
-      {
-        "case_id": "repo_testpilot_api_autogen_d2h8j9ub_02e2604f7c_case_2",
-        "name": "Multiply Values Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.multiply_values in mathlib/calc.py",
-        "source_type": "behavioral_contract",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_d2h8j9ub_02e2604f7c_case_2",
-          "expected_changed_symbols": [
-            "multiply_values"
-          ],
-          "expected_impacted_symbols": [
-            "multiply_values"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception"
-          ],
-          "provenance": "AST nominal contract for mathlib/calc.py:multiply_values (awaiting mutation review)",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": false
-        },
-        "validation_level": "proposed_awaiting_review",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.multiply_values",
-          "mutation_sensitive": false,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 0.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T17:23:07Z"
-      },
-      {
-        "case_id": "repo_testpilot_api_autogen_d2h8j9ub_02e2604f7c_case_3",
-        "name": "Divide Positive Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.divide_positive in mathlib/calc.py",
-        "source_type": "behavioral_contract",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_d2h8j9ub_02e2604f7c_case_3",
-          "expected_changed_symbols": [
-            "divide_positive"
-          ],
-          "expected_impacted_symbols": [
-            "divide_positive"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception"
-          ],
-          "provenance": "AST nominal contract for mathlib/calc.py:divide_positive (awaiting mutation review)",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": false
-        },
-        "validation_level": "proposed_awaiting_review",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.divide_positive",
-          "mutation_sensitive": false,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 0.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T17:23:07Z"
-      }
-    ],
-    "validated_benchmark_cases_count": 0,
-    "last_analyzed_at": "2026-10-26T17:22:39.920646+00:00",
-    "last_evaluated_at": null,
-    "latest_evaluation_runs": {},
-    "created_at": "2026-10-26T17:22:39.916639+00:00",
-    "updated_at": "2026-10-26T20:04:18.354941+00:00"
-  },
-  "repo_testpilot_api_autogen_4fa2phiy_ece6d53d90": {
-    "repo_id": "repo_testpilot_api_autogen_4fa2phiy_ece6d53d90",
-    "name": "testpilot_api_autogen_4fa2phiy",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_autogen_4fa2phiy",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "09ae884cec55ab3fbe0c139a26b084793a92b971",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "ready_for_evaluation",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 0,
-    "discovered_tests": [
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract"
-    ],
-    "total_tests_count": 9,
-    "test_framework": "pytest",
-    "baseline_test_status": "no_tests",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_nominal_contract",
-        "intended_behavior": "Verify add_values executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: add_values(a, b)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:34:10Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_boundary_conditions",
-        "intended_behavior": "Verify add_values handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: a, b",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:34:10Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_invalid_type_exception",
-        "intended_behavior": "Verify add_values enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on add_values",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:34:10Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_nominal_contract",
-        "intended_behavior": "Verify multiply_values executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: multiply_values(x, y)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:34:10Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_boundary_conditions",
-        "intended_behavior": "Verify multiply_values handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: x, y",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:34:10Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_invalid_type_exception",
-        "intended_behavior": "Verify multiply_values enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on multiply_values",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:34:10Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_nominal_contract",
-        "intended_behavior": "Verify divide_positive executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: divide_positive(val, divisor)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:34:10Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_boundary_conditions",
-        "intended_behavior": "Verify divide_positive handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: val, divisor",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:34:10Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_invalid_type_exception",
-        "intended_behavior": "Verify divide_positive enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on divide_positive",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:34:10Z"
-      }
-    ],
-    "generated_tests_count": 9,
-    "validated_tests_count": 9,
-    "mutation_sensitive_tests_count": 9,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_autogen_4fa2phiy_ece6d53d90_case_1",
-        "name": "Add Values Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.add_values in mathlib/calc.py",
-        "source_type": "mutation_analysis",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_4fa2phiy_ece6d53d90_case_1",
-          "expected_changed_symbols": [
-            "add_values"
-          ],
-          "expected_impacted_symbols": [
-            "add_values"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception"
-          ],
-          "provenance": "AST behavioral contract validated via mutation testing on mathlib/calc.py:add_values",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.add_values",
-          "mutation_sensitive": true,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T17:34:41Z"
-      },
-      {
-        "case_id": "repo_testpilot_api_autogen_4fa2phiy_ece6d53d90_case_2",
-        "name": "Multiply Values Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.multiply_values in mathlib/calc.py",
-        "source_type": "mutation_analysis",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_4fa2phiy_ece6d53d90_case_2",
-          "expected_changed_symbols": [
-            "multiply_values"
-          ],
-          "expected_impacted_symbols": [
-            "multiply_values"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception"
-          ],
-          "provenance": "AST behavioral contract validated via mutation testing on mathlib/calc.py:multiply_values",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.multiply_values",
-          "mutation_sensitive": true,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T17:34:41Z"
-      },
-      {
-        "case_id": "repo_testpilot_api_autogen_4fa2phiy_ece6d53d90_case_3",
-        "name": "Divide Positive Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.divide_positive in mathlib/calc.py",
-        "source_type": "mutation_analysis",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_4fa2phiy_ece6d53d90_case_3",
-          "expected_changed_symbols": [
-            "divide_positive"
-          ],
-          "expected_impacted_symbols": [
-            "divide_positive"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception"
-          ],
-          "provenance": "AST behavioral contract validated via mutation testing on mathlib/calc.py:divide_positive",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.divide_positive",
-          "mutation_sensitive": true,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T17:34:41Z"
-      }
-    ],
-    "validated_benchmark_cases_count": 3,
-    "last_analyzed_at": "2026-10-26T17:34:10.121592+00:00",
-    "last_evaluated_at": null,
-    "latest_evaluation_runs": {},
-    "created_at": "2026-10-26T17:34:10.117586+00:00",
-    "updated_at": "2026-10-26T20:04:20.953817+00:00"
-  },
-  "repo_testpilot_api_autogen_z7odsiga_89e9a7ff3c": {
-    "repo_id": "repo_testpilot_api_autogen_z7odsiga_89e9a7ff3c",
-    "name": "testpilot_api_autogen_z7odsiga",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_autogen_z7odsiga",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "18c241a5a003c8c90f653b691d33857dff325d4b",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "ready_for_evaluation",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 0,
-    "discovered_tests": [
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract"
-    ],
-    "total_tests_count": 9,
-    "test_framework": "pytest",
-    "baseline_test_status": "no_tests",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_nominal_contract",
-        "intended_behavior": "Verify add_values executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: add_values(a, b)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:39:53Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_boundary_conditions",
-        "intended_behavior": "Verify add_values handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: a, b",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:39:53Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_invalid_type_exception",
-        "intended_behavior": "Verify add_values enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on add_values",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:39:53Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_nominal_contract",
-        "intended_behavior": "Verify multiply_values executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: multiply_values(x, y)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:39:53Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_boundary_conditions",
-        "intended_behavior": "Verify multiply_values handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: x, y",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:39:53Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_invalid_type_exception",
-        "intended_behavior": "Verify multiply_values enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on multiply_values",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:39:53Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_nominal_contract",
-        "intended_behavior": "Verify divide_positive executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: divide_positive(val, divisor)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:39:53Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_boundary_conditions",
-        "intended_behavior": "Verify divide_positive handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: val, divisor",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:39:53Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_invalid_type_exception",
-        "intended_behavior": "Verify divide_positive enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on divide_positive",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T17:39:53Z"
-      }
-    ],
-    "generated_tests_count": 9,
-    "validated_tests_count": 9,
-    "mutation_sensitive_tests_count": 9,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_autogen_z7odsiga_89e9a7ff3c_case_1",
-        "name": "Add Values Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.add_values in mathlib/calc.py",
-        "source_type": "mutation_analysis",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_z7odsiga_89e9a7ff3c_case_1",
-          "expected_changed_symbols": [
-            "add_values"
-          ],
-          "expected_impacted_symbols": [
-            "add_values"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception"
-          ],
-          "provenance": "AST behavioral contract validated via mutation testing on mathlib/calc.py:add_values",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.add_values",
-          "mutation_sensitive": true,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T17:40:24Z"
-      },
-      {
-        "case_id": "repo_testpilot_api_autogen_z7odsiga_89e9a7ff3c_case_2",
-        "name": "Multiply Values Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.multiply_values in mathlib/calc.py",
-        "source_type": "mutation_analysis",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_z7odsiga_89e9a7ff3c_case_2",
-          "expected_changed_symbols": [
-            "multiply_values"
-          ],
-          "expected_impacted_symbols": [
-            "multiply_values"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception"
-          ],
-          "provenance": "AST behavioral contract validated via mutation testing on mathlib/calc.py:multiply_values",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.multiply_values",
-          "mutation_sensitive": true,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T17:40:24Z"
-      },
-      {
-        "case_id": "repo_testpilot_api_autogen_z7odsiga_89e9a7ff3c_case_3",
-        "name": "Divide Positive Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.divide_positive in mathlib/calc.py",
-        "source_type": "mutation_analysis",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_z7odsiga_89e9a7ff3c_case_3",
-          "expected_changed_symbols": [
-            "divide_positive"
-          ],
-          "expected_impacted_symbols": [
-            "divide_positive"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception"
-          ],
-          "provenance": "AST behavioral contract validated via mutation testing on mathlib/calc.py:divide_positive",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.divide_positive",
-          "mutation_sensitive": true,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T17:40:24Z"
-      }
-    ],
-    "validated_benchmark_cases_count": 3,
-    "last_analyzed_at": "2026-10-26T17:39:53.125574+00:00",
-    "last_evaluated_at": null,
-    "latest_evaluation_runs": {},
-    "created_at": "2026-10-26T17:39:53.120554+00:00",
-    "updated_at": "2026-10-26T20:04:23.502123+00:00"
-  },
-  "repo_testpilot_api_test_repo_xw_o2ns2_22077b1d9a": {
-    "repo_id": "repo_testpilot_api_test_repo_xw_o2ns2_22077b1d9a",
+  "repo_testpilot_api_test_repo_84a48pd__e675b07ee7": {
+    "repo_id": "repo_testpilot_api_test_repo_84a48pd__e675b07ee7",
     "name": "API Test Repo",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_xw_o2ns2",
+    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_84a48pd_",
     "remote_url": null,
     "is_remote": false,
+    "is_private": false,
+    "auth_type": null,
     "is_git": true,
-    "detected_revision": "0e3702832ab87191d24c2256a97c7df14ee68283",
+    "detected_revision": "54c6fbf5136fcf2e4812dc85ed3d6edf60f6f128",
     "current_branch": "master",
     "is_active": false,
     "status": "evaluated",
@@ -4855,6 +2659,131 @@
     "baseline_test_error": null,
     "supported_language": true,
     "unsupported_reason": null,
+    "is_monorepo": false,
+    "workspace_type": "single_package",
+    "manifests": [],
+    "stage_capabilities": {
+      "onboarding": "fully_supported",
+      "analysis": "fully_supported",
+      "test_discovery": "fully_supported",
+      "test_generation": "fully_supported",
+      "ground_truth_validation": "fully_supported",
+      "docker_execution": "fully_supported",
+      "evaluation": "fully_supported"
+    },
+    "compatibility_report": {
+      "repo_name": "testpilot_api_test_repo_84a48pd_",
+      "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_84a48pd_",
+      "ecosystem": {
+        "primary_language": "Python",
+        "detected_languages": [
+          "Python"
+        ],
+        "manifests": [],
+        "workspace": {
+          "is_monorepo": false,
+          "workspace_type": "single_package",
+          "root_manifest": null,
+          "packages": []
+        },
+        "detected_test_frameworks": [
+          "pytest"
+        ],
+        "external_services": [
+          {
+            "service_name": "docker_daemon",
+            "detected_via": "TestPilot container sandbox isolation requirement",
+            "is_available": true,
+            "is_critical": true,
+            "remediation_notes": "Docker daemon is active and responsive."
+          }
+        ],
+        "env_files": [],
+        "ci_configs": []
+      },
+      "stage_capabilities": {
+        "onboarding": {
+          "stage": "onboarding",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Repository files and git structure are verified and accessible.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {
+            "is_git": true,
+            "primary_language": "Python"
+          },
+          "recommendations": []
+        },
+        "analysis": {
+          "stage": "analysis",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Full AST, symbol call graph, cyclomatic branch, and boundary analysis supported for Python.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "test_discovery": {
+          "stage": "test_discovery",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Native test discovery supported for pytest.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "test_generation": {
+          "stage": "test_generation",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Autonomous test synthesis and AST boundary test generation fully operational for Python pytest.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "ground_truth_validation": {
+          "stage": "ground_truth_validation",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Historical bug-fix mining, parent commit checkout, and test overlay validation fully supported.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "docker_execution": {
+          "stage": "docker_execution",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Disposable Docker container sandbox with read-only repository mount active for Python pytest.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "evaluation": {
+          "stage": "evaluation",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Full Regression, Naive, and TestPilot selection evaluation baselines fully supported.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        }
+      },
+      "overall_support_level": "fully_supported",
+      "can_run_pipeline": true,
+      "summary": "Repository 'testpilot_api_test_repo_84a48pd_' is fully supported across all 7 pipeline stages (Python ecosystem).",
+      "unsupported_stages": [],
+      "partially_supported_stages": [],
+      "blocking_reasons": [],
+      "recommended_actions": []
+    },
     "generated_tests": [],
     "generated_tests_count": 0,
     "validated_tests_count": 0,
@@ -4862,15 +2791,15 @@
     "cases_awaiting_review_count": 0,
     "benchmark_cases": [
       {
-        "case_id": "repo_testpilot_api_test_repo_xw_o2ns2_22077b1d9a_case_1",
+        "case_id": "repo_testpilot_api_test_repo_84a48pd__e675b07ee7_case_1",
         "name": "API Scenario 1",
         "description": "",
         "source_type": "manual_mapping",
         "base_commit": "HEAD~1",
         "target_commit": "HEAD",
-        "commit_sha": null,
+        "commit_sha": "54c6fbf5136fcf2e4812dc85ed3d6edf60f6f128",
         "ground_truth": {
-          "case_id": "repo_testpilot_api_test_repo_xw_o2ns2_22077b1d9a_case_1",
+          "case_id": "repo_testpilot_api_test_repo_84a48pd__e675b07ee7_case_1",
           "expected_changed_symbols": [
             "compute_tax"
           ],
@@ -4892,20 +2821,20 @@
         "fault_detection_rate": 1.0,
         "limitations_notes": null,
         "total_tests_suite": 3,
-        "created_at": "2026-10-26T17:42:02.562925+00:00"
+        "created_at": "2026-10-27T08:44:49.343042+00:00"
       }
     ],
     "validated_benchmark_cases_count": 1,
-    "last_analyzed_at": "2026-10-26T17:41:59.561175+00:00",
-    "last_evaluated_at": "2026-10-26T17:42:04.528140+00:00",
+    "last_analyzed_at": "2026-10-27T08:44:45.466991+00:00",
+    "last_evaluated_at": "2026-10-27T08:44:51.497314+00:00",
     "latest_evaluation_runs": {
-      "repo_testpilot_api_test_repo_xw_o2ns2_22077b1d9a_case_1": {
-        "run_id": "custom_run_repo_testpilot_api_test_repo_xw_o2ns2_22077b1d9a_case_1_1793036524",
-        "case_id": "repo_testpilot_api_test_repo_xw_o2ns2_22077b1d9a_case_1",
+      "repo_testpilot_api_test_repo_84a48pd__e675b07ee7_case_1": {
+        "run_id": "custom_run_repo_testpilot_api_test_repo_84a48pd__e675b07ee7_case_1_1793090691",
+        "case_id": "repo_testpilot_api_test_repo_84a48pd__e675b07ee7_case_1",
         "repository": "API Test Repo",
         "base_commit": "HEAD~1",
         "target_commit": "HEAD",
-        "testpilot_version": "0e3702832ab87191d24c2256a97c7df14ee68283",
+        "testpilot_version": "54c6fbf5136fcf2e4812dc85ed3d6edf60f6f128",
         "python_version": "3.11.5",
         "model": null,
         "temperature": null,
@@ -4936,7 +2865,7 @@
             ],
             "selected_count": 2,
             "total_tests": 3,
-            "latency_ms": 1.15,
+            "latency_ms": 1.29,
             "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
           },
           "testpilot": {
@@ -4948,7 +2877,7 @@
             ],
             "selected_count": 2,
             "total_tests": 3,
-            "latency_ms": 15.84,
+            "latency_ms": 17.71,
             "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
           },
           "testpilot_rag": {
@@ -4960,7 +2889,7 @@
             ],
             "selected_count": 2,
             "total_tests": 3,
-            "latency_ms": 1325.09,
+            "latency_ms": 1507.03,
             "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
           },
           "testpilot_sourcegraph": {
@@ -4997,10 +2926,10 @@
             "recall": 1.0,
             "f1": 0.6667,
             "test_reduction_pct": 33.33,
-            "latency_ms": 1.15,
+            "latency_ms": 1.29,
             "evolution_latency_ms": 0.0,
             "selection_latency_ms": 0.0,
-            "total_latency_ms": 1.15,
+            "total_latency_ms": 1.29,
             "is_evaluated": true,
             "notes": ""
           },
@@ -5012,10 +2941,10 @@
             "recall": 1.0,
             "f1": 0.6667,
             "test_reduction_pct": 33.33,
-            "latency_ms": 583.6,
-            "evolution_latency_ms": 15.84,
-            "selection_latency_ms": 15.96,
-            "total_latency_ms": 583.6,
+            "latency_ms": 590.02,
+            "evolution_latency_ms": 17.71,
+            "selection_latency_ms": 17.85,
+            "total_latency_ms": 590.02,
             "is_evaluated": true,
             "notes": ""
           },
@@ -5027,10 +2956,10 @@
             "recall": 1.0,
             "f1": 0.6667,
             "test_reduction_pct": 33.33,
-            "latency_ms": 1908.84,
-            "evolution_latency_ms": 15.84,
-            "selection_latency_ms": 1341.2,
-            "total_latency_ms": 1908.84,
+            "latency_ms": 2097.28,
+            "evolution_latency_ms": 17.71,
+            "selection_latency_ms": 1525.11,
+            "total_latency_ms": 2097.28,
             "is_evaluated": true,
             "notes": ""
           },
@@ -5076,855 +3005,24 @@
             "resolution_engine": "AST/Tree-sitter Qualified"
           }
         ],
-        "timestamp": "2026-10-26T17:42:04.528140+00:00",
+        "timestamp": "2026-10-27T08:44:51.497314+00:00",
         "status": "completed",
         "notes": "Evaluation of API Scenario 1"
       }
     },
-    "created_at": "2026-10-26T17:41:59.556173+00:00",
-    "updated_at": "2026-10-26T17:42:04.868461+00:00"
+    "created_at": "2026-10-27T08:44:45.464995+00:00",
+    "updated_at": "2026-10-27T08:44:51.853830+00:00"
   },
-  "repo_testpilot_api_test_repo_slhuf0gl_80657f277a": {
-    "repo_id": "repo_testpilot_api_test_repo_slhuf0gl_80657f277a",
-    "name": "API Test Repo",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_slhuf0gl",
+  "repo_testpilot_api_autogen_uis6ehuu_5a029e47c1": {
+    "repo_id": "repo_testpilot_api_autogen_uis6ehuu_5a029e47c1",
+    "name": "testpilot_api_autogen_uis6ehuu",
+    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_autogen_uis6ehuu",
     "remote_url": null,
     "is_remote": false,
+    "is_private": false,
+    "auth_type": null,
     "is_git": true,
-    "detected_revision": "145adcf6384df53f623e5f29dbed97cc1e586dae",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "evaluated",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 1,
-    "discovered_tests": [
-      "tests/test_service.py::test_calculate_total_standard",
-      "tests/test_service.py::test_compute_tax_standard",
-      "tests/test_service.py::test_unrelated_feature"
-    ],
-    "total_tests_count": 3,
-    "test_framework": "pytest",
-    "baseline_test_status": "passed",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [],
-    "generated_tests_count": 0,
-    "validated_tests_count": 0,
-    "mutation_sensitive_tests_count": 0,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_test_repo_slhuf0gl_80657f277a_case_1",
-        "name": "API Scenario 1",
-        "description": "",
-        "source_type": "manual_mapping",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_test_repo_slhuf0gl_80657f277a_case_1",
-          "expected_changed_symbols": [
-            "compute_tax"
-          ],
-          "expected_impacted_symbols": [],
-          "expected_test_callers": [
-            "test_compute_tax_standard"
-          ],
-          "provenance": "Verified in test_15_and_16",
-          "notes": "",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {},
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 3,
-        "created_at": "2026-10-26T17:45:14.858211+00:00"
-      }
-    ],
-    "validated_benchmark_cases_count": 1,
-    "last_analyzed_at": "2026-10-26T17:45:11.773033+00:00",
-    "last_evaluated_at": "2026-10-26T17:45:16.890562+00:00",
-    "latest_evaluation_runs": {
-      "repo_testpilot_api_test_repo_slhuf0gl_80657f277a_case_1": {
-        "run_id": "custom_run_repo_testpilot_api_test_repo_slhuf0gl_80657f277a_case_1_1793036716",
-        "case_id": "repo_testpilot_api_test_repo_slhuf0gl_80657f277a_case_1",
-        "repository": "API Test Repo",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "testpilot_version": "145adcf6384df53f623e5f29dbed97cc1e586dae",
-        "python_version": "3.11.5",
-        "model": null,
-        "temperature": null,
-        "prompt_version": null,
-        "rag_status": "active",
-        "total_tests": 3,
-        "ground_truth_count": 1,
-        "baseline_results": {
-          "full_regression": {
-            "baseline_type": "full_regression",
-            "name": "Full Regression",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard",
-              "tests/test_service.py::test_unrelated_feature"
-            ],
-            "selected_count": 3,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Standard CI approach: executes 100% of tests. Zero reduction."
-          },
-          "naive_name_matching": {
-            "baseline_type": "naive_name_matching",
-            "name": "Naive Name Matching",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1.09,
-            "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
-          },
-          "testpilot": {
-            "baseline_type": "testpilot",
-            "name": "TestPilot (Qualified Identity)",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 16.16,
-            "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
-          },
-          "testpilot_rag": {
-            "baseline_type": "testpilot_rag",
-            "name": "TestPilot + Repository RAG",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1388.33,
-            "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
-          },
-          "testpilot_sourcegraph": {
-            "baseline_type": "testpilot_sourcegraph",
-            "name": "TestPilot + Sourcegraph",
-            "selected_tests": [],
-            "selected_count": 0,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "metrics": {
-          "full_regression": {
-            "tp": 1,
-            "fp": 2,
-            "fn": 0,
-            "precision": 0.3333,
-            "recall": 1.0,
-            "f1": 0.5,
-            "test_reduction_pct": 0.0,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "naive_name_matching": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 1.09,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 1.09,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 583.97,
-            "evolution_latency_ms": 16.16,
-            "selection_latency_ms": 16.27,
-            "total_latency_ms": 583.97,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_rag": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 1972.45,
-            "evolution_latency_ms": 16.16,
-            "selection_latency_ms": 1404.76,
-            "total_latency_ms": 1972.45,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_sourcegraph": {
-            "tp": 0,
-            "fp": 0,
-            "fn": 0,
-            "precision": null,
-            "recall": null,
-            "f1": null,
-            "test_reduction_pct": null,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": false,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "evidence_records": [
-          {
-            "test_name": "test_calculate_total_standard",
-            "changed_symbol": "calculate_total",
-            "qualified_symbol": "calculate_total",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'calculate_total' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          },
-          {
-            "test_name": "test_compute_tax_standard",
-            "changed_symbol": "compute_tax",
-            "qualified_symbol": "compute_tax",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'compute_tax' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          }
-        ],
-        "timestamp": "2026-10-26T17:45:16.890562+00:00",
-        "status": "completed",
-        "notes": "Evaluation of API Scenario 1"
-      }
-    },
-    "created_at": "2026-10-26T17:45:11.768029+00:00",
-    "updated_at": "2026-10-26T17:45:17.241269+00:00"
-  },
-  "repo_testpilot_api_autogen_m6kjen0j_3012108906": {
-    "repo_id": "repo_testpilot_api_autogen_m6kjen0j_3012108906",
-    "name": "testpilot_api_autogen_m6kjen0j",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_autogen_m6kjen0j",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "a86ee0d77a0cf8108b5edc234f70edf7005afe5c",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "ready_for_evaluation",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 0,
-    "discovered_tests": [
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception",
-      "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract"
-    ],
-    "total_tests_count": 9,
-    "test_framework": "pytest",
-    "baseline_test_status": "no_tests",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_nominal_contract",
-        "intended_behavior": "Verify add_values executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: add_values(a, b)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T19:08:43Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_boundary_conditions",
-        "intended_behavior": "Verify add_values handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: a, b",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T19:08:43Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception",
-        "target_symbol": "mathlib.calc.add_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_add_values_invalid_type_exception",
-        "intended_behavior": "Verify add_values enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on add_values",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T19:08:43Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_nominal_contract",
-        "intended_behavior": "Verify multiply_values executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: multiply_values(x, y)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T19:08:43Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_boundary_conditions",
-        "intended_behavior": "Verify multiply_values handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: x, y",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T19:08:43Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception",
-        "target_symbol": "mathlib.calc.multiply_values",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_multiply_values_invalid_type_exception",
-        "intended_behavior": "Verify multiply_values enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on multiply_values",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T19:08:43Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_nominal_contract",
-        "intended_behavior": "Verify divide_positive executes on standard inputs and returns valid typed response",
-        "generation_method": "ast_nominal_contract",
-        "source_evidence": "Function: divide_positive(val, divisor)",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T19:08:43Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_boundary_conditions",
-        "intended_behavior": "Verify divide_positive handles zero/empty boundary conditions gracefully",
-        "generation_method": "ast_boundary_analysis",
-        "source_evidence": "Boundary parameters: val, divisor",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T19:08:43Z"
-      },
-      {
-        "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception",
-        "target_symbol": "mathlib.calc.divide_positive",
-        "target_file": "mathlib/calc.py",
-        "test_file": "tests/generated/test_autogen_mathlib_calc.py",
-        "test_name": "test_divide_positive_invalid_type_exception",
-        "intended_behavior": "Verify divide_positive enforces input type constraints or handles invalid types",
-        "generation_method": "ast_exception_contract",
-        "source_evidence": "Type constraints on divide_positive",
-        "syntax_valid": true,
-        "executes_successfully": true,
-        "is_trivial": false,
-        "mutation_sensitive": true,
-        "rejection_reason": null,
-        "created_at": "2026-10-26T19:08:43Z"
-      }
-    ],
-    "generated_tests_count": 9,
-    "validated_tests_count": 9,
-    "mutation_sensitive_tests_count": 9,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_autogen_m6kjen0j_3012108906_case_1",
-        "name": "Add Values Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.add_values in mathlib/calc.py",
-        "source_type": "mutation_analysis",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_m6kjen0j_3012108906_case_1",
-          "expected_changed_symbols": [
-            "add_values"
-          ],
-          "expected_impacted_symbols": [
-            "add_values"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception"
-          ],
-          "provenance": "AST behavioral contract validated via mutation testing on mathlib/calc.py:add_values",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.add_values",
-          "mutation_sensitive": true,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T19:09:21Z"
-      },
-      {
-        "case_id": "repo_testpilot_api_autogen_m6kjen0j_3012108906_case_2",
-        "name": "Multiply Values Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.multiply_values in mathlib/calc.py",
-        "source_type": "mutation_analysis",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_m6kjen0j_3012108906_case_2",
-          "expected_changed_symbols": [
-            "multiply_values"
-          ],
-          "expected_impacted_symbols": [
-            "multiply_values"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception"
-          ],
-          "provenance": "AST behavioral contract validated via mutation testing on mathlib/calc.py:multiply_values",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.multiply_values",
-          "mutation_sensitive": true,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T19:09:21Z"
-      },
-      {
-        "case_id": "repo_testpilot_api_autogen_m6kjen0j_3012108906_case_3",
-        "name": "Divide Positive Regression Scenario",
-        "description": "Behavioral regression test scenario for mathlib.calc.divide_positive in mathlib/calc.py",
-        "source_type": "mutation_analysis",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": null,
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_m6kjen0j_3012108906_case_3",
-          "expected_changed_symbols": [
-            "divide_positive"
-          ],
-          "expected_impacted_symbols": [
-            "divide_positive"
-          ],
-          "expected_test_callers": [
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
-            "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception"
-          ],
-          "provenance": "AST behavioral contract validated via mutation testing on mathlib/calc.py:divide_positive",
-          "notes": "Generated regression benchmark case covering 3 verified tests.",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {
-          "target_file": "mathlib/calc.py",
-          "target_symbol": "mathlib.calc.divide_positive",
-          "mutation_sensitive": true,
-          "tested_callers_count": 3
-        },
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 9,
-        "created_at": "2026-10-26T19:09:21Z"
-      }
-    ],
-    "validated_benchmark_cases_count": 3,
-    "last_analyzed_at": "2026-10-26T19:08:43.618447+00:00",
-    "last_evaluated_at": null,
-    "latest_evaluation_runs": {},
-    "created_at": "2026-10-26T19:08:43.613444+00:00",
-    "updated_at": "2026-10-26T20:04:26.698491+00:00"
-  },
-  "repo_testpilot_api_test_repo_1gs29gsw_6cac4239b4": {
-    "repo_id": "repo_testpilot_api_test_repo_1gs29gsw_6cac4239b4",
-    "name": "API Test Repo",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_1gs29gsw",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "5e57aa65dba4fdb6b3d6cc509e5d915c2fa58a8b",
-    "current_branch": "master",
-    "is_active": false,
-    "status": "evaluated",
-    "status_message": "Repository removed from active benchmark suite (archived).",
-    "languages": [
-      "Python"
-    ],
-    "source_files_count": 2,
-    "test_files_count": 1,
-    "discovered_tests": [
-      "tests/test_service.py::test_calculate_total_standard",
-      "tests/test_service.py::test_compute_tax_standard",
-      "tests/test_service.py::test_unrelated_feature"
-    ],
-    "total_tests_count": 3,
-    "test_framework": "pytest",
-    "baseline_test_status": "passed",
-    "baseline_test_error": null,
-    "supported_language": true,
-    "unsupported_reason": null,
-    "generated_tests": [],
-    "generated_tests_count": 0,
-    "validated_tests_count": 0,
-    "mutation_sensitive_tests_count": 0,
-    "cases_awaiting_review_count": 0,
-    "benchmark_cases": [
-      {
-        "case_id": "repo_testpilot_api_test_repo_1gs29gsw_6cac4239b4_case_1",
-        "name": "API Scenario 1",
-        "description": "",
-        "source_type": "manual_mapping",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "commit_sha": "5e57aa65dba4fdb6b3d6cc509e5d915c2fa58a8b",
-        "ground_truth": {
-          "case_id": "repo_testpilot_api_test_repo_1gs29gsw_6cac4239b4_case_1",
-          "expected_changed_symbols": [
-            "compute_tax"
-          ],
-          "expected_impacted_symbols": [],
-          "expected_test_callers": [
-            "test_compute_tax_standard"
-          ],
-          "provenance": "Verified in test_15_and_16",
-          "notes": "",
-          "is_verified": true
-        },
-        "validation_level": "contract_mutation_verified",
-        "review_status": "validated",
-        "reviewer": null,
-        "review_notes": null,
-        "reviewed_at": null,
-        "validation_evidence": {},
-        "mutant_kill_rate": 1.0,
-        "fault_detection_rate": 1.0,
-        "limitations_notes": null,
-        "total_tests_suite": 3,
-        "created_at": "2026-10-26T19:11:12.056341+00:00"
-      }
-    ],
-    "validated_benchmark_cases_count": 1,
-    "last_analyzed_at": "2026-10-26T19:11:08.326589+00:00",
-    "last_evaluated_at": "2026-10-26T19:11:14.562068+00:00",
-    "latest_evaluation_runs": {
-      "repo_testpilot_api_test_repo_1gs29gsw_6cac4239b4_case_1": {
-        "run_id": "custom_run_repo_testpilot_api_test_repo_1gs29gsw_6cac4239b4_case_1_1793041874",
-        "case_id": "repo_testpilot_api_test_repo_1gs29gsw_6cac4239b4_case_1",
-        "repository": "API Test Repo",
-        "base_commit": "HEAD~1",
-        "target_commit": "HEAD",
-        "testpilot_version": "5e57aa65dba4fdb6b3d6cc509e5d915c2fa58a8b",
-        "python_version": "3.11.5",
-        "model": null,
-        "temperature": null,
-        "prompt_version": null,
-        "rag_status": "active",
-        "total_tests": 3,
-        "ground_truth_count": 1,
-        "baseline_results": {
-          "full_regression": {
-            "baseline_type": "full_regression",
-            "name": "Full Regression",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard",
-              "tests/test_service.py::test_unrelated_feature"
-            ],
-            "selected_count": 3,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Standard CI approach: executes 100% of tests. Zero reduction."
-          },
-          "naive_name_matching": {
-            "baseline_type": "naive_name_matching",
-            "name": "Naive Name Matching",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1.62,
-            "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
-          },
-          "testpilot": {
-            "baseline_type": "testpilot",
-            "name": "TestPilot (Qualified Identity)",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 24.19,
-            "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
-          },
-          "testpilot_rag": {
-            "baseline_type": "testpilot_rag",
-            "name": "TestPilot + Repository RAG",
-            "selected_tests": [
-              "tests/test_service.py::test_calculate_total_standard",
-              "tests/test_service.py::test_compute_tax_standard"
-            ],
-            "selected_count": 2,
-            "total_tests": 3,
-            "latency_ms": 1682.67,
-            "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
-          },
-          "testpilot_sourcegraph": {
-            "baseline_type": "testpilot_sourcegraph",
-            "name": "TestPilot + Sourcegraph",
-            "selected_tests": [],
-            "selected_count": 0,
-            "total_tests": 3,
-            "latency_ms": 0.0,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "metrics": {
-          "full_regression": {
-            "tp": 1,
-            "fp": 2,
-            "fn": 0,
-            "precision": 0.3333,
-            "recall": 1.0,
-            "f1": 0.5,
-            "test_reduction_pct": 0.0,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "naive_name_matching": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 1.62,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 1.62,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 713.95,
-            "evolution_latency_ms": 24.19,
-            "selection_latency_ms": 24.32,
-            "total_latency_ms": 713.95,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_rag": {
-            "tp": 1,
-            "fp": 1,
-            "fn": 0,
-            "precision": 0.5,
-            "recall": 1.0,
-            "f1": 0.6667,
-            "test_reduction_pct": 33.33,
-            "latency_ms": 2396.79,
-            "evolution_latency_ms": 24.19,
-            "selection_latency_ms": 1707.16,
-            "total_latency_ms": 2396.79,
-            "is_evaluated": true,
-            "notes": ""
-          },
-          "testpilot_sourcegraph": {
-            "tp": 0,
-            "fp": 0,
-            "fn": 0,
-            "precision": null,
-            "recall": null,
-            "f1": null,
-            "test_reduction_pct": null,
-            "latency_ms": 0.0,
-            "evolution_latency_ms": 0.0,
-            "selection_latency_ms": 0.0,
-            "total_latency_ms": 0.0,
-            "is_evaluated": false,
-            "notes": "Sourcegraph quantitative evaluation could not be performed because Sourcegraph was unavailable (port 7080 unreachable, Docker offline). Local AST fallback was NOT substituted."
-          }
-        },
-        "evidence_records": [
-          {
-            "test_name": "test_calculate_total_standard",
-            "changed_symbol": "calculate_total",
-            "qualified_symbol": "calculate_total",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'calculate_total' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          },
-          {
-            "test_name": "test_compute_tax_standard",
-            "changed_symbol": "compute_tax",
-            "qualified_symbol": "compute_tax",
-            "caller_relationship": "CRITICAL",
-            "ast_evidence": "Direct test of changed symbol 'compute_tax' in service.py",
-            "sourcegraph_evidence": null,
-            "match_quality": "ast_qualified",
-            "confidence": 0.95,
-            "uncertainty": "low",
-            "resolution_engine": "AST/Tree-sitter Qualified"
-          }
-        ],
-        "timestamp": "2026-10-26T19:11:14.562068+00:00",
-        "status": "completed",
-        "notes": "Evaluation of API Scenario 1"
-      }
-    },
-    "created_at": "2026-10-26T19:11:08.320589+00:00",
-    "updated_at": "2026-10-26T19:11:15.111959+00:00"
-  },
-  "repo_testpilot_api_autogen_n_h4eeh7_aa2d5d410d": {
-    "repo_id": "repo_testpilot_api_autogen_n_h4eeh7_aa2d5d410d",
-    "name": "testpilot_api_autogen_n_h4eeh7",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_autogen_n_h4eeh7",
-    "remote_url": null,
-    "is_remote": false,
-    "is_git": true,
-    "detected_revision": "112efd770dfd2db41a0ece25d8deed48ec158485",
+    "detected_revision": "c536a22d03eea6aac2c306a8e9af8107c54c2f7d",
     "current_branch": "master",
     "is_active": true,
     "status": "ready_for_evaluation",
@@ -5951,6 +3049,142 @@
     "baseline_test_error": null,
     "supported_language": true,
     "unsupported_reason": null,
+    "is_monorepo": false,
+    "workspace_type": "single_package",
+    "manifests": [],
+    "stage_capabilities": {
+      "onboarding": "fully_supported",
+      "analysis": "fully_supported",
+      "test_discovery": "unsupported",
+      "test_generation": "fully_supported",
+      "ground_truth_validation": "fully_supported",
+      "docker_execution": "fully_supported",
+      "evaluation": "unsupported"
+    },
+    "compatibility_report": {
+      "repo_name": "testpilot_api_autogen_uis6ehuu",
+      "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_autogen_uis6ehuu",
+      "ecosystem": {
+        "primary_language": "Python",
+        "detected_languages": [
+          "Python"
+        ],
+        "manifests": [],
+        "workspace": {
+          "is_monorepo": false,
+          "workspace_type": "single_package",
+          "root_manifest": null,
+          "packages": []
+        },
+        "detected_test_frameworks": [],
+        "external_services": [
+          {
+            "service_name": "docker_daemon",
+            "detected_via": "TestPilot container sandbox isolation requirement",
+            "is_available": true,
+            "is_critical": true,
+            "remediation_notes": "Docker daemon is active and responsive."
+          }
+        ],
+        "env_files": [],
+        "ci_configs": []
+      },
+      "stage_capabilities": {
+        "onboarding": {
+          "stage": "onboarding",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Repository files and git structure are verified and accessible.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {
+            "is_git": true,
+            "primary_language": "Python"
+          },
+          "recommendations": []
+        },
+        "analysis": {
+          "stage": "analysis",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Full AST, symbol call graph, cyclomatic branch, and boundary analysis supported for Python.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "test_discovery": {
+          "stage": "test_discovery",
+          "support_level": "unsupported",
+          "available": false,
+          "reason": "No recognized test framework (pytest, unittest, jest, vitest, mocha) or test files detected.",
+          "missing_adapter": "Test framework discovery adapter",
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": [
+            "Add standard test files (e.g. test_*.py, *.test.ts) or configure a recognized test framework."
+          ]
+        },
+        "test_generation": {
+          "stage": "test_generation",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Autonomous test synthesis and AST boundary test generation fully operational for Python pytest.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "ground_truth_validation": {
+          "stage": "ground_truth_validation",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Historical bug-fix mining, parent commit checkout, and test overlay validation fully supported.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "docker_execution": {
+          "stage": "docker_execution",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Disposable Docker container sandbox with read-only repository mount active for Python pytest.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "evaluation": {
+          "stage": "evaluation",
+          "support_level": "unsupported",
+          "available": false,
+          "reason": "No tests discovered; regression selection evaluation cannot be executed without test suite.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": [
+            "Ensure test discovery finds valid test targets before triggering evaluation."
+          ]
+        }
+      },
+      "overall_support_level": "partially_supported",
+      "can_run_pipeline": false,
+      "summary": "Repository 'testpilot_api_autogen_uis6ehuu' is partially supported (Python). 2 pipeline stages have missing adapters or requirements: test_discovery, evaluation.",
+      "unsupported_stages": [
+        "test_discovery",
+        "evaluation"
+      ],
+      "partially_supported_stages": [],
+      "blocking_reasons": [
+        "[TEST_DISCOVERY] No recognized test framework (pytest, unittest, jest, vitest, mocha) or test files detected.",
+        "[EVALUATION] No tests discovered; regression selection evaluation cannot be executed without test suite."
+      ],
+      "recommended_actions": [
+        "Add standard test files (e.g. test_*.py, *.test.ts) or configure a recognized test framework.",
+        "Ensure test discovery finds valid test targets before triggering evaluation."
+      ]
+    },
     "generated_tests": [
       {
         "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_nominal_contract",
@@ -5966,7 +3200,7 @@
         "is_trivial": false,
         "mutation_sensitive": true,
         "rejection_reason": null,
-        "created_at": "2026-10-26T20:42:11Z"
+        "created_at": "2026-10-27T09:34:27Z"
       },
       {
         "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_boundary_conditions",
@@ -5982,7 +3216,7 @@
         "is_trivial": false,
         "mutation_sensitive": true,
         "rejection_reason": null,
-        "created_at": "2026-10-26T20:42:11Z"
+        "created_at": "2026-10-27T09:34:27Z"
       },
       {
         "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_add_values_invalid_type_exception",
@@ -5998,7 +3232,7 @@
         "is_trivial": false,
         "mutation_sensitive": true,
         "rejection_reason": null,
-        "created_at": "2026-10-26T20:42:11Z"
+        "created_at": "2026-10-27T09:34:27Z"
       },
       {
         "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_nominal_contract",
@@ -6014,7 +3248,7 @@
         "is_trivial": false,
         "mutation_sensitive": true,
         "rejection_reason": null,
-        "created_at": "2026-10-26T20:42:11Z"
+        "created_at": "2026-10-27T09:34:27Z"
       },
       {
         "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_boundary_conditions",
@@ -6030,7 +3264,7 @@
         "is_trivial": false,
         "mutation_sensitive": true,
         "rejection_reason": null,
-        "created_at": "2026-10-26T20:42:11Z"
+        "created_at": "2026-10-27T09:34:27Z"
       },
       {
         "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_multiply_values_invalid_type_exception",
@@ -6046,7 +3280,7 @@
         "is_trivial": false,
         "mutation_sensitive": true,
         "rejection_reason": null,
-        "created_at": "2026-10-26T20:42:11Z"
+        "created_at": "2026-10-27T09:34:27Z"
       },
       {
         "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_nominal_contract",
@@ -6062,7 +3296,7 @@
         "is_trivial": false,
         "mutation_sensitive": true,
         "rejection_reason": null,
-        "created_at": "2026-10-26T20:42:11Z"
+        "created_at": "2026-10-27T09:34:27Z"
       },
       {
         "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_boundary_conditions",
@@ -6078,7 +3312,7 @@
         "is_trivial": false,
         "mutation_sensitive": true,
         "rejection_reason": null,
-        "created_at": "2026-10-26T20:42:11Z"
+        "created_at": "2026-10-27T09:34:27Z"
       },
       {
         "test_id": "tests/generated/test_autogen_mathlib_calc.py::test_divide_positive_invalid_type_exception",
@@ -6094,7 +3328,7 @@
         "is_trivial": false,
         "mutation_sensitive": true,
         "rejection_reason": null,
-        "created_at": "2026-10-26T20:42:11Z"
+        "created_at": "2026-10-27T09:34:27Z"
       }
     ],
     "generated_tests_count": 9,
@@ -6103,7 +3337,7 @@
     "cases_awaiting_review_count": 0,
     "benchmark_cases": [
       {
-        "case_id": "repo_testpilot_api_autogen_n_h4eeh7_aa2d5d410d_case_1",
+        "case_id": "repo_testpilot_api_autogen_uis6ehuu_5a029e47c1_case_1",
         "name": "Add Values Regression Scenario",
         "description": "Behavioral regression test scenario for mathlib.calc.add_values in mathlib/calc.py",
         "source_type": "mutation_analysis",
@@ -6111,7 +3345,7 @@
         "target_commit": "HEAD",
         "commit_sha": null,
         "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_n_h4eeh7_aa2d5d410d_case_1",
+          "case_id": "repo_testpilot_api_autogen_uis6ehuu_5a029e47c1_case_1",
           "expected_changed_symbols": [
             "add_values"
           ],
@@ -6142,10 +3376,10 @@
         "fault_detection_rate": 1.0,
         "limitations_notes": null,
         "total_tests_suite": 9,
-        "created_at": "2026-10-26T20:42:48Z"
+        "created_at": "2026-10-27T09:35:11Z"
       },
       {
-        "case_id": "repo_testpilot_api_autogen_n_h4eeh7_aa2d5d410d_case_2",
+        "case_id": "repo_testpilot_api_autogen_uis6ehuu_5a029e47c1_case_2",
         "name": "Multiply Values Regression Scenario",
         "description": "Behavioral regression test scenario for mathlib.calc.multiply_values in mathlib/calc.py",
         "source_type": "mutation_analysis",
@@ -6153,7 +3387,7 @@
         "target_commit": "HEAD",
         "commit_sha": null,
         "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_n_h4eeh7_aa2d5d410d_case_2",
+          "case_id": "repo_testpilot_api_autogen_uis6ehuu_5a029e47c1_case_2",
           "expected_changed_symbols": [
             "multiply_values"
           ],
@@ -6184,10 +3418,10 @@
         "fault_detection_rate": 1.0,
         "limitations_notes": null,
         "total_tests_suite": 9,
-        "created_at": "2026-10-26T20:42:48Z"
+        "created_at": "2026-10-27T09:35:11Z"
       },
       {
-        "case_id": "repo_testpilot_api_autogen_n_h4eeh7_aa2d5d410d_case_3",
+        "case_id": "repo_testpilot_api_autogen_uis6ehuu_5a029e47c1_case_3",
         "name": "Divide Positive Regression Scenario",
         "description": "Behavioral regression test scenario for mathlib.calc.divide_positive in mathlib/calc.py",
         "source_type": "mutation_analysis",
@@ -6195,7 +3429,7 @@
         "target_commit": "HEAD",
         "commit_sha": null,
         "ground_truth": {
-          "case_id": "repo_testpilot_api_autogen_n_h4eeh7_aa2d5d410d_case_3",
+          "case_id": "repo_testpilot_api_autogen_uis6ehuu_5a029e47c1_case_3",
           "expected_changed_symbols": [
             "divide_positive"
           ],
@@ -6226,24 +3460,26 @@
         "fault_detection_rate": 1.0,
         "limitations_notes": null,
         "total_tests_suite": 9,
-        "created_at": "2026-10-26T20:42:48Z"
+        "created_at": "2026-10-27T09:35:11Z"
       }
     ],
     "validated_benchmark_cases_count": 3,
-    "last_analyzed_at": "2026-10-26T20:42:10.767955+00:00",
+    "last_analyzed_at": "2026-10-27T09:34:26.390000+00:00",
     "last_evaluated_at": null,
     "latest_evaluation_runs": {},
-    "created_at": "2026-10-26T20:42:10.765956+00:00",
-    "updated_at": "2026-10-26T20:42:48.848407+00:00"
+    "created_at": "2026-10-27T09:34:26.388366+00:00",
+    "updated_at": "2026-10-27T09:35:11.840752+00:00"
   },
-  "repo_testpilot_api_test_repo_n2mjf3ug_fbe85a6644": {
-    "repo_id": "repo_testpilot_api_test_repo_n2mjf3ug_fbe85a6644",
+  "repo_testpilot_api_test_repo_wu1p5af2_32c47bc84b": {
+    "repo_id": "repo_testpilot_api_test_repo_wu1p5af2_32c47bc84b",
     "name": "API Test Repo",
-    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_n2mjf3ug",
+    "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_wu1p5af2",
     "remote_url": null,
     "is_remote": false,
+    "is_private": false,
+    "auth_type": null,
     "is_git": true,
-    "detected_revision": "73f479652661c962bdcdba5b5d408a1b2ebe9ec0",
+    "detected_revision": "df9d1105596bd215c5ece84cc397992d379f5d1d",
     "current_branch": "master",
     "is_active": false,
     "status": "evaluated",
@@ -6264,6 +3500,131 @@
     "baseline_test_error": null,
     "supported_language": true,
     "unsupported_reason": null,
+    "is_monorepo": false,
+    "workspace_type": "single_package",
+    "manifests": [],
+    "stage_capabilities": {
+      "onboarding": "fully_supported",
+      "analysis": "fully_supported",
+      "test_discovery": "fully_supported",
+      "test_generation": "fully_supported",
+      "ground_truth_validation": "fully_supported",
+      "docker_execution": "fully_supported",
+      "evaluation": "fully_supported"
+    },
+    "compatibility_report": {
+      "repo_name": "testpilot_api_test_repo_wu1p5af2",
+      "canonical_path": "C:\\Users\\shres\\AppData\\Local\\Temp\\testpilot_api_test_repo_wu1p5af2",
+      "ecosystem": {
+        "primary_language": "Python",
+        "detected_languages": [
+          "Python"
+        ],
+        "manifests": [],
+        "workspace": {
+          "is_monorepo": false,
+          "workspace_type": "single_package",
+          "root_manifest": null,
+          "packages": []
+        },
+        "detected_test_frameworks": [
+          "pytest"
+        ],
+        "external_services": [
+          {
+            "service_name": "docker_daemon",
+            "detected_via": "TestPilot container sandbox isolation requirement",
+            "is_available": true,
+            "is_critical": true,
+            "remediation_notes": "Docker daemon is active and responsive."
+          }
+        ],
+        "env_files": [],
+        "ci_configs": []
+      },
+      "stage_capabilities": {
+        "onboarding": {
+          "stage": "onboarding",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Repository files and git structure are verified and accessible.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {
+            "is_git": true,
+            "primary_language": "Python"
+          },
+          "recommendations": []
+        },
+        "analysis": {
+          "stage": "analysis",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Full AST, symbol call graph, cyclomatic branch, and boundary analysis supported for Python.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "test_discovery": {
+          "stage": "test_discovery",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Native test discovery supported for pytest.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "test_generation": {
+          "stage": "test_generation",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Autonomous test synthesis and AST boundary test generation fully operational for Python pytest.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "ground_truth_validation": {
+          "stage": "ground_truth_validation",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Historical bug-fix mining, parent commit checkout, and test overlay validation fully supported.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "docker_execution": {
+          "stage": "docker_execution",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Disposable Docker container sandbox with read-only repository mount active for Python pytest.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        },
+        "evaluation": {
+          "stage": "evaluation",
+          "support_level": "fully_supported",
+          "available": true,
+          "reason": "Full Regression, Naive, and TestPilot selection evaluation baselines fully supported.",
+          "missing_adapter": null,
+          "missing_services": [],
+          "diagnostics": {},
+          "recommendations": []
+        }
+      },
+      "overall_support_level": "fully_supported",
+      "can_run_pipeline": true,
+      "summary": "Repository 'testpilot_api_test_repo_wu1p5af2' is fully supported across all 7 pipeline stages (Python ecosystem).",
+      "unsupported_stages": [],
+      "partially_supported_stages": [],
+      "blocking_reasons": [],
+      "recommended_actions": []
+    },
     "generated_tests": [],
     "generated_tests_count": 0,
     "validated_tests_count": 0,
@@ -6271,15 +3632,15 @@
     "cases_awaiting_review_count": 0,
     "benchmark_cases": [
       {
-        "case_id": "repo_testpilot_api_test_repo_n2mjf3ug_fbe85a6644_case_1",
+        "case_id": "repo_testpilot_api_test_repo_wu1p5af2_32c47bc84b_case_1",
         "name": "API Scenario 1",
         "description": "",
         "source_type": "manual_mapping",
         "base_commit": "HEAD~1",
         "target_commit": "HEAD",
-        "commit_sha": "73f479652661c962bdcdba5b5d408a1b2ebe9ec0",
+        "commit_sha": "df9d1105596bd215c5ece84cc397992d379f5d1d",
         "ground_truth": {
-          "case_id": "repo_testpilot_api_test_repo_n2mjf3ug_fbe85a6644_case_1",
+          "case_id": "repo_testpilot_api_test_repo_wu1p5af2_32c47bc84b_case_1",
           "expected_changed_symbols": [
             "compute_tax"
           ],
@@ -6301,20 +3662,20 @@
         "fault_detection_rate": 1.0,
         "limitations_notes": null,
         "total_tests_suite": 3,
-        "created_at": "2026-10-26T20:44:07.676302+00:00"
+        "created_at": "2026-10-27T10:00:37.872977+00:00"
       }
     ],
     "validated_benchmark_cases_count": 1,
-    "last_analyzed_at": "2026-10-26T20:44:04.090970+00:00",
-    "last_evaluated_at": "2026-10-26T20:44:10.176268+00:00",
+    "last_analyzed_at": "2026-10-27T10:00:33.408279+00:00",
+    "last_evaluated_at": "2026-10-27T10:00:51.306826+00:00",
     "latest_evaluation_runs": {
-      "repo_testpilot_api_test_repo_n2mjf3ug_fbe85a6644_case_1": {
-        "run_id": "custom_run_repo_testpilot_api_test_repo_n2mjf3ug_fbe85a6644_case_1_1793047450",
-        "case_id": "repo_testpilot_api_test_repo_n2mjf3ug_fbe85a6644_case_1",
+      "repo_testpilot_api_test_repo_wu1p5af2_32c47bc84b_case_1": {
+        "run_id": "custom_run_repo_testpilot_api_test_repo_wu1p5af2_32c47bc84b_case_1_1793095251",
+        "case_id": "repo_testpilot_api_test_repo_wu1p5af2_32c47bc84b_case_1",
         "repository": "API Test Repo",
         "base_commit": "HEAD~1",
         "target_commit": "HEAD",
-        "testpilot_version": "73f479652661c962bdcdba5b5d408a1b2ebe9ec0",
+        "testpilot_version": "df9d1105596bd215c5ece84cc397992d379f5d1d",
         "python_version": "3.11.5",
         "model": null,
         "temperature": null,
@@ -6345,7 +3706,7 @@
             ],
             "selected_count": 2,
             "total_tests": 3,
-            "latency_ms": 1.69,
+            "latency_ms": 1.18,
             "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
           },
           "testpilot": {
@@ -6357,7 +3718,7 @@
             ],
             "selected_count": 2,
             "total_tests": 3,
-            "latency_ms": 22.26,
+            "latency_ms": 19.36,
             "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
           },
           "testpilot_rag": {
@@ -6369,7 +3730,7 @@
             ],
             "selected_count": 2,
             "total_tests": 3,
-            "latency_ms": 1714.57,
+            "latency_ms": 12548.7,
             "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
           },
           "testpilot_sourcegraph": {
@@ -6406,10 +3767,10 @@
             "recall": 1.0,
             "f1": 0.6667,
             "test_reduction_pct": 33.33,
-            "latency_ms": 1.69,
+            "latency_ms": 1.18,
             "evolution_latency_ms": 0.0,
             "selection_latency_ms": 0.0,
-            "total_latency_ms": 1.69,
+            "total_latency_ms": 1.18,
             "is_evaluated": true,
             "notes": ""
           },
@@ -6421,10 +3782,10 @@
             "recall": 1.0,
             "f1": 0.6667,
             "test_reduction_pct": 33.33,
-            "latency_ms": 706.99,
-            "evolution_latency_ms": 22.26,
-            "selection_latency_ms": 22.38,
-            "total_latency_ms": 706.99,
+            "latency_ms": 813.63,
+            "evolution_latency_ms": 19.36,
+            "selection_latency_ms": 19.5,
+            "total_latency_ms": 813.63,
             "is_evaluated": true,
             "notes": ""
           },
@@ -6436,10 +3797,10 @@
             "recall": 1.0,
             "f1": 0.6667,
             "test_reduction_pct": 33.33,
-            "latency_ms": 2421.71,
-            "evolution_latency_ms": 22.26,
-            "selection_latency_ms": 1737.1,
-            "total_latency_ms": 2421.71,
+            "latency_ms": 13362.57,
+            "evolution_latency_ms": 19.36,
+            "selection_latency_ms": 12568.44,
+            "total_latency_ms": 13362.57,
             "is_evaluated": true,
             "notes": ""
           },
@@ -6485,12 +3846,12 @@
             "resolution_engine": "AST/Tree-sitter Qualified"
           }
         ],
-        "timestamp": "2026-10-26T20:44:10.176268+00:00",
+        "timestamp": "2026-10-27T10:00:51.306826+00:00",
         "status": "completed",
         "notes": "Evaluation of API Scenario 1"
       }
     },
-    "created_at": "2026-10-26T20:44:04.087366+00:00",
-    "updated_at": "2026-10-26T20:44:10.568206+00:00"
+    "created_at": "2026-10-27T10:00:33.404755+00:00",
+    "updated_at": "2026-10-27T10:00:51.656266+00:00"
   }
 }
