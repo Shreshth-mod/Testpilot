@@ -12,6 +12,7 @@ Provides framework-independent, conservative event registration discovery.
 """
 
 import ast
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
@@ -76,6 +77,7 @@ class EventRegistrationDetector:
         self.repo_root = Path(repo_root).resolve()
         self._cached_py_files: Optional[list[Path]] = None
         self._custom_trigger_map: dict[str, list[str]] = {}
+        self._handler_index: Optional[dict[str, list[EventRegistration]]] = None
 
     def register_event_mapping(self, event_name: str, trigger_hints: list[str]) -> None:
         """Extensibility API allowing external plugins or frameworks to register custom event trigger hints."""
@@ -96,12 +98,15 @@ class EventRegistrationDetector:
             files: list[Path] = []
             ignored = {
                 ".git", ".venv", "venv", "env", "node_modules",
-                "build", "dist", ".tox", ".eggs", "__pycache__", "site-packages"
+                "build", "dist", ".tox", ".eggs", "__pycache__", "site-packages",
+                ".chroma_db", ".pytest_cache", "htmlcov"
             }
             try:
-                for p in self.repo_root.rglob("*.py"):
-                    if not any(part in ignored for part in p.parts):
-                        files.append(p)
+                for dirpath, dirnames, filenames in os.walk(self.repo_root):
+                    dirnames[:] = [d for d in dirnames if not d.startswith(".") and d not in ignored]
+                    for f in filenames:
+                        if f.endswith(".py"):
+                            files.append(Path(dirpath) / f)
             except Exception:
                 pass
             self._cached_py_files = files
@@ -319,13 +324,16 @@ class EventRegistrationDetector:
     def find_registrations_for_handler(self, handler_name: str) -> list[EventRegistration]:
         """
         Searches the repository for all event/signal registrations binding handler_name.
-        Uses cached Python files list and fast string pre-filtering.
+        Indexes all registrations across the repository on first lookup for O(1) query time.
         """
-        registrations: list[EventRegistration] = []
-        for f in self._get_repo_py_files():
-            regs = self.scan_file_for_registrations(f, target_handler_name=handler_name)
-            registrations.extend(regs)
-        return registrations
+        if self._handler_index is None:
+            index: dict[str, list[EventRegistration]] = {}
+            for f in self._get_repo_py_files():
+                regs = self.scan_file_for_registrations(f)
+                for r in regs:
+                    index.setdefault(r.handler_name, []).append(r)
+            self._handler_index = index
+        return list(self._handler_index.get(handler_name, []))
 
     @staticmethod
     def _unparse_expr(node: ast.AST) -> str:

@@ -60,13 +60,16 @@ class ASTDiffParser:
 
         class FunctionVisitor(ast.NodeVisitor):
             def __init__(self):
-                self.current_class: Optional[str] = None
+                self.class_stack: list[str] = []
+
+            @property
+            def current_class(self) -> Optional[str]:
+                return ".".join(self.class_stack) if self.class_stack else None
 
             def visit_ClassDef(self, node: ast.ClassDef):
-                old_class = self.current_class
-                self.current_class = node.name
+                self.class_stack.append(node.name)
                 self.generic_visit(node)
-                self.current_class = old_class
+                self.class_stack.pop()
 
             def visit_FunctionDef(self, node: ast.FunctionDef):
                 func_def = cls._extract_function_def(node, source_lines, file_path, self.current_class)
@@ -141,6 +144,19 @@ class ASTDiffParser:
         for param in parameters:
             cls._generate_parameter_boundaries(param, boundary_candidates)
 
+        # Extract decorators
+        decorators: list[str] = []
+        for dec in getattr(node, "decorator_list", []):
+            if isinstance(dec, ast.Name):
+                decorators.append(dec.id)
+            elif isinstance(dec, ast.Attribute):
+                decorators.append(dec.attr)
+            elif isinstance(dec, ast.Call):
+                if isinstance(dec.func, ast.Name):
+                    decorators.append(dec.func.id)
+                elif isinstance(dec.func, ast.Attribute):
+                    decorators.append(dec.func.attr)
+
         return ASTFunctionDef(
             name=node.name,
             class_name=class_name,
@@ -153,6 +169,7 @@ class ASTDiffParser:
             branch_conditions=branch_conditions,
             boundary_candidates=boundary_candidates,
             raw_source=raw_source,
+            decorators=decorators,
         )
 
     @classmethod

@@ -1913,3 +1913,39 @@ def test_transitive_blast_radius_api_field_consistency():
         assert node["impact_type"] == "INDIRECT"
         assert "evidence" in node
         assert len(node["evidence"]["call_chain"]) >= 2
+
+
+def test_evolution_analyze_nonexistent_repo_path_fallback():
+    """Verify that an invalid or non-existent repo_path falls back safely without unhandled exceptions."""
+    from fastapi.testclient import TestClient
+    from testpilot.web.api import app
+
+    client = TestClient(app)
+    resp = client.post(
+        "/api/evolution/analyze",
+        json={"base_ref": "HEAD~1", "target_ref": "HEAD", "max_depth": 2, "repo_path": "/nonexistent/path/xyz_9999"},
+    )
+    # Backend falls back to current working directory '.' or returns graceful status
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "changed_symbols" in data
+
+
+def test_evolution_analyze_empty_diff_clean_terminal_state():
+    """Verify that HEAD..HEAD produces genuine zero counts without hanging."""
+    from fastapi.testclient import TestClient
+    from testpilot.web.api import app
+
+    client = TestClient(app)
+    resp = client.post(
+        "/api/evolution/analyze",
+        json={"base_ref": "HEAD", "target_ref": "HEAD", "max_depth": 2, "repo_path": "."},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data.get("changed_files", [])) == 0
+    assert len(data.get("changed_symbols", [])) == 0
+    assert len(data.get("direct_impacts", [])) == 0
+    assert len(data.get("indirect_impacts", [])) == 0
+    assert len(data.get("prioritized_tests", [])) == 0
+    assert len(data.get("semantic_impacts", [])) == 0

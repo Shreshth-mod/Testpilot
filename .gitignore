@@ -55,3 +55,7 @@ testbed/evaluation_store/clones/
 .env.*
 *.local
 
+# Scratch and temporary path artifacts
+scratch/
+C*Users*
+

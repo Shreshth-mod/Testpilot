@@ -1,0 +1,34 @@
+name: testpilot-local
+
+services:
+  testpilot-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+    image: testpilot-app:local
+    container_name: testpilot-app
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    volumes:
+      # Docker daemon socket for launching disposable runner containers
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Mount current repository workspace to persist generated artifacts and state
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+      - TESTPILOT_RUNNER_IMAGE=testpilot-runner:local
+      - TESTPILOT_HOST_DIR=${PWD}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - testpilot-net
+
+networks:
+  testpilot-net:
+    driver: bridge

@@ -96,11 +96,17 @@ class ImpactAnalysisEngine:
                     for fn in parsed_funcs:
                         changed_symbols.append({
                             "name": fn.name,
+                            "class_name": fn.class_name,
+                            "qualified_name": fn.qualified_name,
                             "file_path": active_ctx.primary_target_file,
                             "line_start": fn.line_start,
                             "line_end": fn.line_end,
                             "change_type": "MODIFIED",
                             "parameters": [p.name for p in fn.parameters],
+                            "decorators": getattr(fn, "decorators", []),
+                            "is_staticmethod": getattr(fn, "is_staticmethod", False),
+                            "is_classmethod": getattr(fn, "is_classmethod", False),
+                            "is_property": getattr(fn, "is_property", False),
                         })
                 except Exception as e:
                     logger.warning("Fallback AST parse failed: %s", e)
@@ -111,11 +117,15 @@ class ImpactAnalysisEngine:
             changed_symbols = [
                 {
                     "name": "calculate_order_totals",
+                    "class_name": "OrderService",
+                    "qualified_name": "OrderService.calculate_order_totals",
                     "file_path": "testbed/app/services/order_service.py",
                     "line_start": 35,
                     "line_end": 75,
                     "change_type": "MODIFIED",
                     "parameters": ["items", "discount_code", "shipping_country"],
+                    "decorators": ["staticmethod"],
+                    "is_staticmethod": True,
                 }
             ]
 
@@ -440,7 +450,7 @@ class ImpactAnalysisEngine:
         test_files: list[Path] = []
         for p in repo_path.glob("**/test_*.py"):
             parts = p.parts
-            if any(x in parts for x in (".venv", "venv", ".git", "__pycache__")):
+            if any(x in parts for x in (".venv", "venv", ".git", "__pycache__", "evaluation_store", "clones")):
                 continue
             test_files.append(p)
 

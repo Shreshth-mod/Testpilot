@@ -726,11 +726,11 @@ benchmark_command = benchmark_cmd
 
 
 @cli.command(name="ui")
-@click.option("--port", default=8501, help="Port to run the web UI dashboard")
-@click.option("--host", default="127.0.0.1", help="Host IP to bind the web server")
+@cli.command(name="serve")
 def ui_cmd(
     port: int = typer.Option(8501, "--port", "-p", help="Port to run the web UI dashboard"),
     host: str = typer.Option("127.0.0.1", "--host", "-h", help="Host IP to bind the web server"),
+    reload: bool = typer.Option(False, "--reload", "-r", help="Enable auto-reload for development with safe exclusions"),
 ):
     """Launch TestPilot AI Web Interface and IDE Dashboard."""
     import os
@@ -768,10 +768,29 @@ def ui_cmd(
         port = fallback_port
 
     console.print(Panel.fit(f"[bold cyan]Launching TestPilot AI Dashboard[/bold cyan]\nURL: [bold green]http://{host}:{port}[/bold green]"))
-    uvicorn.run("testpilot.web.api:app", host=host, port=port, reload=False)
+    if reload:
+        uvicorn.run(
+            "testpilot.web.api:app",
+            host=host,
+            port=port,
+            reload=True,
+            reload_dirs=["testpilot"],
+            reload_excludes=[
+                ".testpilot/*",
+                ".testpilot/**",
+                "tests/generated/*",
+                "testbed/evaluation_store/*",
+                "*.json",
+                ".git/*",
+            ],
+        )
+    else:
+        uvicorn.run("testpilot.web.api:app", host=host, port=port, reload=False)
 
 
 ui_command = ui_cmd
+serve_command = ui_cmd
+
 
 
 @cli.command(name="check-guardrails")

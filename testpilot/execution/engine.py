@@ -148,6 +148,28 @@ class IsolatedExecutionEngine:
 
         duration_ms = (time.perf_counter() - start_time) * 1000.0
 
+        # Update TargetedTest execution status and telemetry in Selection report
+        if sel_report:
+            result_map = {r.test_name: r for r in results}
+            for tgt in sel_report.targeted_generated_tests:
+                if tgt.test_name in result_map:
+                    res = result_map[tgt.test_name]
+                    if res.outcome == TestOutcome.PASSED:
+                        tgt.execution_status = "PASSED"
+                        tgt.execution_output = res.stdout
+                    elif res.outcome in (TestOutcome.FAILED, TestOutcome.ERROR):
+                        tgt.execution_status = "FAILED"
+                        tgt.execution_error = res.error_message or res.stderr
+                    elif res.outcome == TestOutcome.SKIPPED:
+                        tgt.execution_status = "SKIPPED"
+                else:
+                    tgt.execution_status = "NOT_RUN"
+
+            sel_report.tests_executed_count = len(results)
+            sel_report.tests_passed_count = passed_count
+            sel_report.tests_failed_count = failed_count + error_count
+            self.selection_engine._save_report(sel_report)
+
         # 5. Assemble Stage 3 Report
         report = IsolatedExecutionReport(
             workflow_id=wf.workflow_id,

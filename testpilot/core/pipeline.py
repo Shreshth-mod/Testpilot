@@ -282,7 +282,7 @@ class FullPipelineOrchestrator:
         analysis_id = req.analysis_id or ctx_mgr.get_active_context().analysis_id
         repo_name = req.repo_name or ctx_mgr.detect_repo_name(req.repo_path or ".")
         target_f = req.target_file or (evo_result.changed_files[0] if evo_result.changed_files else None)
-        target_s = req.target_symbol or (evo_result.changed_symbols[0].name if evo_result.changed_symbols else None)
+        target_s = req.target_symbol or (evo_result.changed_symbols[0].qualified_name if evo_result.changed_symbols else None)
 
         return FullPipelineResult(
             analysis_id=analysis_id,

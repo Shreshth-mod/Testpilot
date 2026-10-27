@@ -5,12 +5,15 @@ constructs transitive caller impact graphs, and prioritizes existing tests.
 """
 
 import ast
+import logging
 import re
 import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
+
+logger = logging.getLogger(__name__)
 
 from testpilot.ast_engine.treesitter_parser import ASTDiffParser
 from testpilot.evolution.events import EventRegistrationDetector
@@ -327,6 +330,10 @@ class RepositoryEvolutionEngine:
                                         change_type=ChangeType.DELETED,
                                         parameters=[p.name for p in f.parameters],
                                         raw_signature=f"def {f.name}({', '.join(p.name for p in f.parameters)}) -> {f.return_type or 'None'}",
+                                        decorators=getattr(f, "decorators", []),
+                                        is_staticmethod=getattr(f, "is_staticmethod", False),
+                                        is_classmethod=getattr(f, "is_classmethod", False),
+                                        is_property=getattr(f, "is_property", False),
                                     )
                                 )
                     except Exception:
@@ -352,6 +359,10 @@ class RepositoryEvolutionEngine:
                                         change_type=ChangeType.ADDED,
                                         parameters=[p.name for p in f.parameters],
                                         raw_signature=f"def {f.name}({', '.join(p.name for p in f.parameters)}) -> {f.return_type or 'None'}",
+                                        decorators=getattr(f, "decorators", []),
+                                        is_staticmethod=getattr(f, "is_staticmethod", False),
+                                        is_classmethod=getattr(f, "is_classmethod", False),
+                                        is_property=getattr(f, "is_property", False),
                                     )
                                 )
                     except Exception:
@@ -390,6 +401,10 @@ class RepositoryEvolutionEngine:
                                         previous_file_path=old_path,
                                         parameters=[p.name for p in tf.parameters],
                                         raw_signature=f"def {tf.name}({', '.join(p.name for p in tf.parameters)}) -> {tf.return_type or 'None'}",
+                                        decorators=getattr(tf, "decorators", []),
+                                        is_staticmethod=getattr(tf, "is_staticmethod", False),
+                                        is_classmethod=getattr(tf, "is_classmethod", False),
+                                        is_property=getattr(tf, "is_property", False),
                                     )
                                 )
                         else:
@@ -415,6 +430,10 @@ class RepositoryEvolutionEngine:
                                             previous_file_path=old_path,
                                             parameters=[p.name for p in tf.parameters],
                                             raw_signature=f"def {tf.name}({', '.join(p.name for p in tf.parameters)}) -> {tf.return_type or 'None'}",
+                                            decorators=getattr(tf, "decorators", []),
+                                            is_staticmethod=getattr(tf, "is_staticmethod", False),
+                                            is_classmethod=getattr(tf, "is_classmethod", False),
+                                            is_property=getattr(tf, "is_property", False),
                                         )
                                     )
 
@@ -435,6 +454,10 @@ class RepositoryEvolutionEngine:
                                         previous_file_path=old_path,
                                         parameters=[p.name for p in bf.parameters],
                                         raw_signature=f"def {bf.name}({', '.join(p.name for p in bf.parameters)}) -> {bf.return_type or 'None'}",
+                                        decorators=getattr(bf, "decorators", []),
+                                        is_staticmethod=getattr(bf, "is_staticmethod", False),
+                                        is_classmethod=getattr(bf, "is_classmethod", False),
+                                        is_property=getattr(bf, "is_property", False),
                                     )
                                 )
                     continue
@@ -542,7 +565,6 @@ class RepositoryEvolutionEngine:
                 # Also enqueue event name to discover callers/triggers of the event
                 if max_depth >= 2:
                     queue.append((reg.event_name, reg.source_file, None, 2, cs.qualified_name, cs.file_path, [cs.qualified_name, f"event:{reg.event_name}"]))
-
         while queue:
             curr_sym, curr_file, curr_class, depth, root_sym, root_file, chain = queue.pop(0)
             if depth > max_depth:

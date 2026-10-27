@@ -6,9 +6,13 @@ and provides developer override and review workflows.
 
 from __future__ import annotations
 
+import io
 import json
 import logging
 from pathlib import Path
+import shutil
+import subprocess
+import tarfile
 import time
 from typing import Any, Optional
 
@@ -26,7 +30,12 @@ from testpilot.arbitration.models import (
     ReviewStatus,
 )
 from testpilot.execution.engine import IsolatedExecutionEngine
-from testpilot.execution.models import IsolatedExecutionReport, TestOutcome
+from testpilot.execution.models import (
+    DockerSecurityProfile,
+    IsolatedExecutionReport,
+    TestCaseResult,
+    TestOutcome,
+)
 
 logger = logging.getLogger("testpilot.arbitration.engine")
 
@@ -88,8 +97,11 @@ class FailureArbitrationEngine:
         items: list[ArbitrationItem] = []
         counts = {cat.value: 0 for cat in ArbitrationCategory}
 
+        base_results = self._execute_base_revision(wf, failed_results)
+
         for fr in failed_results:
-            category, confidence, root_cause, action, evidence = self._classify_failure(fr, wf)
+            base_run = base_results.get(fr.test_name)
+            category, confidence, root_cause, action, evidence = self._classify_failure(fr, wf, base_run)
             counts[category.value] += 1
             item = ArbitrationItem(
                 test_name=fr.test_name,
@@ -97,7 +109,7 @@ class FailureArbitrationEngine:
                 category=category,
                 confidence=confidence,
                 target_outcome="FAILED" if fr.outcome == TestOutcome.FAILED else "ERROR",
-                base_outcome="PASSED" if category == ArbitrationCategory.REGRESSION else ("FAILED" if category == ArbitrationCategory.PRE_EXISTING else None),
+                base_outcome="PASSED" if (base_run and base_run.outcome == TestOutcome.PASSED) else ("FAILED" if (base_run and base_run.outcome in (TestOutcome.FAILED, TestOutcome.ERROR)) else None),
                 failure_signature=fr.error_message or fr.test_name,
                 root_cause_explanation=root_cause,
                 recommended_action=action,
@@ -144,6 +156,76 @@ class FailureArbitrationEngine:
 
         return report
 
+    def _execute_base_revision(
+        self, wf: WorkflowContext, failed_results: list[TestCaseResult]
+    ) -> dict[str, TestCaseResult]:
+        """
+        Execute failed test cases against the base revision to gather
+        reproducible base-versus-target evidence.
+        """
+        repo_path = Path(wf.repo_path).expanduser().resolve()
+        if not (repo_path / ".git").exists() or not wf.base_commit_hash:
+            return {}
+
+        chk = subprocess.run(
+            ["git", "cat-file", "-e", f"{wf.base_commit_hash}^{{commit}}"],
+            cwd=str(repo_path),
+            capture_output=True,
+            check=False,
+        )
+        if chk.returncode != 0:
+            return {}
+
+        base_ws = (self.wf_storage.workspaces_dir / f"ws-base-{wf.workflow_id}").resolve()
+        if base_ws.exists():
+            shutil.rmtree(base_ws, ignore_errors=True)
+        base_ws.mkdir(parents=True, exist_ok=True)
+
+        try:
+            archive_res = subprocess.run(
+                ["git", "archive", wf.base_commit_hash],
+                cwd=str(repo_path),
+                capture_output=True,
+                check=True,
+            )
+            with tarfile.open(fileobj=io.BytesIO(archive_res.stdout)) as tf:
+                tf.extractall(path=base_ws)
+
+            # Copy generated test files into base workspace so they can execute against base code
+            for fr in failed_results:
+                src_test_file = repo_path / fr.test_file
+                if not src_test_file.exists():
+                    tgt_ws = self.wf_storage.workspaces_dir / f"ws-{wf.workflow_id}"
+                    if (tgt_ws / fr.test_file).exists():
+                        src_test_file = tgt_ws / fr.test_file
+                if src_test_file.exists():
+                    dest = base_ws / fr.test_file
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src_test_file, dest)
+
+            test_cases = [
+                {
+                    "test_name": fr.test_name,
+                    "test_file": fr.test_file,
+                    "targeted_symbol": fr.targeted_symbol,
+                }
+                for fr in failed_results
+            ]
+            sec = DockerSecurityProfile()
+            results, _ = self.execution_engine.runner.run_tests(
+                test_cases=test_cases,
+                repo_path=base_ws,
+                security_profile=sec,
+                allow_simulated_dry_run=True,
+            )
+            return {r.test_name: r for r in results}
+        except Exception as e:
+            logger.warning("Failed to execute tests on base revision: %s", e)
+            return {}
+        finally:
+            if base_ws.exists():
+                shutil.rmtree(base_ws, ignore_errors=True)
+
     def review_item(
         self,
         arbitration_run_id: str,
@@ -176,7 +258,7 @@ class FailureArbitrationEngine:
         return report
 
     def _classify_failure(
-        self, fr: Any, wf: WorkflowContext
+        self, fr: Any, wf: WorkflowContext, base_run: Optional[TestCaseResult] = None
     ) -> tuple[ArbitrationCategory, float, str, str, list[str]]:
         """
         Deterministic, evidence-grounded failure classification into the 6 categories.
@@ -188,8 +270,9 @@ class FailureArbitrationEngine:
 
         # 1. INFRASTRUCTURE: container, system, network, or environmental failures
         infra_markers = [
-            "docker", "timed out", "timeout", "connectionrefused", "modulenotfounderror",
-            "importerror: no module", "environmenterror", "nosuchfile", "disk full", "permission denied"
+            "docker", "timed out", "timeout", "connectionrefused", "connection refused",
+            "environmenterror", "nosuchfile", "disk full", "permission denied",
+            "no space left on device"
         ]
         if any(m in err or m in tb for m in infra_markers):
             evidence.append(f"Infrastructure error signature matched in output: {fr.error_message}")
@@ -202,7 +285,7 @@ class FailureArbitrationEngine:
             )
 
         # 2. FLAKY: timing, random, concurrency, socket
-        flaky_markers = ["flaky", "socket", "port in use", "race condition", "deadlock", "retry"]
+        flaky_markers = ["socket", "port in use", "address already in use", "race condition", "deadlock", "flaky"]
         if any(m in t_name or m in err for m in flaky_markers):
             evidence.append("Intermittent or timing-dependent signature detected.")
             return (
@@ -215,20 +298,41 @@ class FailureArbitrationEngine:
 
         # 3. TEST_DEFECT: test harness broken, fixture signature mismatch, or ungrounded assertion
         defect_markers = [
-            "takes 0 positional arguments but 1 was given", "fixture not found", "fixturedef",
-            "assertionerror: assert False", "syntaxerror in test", "assertion error in test setup"
+            "takes 0 positional arguments but 1 was given",
+            "missing 1 required positional argument",
+            "fixture not found",
+            "fixturedef",
+            "assertion error in test setup",
+            "syntaxerror in test",
+            "assert none is not none",
+            "has no symbol",
+            "has no class",
+            "has no class or attribute",
+            "cannot import name",
         ]
-        if any(m in err for m in defect_markers) or "test_" in err:
-            evidence.append(f"Test definition defect detected: {fr.error_message}")
+        is_attribute_defect = "has no attribute" in err and ("module " in err or "type object " in err or "object has no attribute" in err)
+
+        if any(m in err for m in defect_markers) or is_attribute_defect:
+            evidence.append(f"Test definition or symbol lookup defect detected: {fr.error_message}")
             return (
                 ArbitrationCategory.TEST_DEFECT,
-                0.90,
-                "Test assertion or fixture setup violates valid API contract.",
-                "Correct test fixture bindings or assertion expectation.",
+                0.95,
+                "Test assertion, symbol reference, or fixture setup violates valid API contract.",
+                "Correct test symbol lookup, fixture bindings, or assertion expectation.",
                 evidence,
             )
 
-        # 4. PRE_EXISTING: if targeted symbol was not in modified diff or test already failed on base
+        # 4. PRE_EXISTING: test already failed on base commit or target is legacy baseline
+        if base_run and base_run.outcome in (TestOutcome.FAILED, TestOutcome.ERROR):
+            evidence.append(f"Test executed and failed on base revision {wf.base_commit_hash[:8] if wf.base_commit_hash else 'base'}.")
+            return (
+                ArbitrationCategory.PRE_EXISTING,
+                0.95,
+                "Failure exists on base commit and was not introduced by current change.",
+                "Track in backlog as existing technical debt; do not block current change.",
+                evidence,
+            )
+
         if fr.targeted_symbol and "baseline" in t_name:
             evidence.append("Test failed on baseline revision prior to active commit.")
             return (
@@ -241,15 +345,26 @@ class FailureArbitrationEngine:
 
         # 5. REGRESSION: assertion failed on changed function logic
         if ("assertionerror" in err or "assert" in err) and fr.outcome == TestOutcome.FAILED:
-            evidence.append(f"Assertion failed against changed symbol '{fr.targeted_symbol or 'code'}'.")
-            evidence.append(f"Target commit hash: {wf.target_commit_hash}")
-            return (
-                ArbitrationCategory.REGRESSION,
-                0.94,
-                "Code change broke expected behavioral contract.",
-                "Remediate code change in modified function to satisfy regression specification.",
-                evidence,
-            )
+            if base_run and base_run.outcome == TestOutcome.PASSED:
+                evidence.append(f"Reproducible base-versus-target evidence: PASSED on base commit {wf.base_commit_hash[:8]}, FAILED on target commit {wf.target_commit_hash[:8]}.")
+                evidence.append(f"Assertion failed against changed symbol '{fr.targeted_symbol or 'code'}': {fr.error_message}")
+                return (
+                    ArbitrationCategory.REGRESSION,
+                    0.96,
+                    "Code change broke expected behavioral contract verified passing on base revision.",
+                    "Remediate code change in modified function to satisfy regression specification.",
+                    evidence,
+                )
+            else:
+                evidence.append(f"Assertion failed against changed symbol '{fr.targeted_symbol or 'code'}': {fr.error_message}")
+                evidence.append("Base revision not checked; cannot infer base outcome.")
+                return (
+                    ArbitrationCategory.REGRESSION,
+                    0.88,
+                    "Code change broke expected behavioral contract.",
+                    "Remediate code change in modified function to satisfy regression specification.",
+                    evidence,
+                )
 
         # 6. UNCERTAIN
         evidence.append("Ambiguous failure output without definitive error classification.")

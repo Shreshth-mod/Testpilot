@@ -5703,7 +5703,7 @@
       logTerminal('SUCCESS', `Downloaded Zero-Clone Test Suite: ${filename}`);
     }
 
-    // Run Full Pipeline: Sequential Orchestration of Stages 0 -> 1 -> 2 -> 3 -> 4
+    // Run Full Pipeline: Sequential Orchestration of Stages 0 -> 1 -> 2 -> 3 -> 4 (implements /api/pipeline/run workflow)
     async function runFullPipeline() {
       const banner = document.getElementById('pipeline-progress-bar');
       const stepText = document.getElementById('pipeline-step-text');

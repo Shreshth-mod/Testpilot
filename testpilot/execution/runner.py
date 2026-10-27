@@ -9,6 +9,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import atexit
 import logging
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -103,8 +104,8 @@ class PytestDockerRunner(TestRunner):
 
     SUPPORTED_FRAMEWORKS = {"pytest", "python-pytest", "unittest"}
 
-    def __init__(self, docker_image: str = "testpilot-runner:latest") -> None:
-        self.docker_image = docker_image
+    def __init__(self, docker_image: Optional[str] = None) -> None:
+        self.docker_image = docker_image or os.getenv("TESTPILOT_RUNNER_IMAGE", "testpilot-runner:latest")
 
     def supports_framework(self, framework_name: str) -> bool:
         return framework_name.lower() in self.SUPPORTED_FRAMEWORKS
@@ -184,7 +185,18 @@ class PytestDockerRunner(TestRunner):
     ) -> list[TestCaseResult]:
         """Executes tests inside disposable container sandbox."""
         results: list[TestCaseResult] = []
-        abs_repo = str(repo_path.expanduser().resolve()).replace("\\", "/")
+        raw_abs_repo = str(repo_path.expanduser().resolve()).replace("\\", "/")
+        host_dir = os.getenv("TESTPILOT_HOST_DIR")
+        if host_dir:
+            host_dir = host_dir.replace("\\", "/").rstrip("/")
+            if raw_abs_repo == "/app":
+                abs_repo = host_dir
+            elif raw_abs_repo.startswith("/app/"):
+                abs_repo = f"{host_dir}/{raw_abs_repo[5:]}"
+            else:
+                abs_repo = raw_abs_repo
+        else:
+            abs_repo = raw_abs_repo
 
         for tc in test_cases:
             t_name = tc.get("test_name", "test")

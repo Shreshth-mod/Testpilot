@@ -476,6 +476,7 @@ def run_targeted_generation_endpoint(payload: Optional[TargetedGenRequest] = Non
             workflow_id=wf.workflow_id,
             impact_report=impact_report,
             max_tests=req.max_tests or 5,
+            repo_path=Path(wf.repo_path).expanduser().resolve(),
         )
         return {"targeted_tests": [t.model_dump() for t in tests], "total_generated": len(tests)}
     except Exception as e:
@@ -1683,6 +1684,33 @@ def analyze_evolution(request: EvolutionRequest) -> dict[str, Any]:
     Establishes unified analysis context for all downstream pipeline stages.
     """
     try:
+        # If workflow_id provided, sync base_ref/target_ref/repo_path from initialized workflow context
+        if request.workflow_id:
+            wf = workflow_storage.get_active_workflow()
+            if not wf or wf.workflow_id != request.workflow_id:
+                for repo_dir in workflow_storage.base_dir.iterdir():
+                    if repo_dir.is_dir():
+                        target = repo_dir / f"{request.workflow_id}.json"
+                        if target.exists():
+                            wf = workflow_storage.load_workflow(repo_dir.name, request.workflow_id)
+                            break
+            if wf:
+                if request.base_ref == "main" and wf.base_commit_hash:
+                    request.base_ref = wf.base_commit_hash
+                if request.target_ref in (None, "HEAD") and wf.target_commit_hash:
+                    request.target_ref = wf.target_commit_hash
+                if request.repo_path in (".", "") and wf.repo_path:
+                    p = Path(wf.repo_path)
+                    if p.exists() and p.is_dir():
+                        request.repo_path = wf.repo_path
+                    else:
+                        request.repo_path = "."
+
+        # Ensure request.repo_path is a valid existing directory on current host/container
+        target_path = Path(request.repo_path)
+        if not target_path.exists() or not target_path.is_dir():
+            request.repo_path = "."
+
         engine = RepositoryEvolutionEngine(repo_root=request.repo_path)
         report = engine.analyze(request)
         report_data = report.model_dump()
@@ -2618,6 +2646,19 @@ def get_qualitative_analysis_findings(repo_id: Optional[str] = None) -> dict[str
         "findings": findings,
     }
 
+
+
+@app.get("/health")
+def health_check() -> dict[str, Any]:
+    """Health check endpoint for Docker Compose and container orchestration."""
+    docker_status = execution_engine.get_docker_status()
+    return {
+        "status": "healthy",
+        "service": "testpilot-app",
+        "version": "0.1.0",
+        "docker_available": docker_status.is_available,
+        "docker_version": docker_status.daemon_version,
+    }
 
 
 # 12. Static Files & Root Route

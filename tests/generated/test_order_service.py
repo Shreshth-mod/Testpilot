@@ -18,12 +18,12 @@ from testbed.app.services.order_service import (
 # Reasoning Trace Summary: The function `calculate_order_totals` needs to be thoroughly tested to ensure it handles various boundary conditions correctly. The boundary condition...
 
 def test_empty_cart():
-    from testbed.app.services.order_service import OrderService, CartItem
-    from pydantic import ValidationError
-    try:
-        OrderService.calculate_order_totals(items=[], coupon_code='SAVE10')
-    except ValidationError as e:
-        assert str(e) == 'CartItem unit_price must be > 0.0'
+    from testbed.app.services.order_service import OrderService
+    result = OrderService.calculate_order_totals(items=[], coupon_code='SAVE10')
+    assert result.subtotal == 0.0
+    assert result.discount == 0.0
+    assert result.shipping == 0.0
+    assert result.total == 0.0
 
 def test_subtotal_below_free_shipping_threshold():
     from testbed.app.services.order_service import OrderService, CartItem

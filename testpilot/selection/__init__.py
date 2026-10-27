@@ -5,6 +5,8 @@ Exports selection engine and report models.
 
 from testpilot.selection.engine import TestSelectionEngine
 from testpilot.selection.models import (
+    AffectedFileAnalysis,
+    FileChangeClassification,
     SelectedTest,
     SelectionEfficiency,
     TargetedTest,
@@ -17,4 +19,6 @@ __all__ = [
     "SelectedTest",
     "TargetedTest",
     "SelectionEfficiency",
+    "AffectedFileAnalysis",
+    "FileChangeClassification",
 ]

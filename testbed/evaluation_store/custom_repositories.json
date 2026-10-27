@@ -2406,16 +2406,16 @@
     ],
     "validated_benchmark_cases_count": 1,
     "last_analyzed_at": "2026-10-26T17:02:57.367843+00:00",
-    "last_evaluated_at": "2026-10-27T10:53:07.736455+00:00",
+    "last_evaluated_at": "2026-10-27T18:38:39.854138+00:00",
     "latest_evaluation_runs": {
       "repo_shreshth-mod_finmath_db2b8f524f_case_1": {
-        "run_id": "custom_run_repo_shreshth-mod_finmath_db2b8f524f_case_1_1793098387",
+        "run_id": "custom_run_repo_shreshth-mod_finmath_db2b8f524f_case_1_1793126319",
         "case_id": "repo_shreshth-mod_finmath_db2b8f524f_case_1",
         "repository": "FinMath",
         "base_commit": "HEAD~1",
         "target_commit": "HEAD",
         "testpilot_version": "4939da59e66ff93039036a4026712947f59f5baf",
-        "python_version": "3.11.5",
+        "python_version": "3.13.5",
         "model": null,
         "temperature": null,
         "prompt_version": null,
@@ -2467,7 +2467,7 @@
             ],
             "selected_count": 4,
             "total_tests": 23,
-            "latency_ms": 10.48,
+            "latency_ms": 11.09,
             "notes": "Token-based matching ignoring qualified symbol identity and call graphs."
           },
           "testpilot": {
@@ -2480,7 +2480,7 @@
             ],
             "selected_count": 3,
             "total_tests": 23,
-            "latency_ms": 229.57,
+            "latency_ms": 225.05,
             "notes": "Evidence-grounded selection using qualified symbol identity, receiver resolution, and caller graph."
           },
           "testpilot_rag": {
@@ -2493,7 +2493,7 @@
             ],
             "selected_count": 3,
             "total_tests": 23,
-            "latency_ms": 40674.72,
+            "latency_ms": 38864.73,
             "notes": "Combines deterministic qualified AST selection with Repository RAG and CodeLlama validation."
           },
           "testpilot_sourcegraph": {
@@ -2530,10 +2530,10 @@
             "recall": 1.0,
             "f1": 0.8571,
             "test_reduction_pct": 82.61,
-            "latency_ms": 10.48,
+            "latency_ms": 11.09,
             "evolution_latency_ms": 0.0,
             "selection_latency_ms": 0.0,
-            "total_latency_ms": 10.48,
+            "total_latency_ms": 11.09,
             "is_evaluated": true,
             "notes": ""
           },
@@ -2545,10 +2545,10 @@
             "recall": 1.0,
             "f1": 1.0,
             "test_reduction_pct": 86.96,
-            "latency_ms": 422.49,
-            "evolution_latency_ms": 229.57,
-            "selection_latency_ms": 229.77,
-            "total_latency_ms": 422.49,
+            "latency_ms": 448.16,
+            "evolution_latency_ms": 225.05,
+            "selection_latency_ms": 225.23,
+            "total_latency_ms": 448.16,
             "is_evaluated": true,
             "notes": ""
           },
@@ -2560,10 +2560,10 @@
             "recall": 1.0,
             "f1": 1.0,
             "test_reduction_pct": 86.96,
-            "latency_ms": 41097.46,
-            "evolution_latency_ms": 229.57,
-            "selection_latency_ms": 40904.73,
-            "total_latency_ms": 41097.46,
+            "latency_ms": 39313.17,
+            "evolution_latency_ms": 225.05,
+            "selection_latency_ms": 39090.24,
+            "total_latency_ms": 39313.17,
             "is_evaluated": true,
             "notes": ""
           },
@@ -2621,13 +2621,13 @@
             "resolution_engine": "AST/Tree-sitter Qualified"
           }
         ],
-        "timestamp": "2026-10-27T10:53:07.736455+00:00",
+        "timestamp": "2026-10-27T18:38:39.854043+00:00",
         "status": "completed",
         "notes": "Behavioral regression test scenario for app.fmt_inr in app.py"
       }
     },
     "created_at": "2026-10-26T17:02:54.621230+00:00",
-    "updated_at": "2026-10-27T10:53:07.736455+00:00"
+    "updated_at": "2026-10-27T18:38:39.854138+00:00"
   },
   "repo_testpilot_api_test_repo_84a48pd__e675b07ee7": {
     "repo_id": "repo_testpilot_api_test_repo_84a48pd__e675b07ee7",

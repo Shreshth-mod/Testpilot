@@ -122,6 +122,7 @@ class EvolutionRequest(BaseModel):
     max_depth: int = Field(default=3, ge=1, le=5, description="Maximum call-graph traversal depth for indirect impacts")
     enable_semantic_analysis: bool = Field(default=True, description="Whether to run RAG-grounded semantic impact analysis")
     enable_llm_semantic: bool = Field(default=False, description="Whether to invoke local LLM (CodeLlama) in addition to AST data-flow RAG")
+    workflow_id: Optional[str] = Field(default=None, description="Optional workflow context identifier")
 
 
 class SymbolId(BaseModel):
@@ -162,6 +163,10 @@ class ChangedSymbol(BaseModel):
     previous_file_path: Optional[str] = Field(default=None, description="Previous file path if symbol or file was renamed")
     parameters: list[str] = Field(default_factory=list, description="Parameter names of the symbol")
     raw_signature: Optional[str] = Field(default=None, description="Stringified signature or declaration")
+    decorators: list[str] = Field(default_factory=list, description="Decorators on function/method")
+    is_staticmethod: bool = Field(default=False, description="Whether symbol is a staticmethod")
+    is_classmethod: bool = Field(default=False, description="Whether symbol is a classmethod")
+    is_property: bool = Field(default=False, description="Whether symbol is a property")
 
     @property
     def symbol_name(self) -> str:

@@ -50,6 +50,9 @@ class LocalCodeGraphFallback:
     def __init__(self, repo_root: str = ".", secondary_roots: Optional[list[str]] = None):
         self.repo_root = Path(repo_root).resolve()
         self.secondary_roots = [Path(r).resolve() for r in secondary_roots] if secondary_roots else []
+        self._file_ast_cache: dict[str, tuple[str, Optional[ast.AST]]] = {}
+        self._file_imports_cache: dict[str, dict[str, dict[str, str]]] = {}
+        self._query_callers_cache: dict[tuple[str, Optional[str], Optional[str]], list[dict[str, Any]]] = {}
 
     @staticmethod
     def _module_matches_path(module_str: str, file_path: Optional[str]) -> bool:
@@ -109,12 +112,18 @@ class LocalCodeGraphFallback:
         if target_file_path:
             norm_target_path = target_file_path.replace("\\", "/").lstrip("./")
 
+        cache_key = (target_function_name, norm_target_path, target_class_name)
+        if hasattr(self, "_query_callers_cache") and cache_key in self._query_callers_cache:
+            return list(self._query_callers_cache[cache_key])
+
         search_terms = {target_function_name}
         if target_class_name:
             search_terms.add(target_class_name)
 
         if not hasattr(self, "_file_ast_cache"):
             self._file_ast_cache: dict[str, tuple[str, Optional[ast.AST]]] = {}
+        if not hasattr(self, "_file_imports_cache"):
+            self._file_imports_cache: dict[str, dict[str, dict[str, str]]] = {}
 
         for py_file in self._get_python_files(root):
             file_key = str(py_file.resolve())
@@ -138,23 +147,27 @@ class LocalCodeGraphFallback:
             except ValueError:
                 rel_path = str(py_file).replace("\\", "/")
 
-            imported_symbols: dict[str, dict[str, str]] = {}
-            for node in ast.walk(tree):
-                if isinstance(node, ast.Import):
-                    for alias in node.names:
-                        as_name = alias.asname or alias.name
-                        imported_symbols[as_name] = {
-                            "source_module": alias.name,
-                            "original_symbol": alias.name.split(".")[-1],
-                        }
-                elif isinstance(node, ast.ImportFrom):
-                    mod_name = node.module or ""
-                    for alias in node.names:
-                        as_name = alias.asname or alias.name
-                        imported_symbols[as_name] = {
-                            "source_module": mod_name,
-                            "original_symbol": alias.name,
-                        }
+            if file_key in self._file_imports_cache:
+                imported_symbols = self._file_imports_cache[file_key]
+            else:
+                imported_symbols = {}
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Import):
+                        for alias in node.names:
+                            as_name = alias.asname or alias.name
+                            imported_symbols[as_name] = {
+                                "source_module": alias.name,
+                                "original_symbol": alias.name.split(".")[-1],
+                            }
+                    elif isinstance(node, ast.ImportFrom):
+                        mod_name = node.module or ""
+                        for alias in node.names:
+                            as_name = alias.asname or alias.name
+                            imported_symbols[as_name] = {
+                                "source_module": mod_name,
+                                "original_symbol": alias.name,
+                            }
+                self._file_imports_cache[file_key] = imported_symbols
 
             is_same_file = bool(norm_target_path and (rel_path == norm_target_path or rel_path.endswith(norm_target_path)))
 
@@ -378,6 +391,8 @@ class LocalCodeGraphFallback:
             visitor = CallVisitor(self, imported_symbols, is_same_file, norm_target_path, rel_path, target_class_name)
             visitor.visit(tree)
 
+        if hasattr(self, "_query_callers_cache"):
+            self._query_callers_cache[cache_key] = list(callers)
         return callers
 
     def find_callers(
@@ -626,6 +641,7 @@ class SourcegraphClient:
         self.access_token = access_token or os.getenv("SOURCEGRAPH_ACCESS_TOKEN")
         self.timeout = timeout
         self.local_fallback = LocalCodeGraphFallback(repo_root=repo_root)
+        self._callers_cache: dict[tuple[str, Optional[str], Optional[str]], list[dict[str, Any]]] = {}
 
     def is_alive(self) -> bool:
         """
@@ -733,6 +749,9 @@ class SourcegraphClient:
         Find all callers of a function or class method.
         Attempts Sourcegraph GraphQL reference search first; falls back to local AST engine.
         """
+        cache_key = (function_name, file_path, class_name)
+        if hasattr(self, "_callers_cache") and cache_key in self._callers_cache:
+            return list(self._callers_cache[cache_key])
         # If function_name is qualified (e.g. "Flask.request_context"), extract parts
         clean_func = function_name
         clean_class = class_name
@@ -801,6 +820,9 @@ class SourcegraphClient:
             callers = self.local_fallback.find_callers(clean_func, file_path)
         if not callers:
             callers = self.local_fallback.find_callers(function_name, file_path, target_class_name=class_name)
+
+        if hasattr(self, "_callers_cache"):
+            self._callers_cache[cache_key] = callers
         return callers
 
     def _resolve_enclosing_scope(self, file_path: str, line_number: int) -> tuple[str, Optional[str]]:

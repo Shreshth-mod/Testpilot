@@ -40,6 +40,23 @@ class ASTFunctionDef(BaseModel):
     branch_conditions: list[str] = []
     boundary_candidates: list[BoundaryCandidate] = []
     raw_source: str = ""
+    decorators: list[str] = []
+
+    @property
+    def qualified_name(self) -> str:
+        return f"{self.class_name}.{self.name}" if self.class_name else self.name
+
+    @property
+    def is_staticmethod(self) -> bool:
+        return "staticmethod" in self.decorators
+
+    @property
+    def is_classmethod(self) -> bool:
+        return "classmethod" in self.decorators
+
+    @property
+    def is_property(self) -> bool:
+        return "property" in self.decorators
 
 
 class DiffAnalysis(BaseModel):
