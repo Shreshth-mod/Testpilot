@@ -217,9 +217,9 @@
       </button>
       <button onclick="switchTab('arbiter')" id="tab-btn-arbiter"
         class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
-        title="Evidence-Based Failure Arbitration">
-        <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
-        <span>Failure Arbiter</span>
+        title="Test Intelligence Dashboard & Failure Arbitration">
+        <i data-lucide="brain-circuit" class="w-4 h-4 text-purple-400"></i>
+        <span>Test Intelligence</span>
       </button>
       <button onclick="switchTab('overview')" id="tab-btn-overview"
         class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0">
@@ -2631,23 +2631,32 @@
     </div>
 
     <!-- ===================================================================== -->
-    <!-- TAB 5: FAILURE ARBITRATION                                            -->
+    <!-- TAB 5: TEST INTELLIGENCE DASHBOARD & FAILURE ARBITRATION               -->
     <!-- ===================================================================== -->
     <div id="tab-arbiter" class="tab-panel hidden space-y-6">
+      <!-- Main Dashboard Header -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
         <div>
           <div class="flex items-center space-x-2 mb-1">
-            <span class="text-xs text-rose-400 font-mono font-semibold">STAGE 4</span>
+            <span class="text-xs text-purple-400 font-mono font-semibold">STAGE 4</span>
             <span class="text-slate-600">/</span>
             <span id="arbitration-status-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-850 text-slate-400 border border-slate-700">READY</span>
+            <span class="text-slate-600">/</span>
+            <span class="text-[10px] font-mono text-purple-300">CENTRAL INTELLIGENCE LAYER</span>
           </div>
           <h3 class="font-semibold text-sm text-white flex items-center space-x-2">
-            <i data-lucide="scale" class="w-4 h-4 text-purple-400"></i>
-            <span>Evidence-Based Failure Arbitration</span>
+            <i data-lucide="brain-circuit" class="w-4 h-4 text-purple-400"></i>
+            <span>Test Intelligence Dashboard & Failure Arbitration</span>
           </h3>
-          <p class="text-xs text-slate-400 mt-0.5">Disambiguate regressions, pre-existing failures, flaky tests, infrastructure faults, and test defects via base-vs-target comparative analysis</p>
+          <p class="text-xs text-slate-400 mt-0.5">Empirical flakiness detection, sample-bounded confidence scoring, base-vs-target arbitration, and evidence-grounded failure investigation</p>
         </div>
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2">
+          <button onclick="refreshTestIntelligence()" id="btn-refresh-intel"
+            class="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 text-xs font-medium transition"
+            title="Refresh empirical flakiness and execution stats">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span>Refresh Stats</span>
+          </button>
           <button onclick="runFailureArbitration()" id="btn-run-arbitration"
             class="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition shadow-sm">
             <i data-lucide="scale" class="w-3.5 h-3.5"></i>
@@ -2661,117 +2670,288 @@
         </div>
       </div>
 
-      <!-- Prerequisite Alert Banner -->
-      <div id="arbitration-prereq-alert" class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs flex items-center justify-between">
-        <div class="flex items-center space-x-2.5">
-          <i data-lucide="info" class="w-4 h-4 text-purple-400 shrink-0"></i>
-          <span class="text-slate-300" id="arbitration-prereq-text">Connected to active workflow context. Consumes Stage 3 (Isolated Test Execution) results.</span>
-        </div>
-        <button onclick="checkWorkflowPrereqs('arbitration')" class="text-xs text-cyan-400 hover:underline font-mono">Refresh Prereqs</button>
+      <!-- Reliability Degradation & Alert Banner -->
+      <div id="intelligence-alerts-container" class="hidden space-y-2">
+        <!-- Rendered dynamically via JS -->
       </div>
 
-      <!-- 6-Category Summary Counters -->
-      <div id="arbiter-summary-cards" class="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <div class="p-3 rounded-xl bg-rose-950/30 border border-rose-900/60 space-y-1">
-          <div class="text-[10px] text-rose-300 font-semibold uppercase flex items-center space-x-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-            <span>Regression</span>
+      <!-- Top KPI Metric Cards (Phase 3 Centralized Dashboard) -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <!-- Pass Rate Card -->
+        <div class="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800 space-y-1">
+          <div class="text-[10px] text-slate-400 uppercase font-semibold flex items-center justify-between">
+            <span>Pass Rate</span>
+            <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-400"></i>
           </div>
-          <div id="count-arb-regression" class="text-xl font-bold font-mono text-rose-300">0</div>
-          <div class="text-[9px] text-slate-500">Induced by change</div>
-        </div>
-        <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-700/60 space-y-1">
-          <div class="text-[10px] text-slate-300 font-semibold uppercase flex items-center space-x-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            <span>Pre-Existing</span>
+          <div class="flex items-baseline space-x-2">
+            <span id="intel-kpi-passrate" class="text-2xl font-bold font-mono text-emerald-400">--%</span>
           </div>
-          <div id="count-arb-preexisting" class="text-xl font-bold font-mono text-slate-300">0</div>
-          <div class="text-[9px] text-slate-500">Failed at base commit</div>
-        </div>
-        <div class="p-3 rounded-xl bg-amber-950/30 border border-amber-900/60 space-y-1">
-          <div class="text-[10px] text-amber-300 font-semibold uppercase flex items-center space-x-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-            <span>Flaky</span>
+          <div class="text-[10px] text-slate-500 font-mono">
+            <span id="intel-kpi-passed-cnt">0</span> pass / <span id="intel-kpi-failed-cnt">0</span> fail
           </div>
-          <div id="count-arb-flaky" class="text-xl font-bold font-mono text-amber-300">0</div>
-          <div class="text-[9px] text-slate-500">Non-deterministic</div>
         </div>
-        <div class="p-3 rounded-xl bg-cyan-950/30 border border-cyan-900/60 space-y-1">
-          <div class="text-[10px] text-cyan-300 font-semibold uppercase flex items-center space-x-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-            <span>Infrastructure</span>
-          </div>
-          <div id="count-arb-infra" class="text-xl font-bold font-mono text-cyan-300">0</div>
-          <div class="text-[9px] text-slate-500">Env / Timeout / OOM</div>
-        </div>
-        <div class="p-3 rounded-xl bg-purple-950/30 border border-purple-900/60 space-y-1">
-          <div class="text-[10px] text-purple-300 font-semibold uppercase flex items-center space-x-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-            <span>Test Defect</span>
-          </div>
-          <div id="count-arb-testdefect" class="text-xl font-bold font-mono text-purple-300">0</div>
-          <div class="text-[9px] text-slate-500">Faulty test assertion</div>
-        </div>
-        <div class="p-3 rounded-xl bg-orange-950/30 border border-orange-900/60 space-y-1">
-          <div class="text-[10px] text-orange-300 font-semibold uppercase flex items-center space-x-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
-            <span>Uncertain</span>
-          </div>
-          <div id="count-arb-uncertain" class="text-xl font-bold font-mono text-orange-300">0</div>
-          <div class="text-[9px] text-slate-500">Needs review</div>
-        </div>
-      </div>
 
-      <!-- Interactive Filter Bar -->
-      <div id="arbiter-filter-bar" class="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-        <div class="flex flex-wrap items-center gap-2 text-xs">
-          <span class="text-slate-400 font-medium flex items-center space-x-1">
-            <i data-lucide="filter" class="w-3.5 h-3.5 text-purple-400"></i>
-            <span>Filter Category:</span>
-          </span>
-          <button onclick="filterArbitrationCategory('ALL')" id="arb-filter-all"
-            class="arb-filter-btn px-2.5 py-1 rounded-lg bg-purple-950 text-purple-300 border border-purple-800 text-[11px] font-medium transition">
-            ALL (<span id="arb-filter-cnt-all">0</span>)
-          </button>
-          <button onclick="filterArbitrationCategory('REGRESSION')" id="arb-filter-regression"
-            class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 text-[11px] font-medium transition">
-            REGRESSION (<span id="arb-filter-cnt-regression">0</span>)
-          </button>
-          <button onclick="filterArbitrationCategory('PRE_EXISTING')" id="arb-filter-preexisting"
-            class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[11px] font-medium transition">
-            PRE_EXISTING (<span id="arb-filter-cnt-preexisting">0</span>)
-          </button>
-          <button onclick="filterArbitrationCategory('FLAKY')" id="arb-filter-flaky"
-            class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-amber-950 text-slate-300 hover:text-amber-300 border border-slate-700 text-[11px] font-medium transition">
-            FLAKY (<span id="arb-filter-cnt-flaky">0</span>)
-          </button>
-          <button onclick="filterArbitrationCategory('INFRASTRUCTURE')" id="arb-filter-infra"
-            class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-cyan-950 text-slate-300 hover:text-cyan-300 border border-slate-700 text-[11px] font-medium transition">
-            INFRA (<span id="arb-filter-cnt-infra">0</span>)
-          </button>
-          <button onclick="filterArbitrationCategory('TEST_DEFECT')" id="arb-filter-testdefect"
-            class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-purple-950 text-slate-300 hover:text-purple-300 border border-slate-700 text-[11px] font-medium transition">
-            TEST_DEFECT (<span id="arb-filter-cnt-testdefect">0</span>)
-          </button>
-          <button onclick="filterArbitrationCategory('UNCERTAIN')" id="arb-filter-uncertain"
-            class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-orange-950 text-slate-300 hover:text-orange-300 border border-slate-700 text-[11px] font-medium transition">
-            UNCERTAIN (<span id="arb-filter-cnt-uncertain">0</span>)
-          </button>
+        <!-- Regressions Card -->
+        <div class="p-3.5 rounded-xl bg-rose-950/20 border border-rose-900/60 space-y-1">
+          <div class="text-[10px] text-rose-300 uppercase font-semibold flex items-center justify-between">
+            <span>Regressions</span>
+            <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+          </div>
+          <div class="flex items-baseline space-x-2">
+            <span id="intel-kpi-regression" class="text-2xl font-bold font-mono text-rose-300">0</span>
+          </div>
+          <div class="text-[10px] text-slate-500">Induced by current diff</div>
         </div>
-        <div class="text-[11px] text-slate-400 flex items-center space-x-1.5 font-mono">
-          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
-          <span>Base-vs-Target Verified</span>
+
+        <!-- Flaky Tests Card -->
+        <div class="p-3.5 rounded-xl bg-amber-950/20 border border-amber-900/60 space-y-1">
+          <div class="text-[10px] text-amber-300 uppercase font-semibold flex items-center justify-between">
+            <span>Flaky Tests</span>
+            <i data-lucide="shuffle" class="w-3.5 h-3.5 text-amber-400"></i>
+          </div>
+          <div class="flex items-baseline space-x-2">
+            <span id="intel-kpi-flaky-confirmed" class="text-2xl font-bold font-mono text-amber-300">0</span>
+            <span class="text-[10px] text-amber-400/80 font-mono">(<span id="intel-kpi-flaky-suspected">0</span> suspected)</span>
+          </div>
+          <div class="text-[10px] text-slate-500">Inconsistent outcomes</div>
+        </div>
+
+        <!-- Quarantined Tests Card -->
+        <div class="p-3.5 rounded-xl bg-purple-950/20 border border-purple-900/60 space-y-1">
+          <div class="text-[10px] text-purple-300 uppercase font-semibold flex items-center justify-between">
+            <span>Quarantined</span>
+            <i data-lucide="shield-off" class="w-3.5 h-3.5 text-purple-400"></i>
+          </div>
+          <div class="flex items-baseline space-x-2">
+            <span id="intel-kpi-quarantined" class="text-2xl font-bold font-mono text-purple-300">0</span>
+          </div>
+          <div class="text-[10px] text-slate-500">Isolated from blocking CI</div>
+        </div>
+
+        <!-- Total Recorded Executions Card -->
+        <div class="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800 space-y-1">
+          <div class="text-[10px] text-slate-400 uppercase font-semibold flex items-center justify-between">
+            <span>Total Executions</span>
+            <i data-lucide="database" class="w-3.5 h-3.5 text-cyan-400"></i>
+          </div>
+          <div class="flex items-baseline space-x-2">
+            <span id="intel-kpi-executions" class="text-2xl font-bold font-mono text-cyan-300">0</span>
+          </div>
+          <div class="text-[10px] text-slate-500 font-mono">
+            Across <span id="intel-kpi-tests-count">0</span> tracked tests
+          </div>
         </div>
       </div>
 
-      <!-- Arbitration Items Container -->
-      <div id="arbiter-table-container" class="space-y-4">
-        <div class="p-8 text-center text-slate-500 text-xs bg-slate-900/40 rounded-xl border border-slate-800/60">
-          <i data-lucide="scale" class="w-8 h-8 mx-auto text-slate-600 mb-2"></i>
-          <span>Click "Run Arbitration" to categorize test execution failures and inspect root cause evidence.</span>
+      <!-- Sub-Tabs Navigation for Test Intelligence -->
+      <div class="flex border-b border-slate-800 gap-1 text-xs">
+        <button onclick="switchIntelSubTab('arbitration')" id="intel-subtab-btn-arbitration"
+          class="intel-subtab-btn px-4 py-2 font-medium border-b-2 border-purple-500 text-purple-300 flex items-center space-x-1.5 transition">
+          <i data-lucide="scale" class="w-3.5 h-3.5"></i>
+          <span>Failure Arbitration</span>
+        </button>
+        <button onclick="switchIntelSubTab('flakiness')" id="intel-subtab-btn-flakiness"
+          class="intel-subtab-btn px-4 py-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-1.5 transition">
+          <i data-lucide="shuffle" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Flakiness Watchlist & Probes</span>
+        </button>
+        <button onclick="switchIntelSubTab('investigator')" id="intel-subtab-btn-investigator"
+          class="intel-subtab-btn px-4 py-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-1.5 transition">
+          <i data-lucide="search-code" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>Failure Investigator & AI Grounding</span>
+        </button>
+        <button onclick="switchIntelSubTab('history')" id="intel-subtab-btn-history"
+          class="intel-subtab-btn px-4 py-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-1.5 transition">
+          <i data-lucide="history" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span>Historical Telemetry</span>
+        </button>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- SUBTAB 1: FAILURE ARBITRATION                                       -->
+      <!-- =================================================================== -->
+      <div id="intel-panel-arbitration" class="intel-subpanel space-y-4">
+        <!-- 6-Category Summary Counters -->
+        <div id="arbiter-summary-cards" class="grid grid-cols-2 md:grid-cols-6 gap-3">
+          <div class="p-3 rounded-xl bg-rose-950/30 border border-rose-900/60 space-y-1">
+            <div class="text-[10px] text-rose-300 font-semibold uppercase flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+              <span>Regression</span>
+            </div>
+            <div id="count-arb-regression" class="text-xl font-bold font-mono text-rose-300">0</div>
+            <div class="text-[9px] text-slate-500">Induced by change</div>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-700/60 space-y-1">
+            <div class="text-[10px] text-slate-300 font-semibold uppercase flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+              <span>Pre-Existing</span>
+            </div>
+            <div id="count-arb-preexisting" class="text-xl font-bold font-mono text-slate-300">0</div>
+            <div class="text-[9px] text-slate-500">Failed at base commit</div>
+          </div>
+          <div class="p-3 rounded-xl bg-amber-950/30 border border-amber-900/60 space-y-1">
+            <div class="text-[10px] text-amber-300 font-semibold uppercase flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span>Flaky</span>
+            </div>
+            <div id="count-arb-flaky" class="text-xl font-bold font-mono text-amber-300">0</div>
+            <div class="text-[9px] text-slate-500">Non-deterministic</div>
+          </div>
+          <div class="p-3 rounded-xl bg-cyan-950/30 border border-cyan-900/60 space-y-1">
+            <div class="text-[10px] text-cyan-300 font-semibold uppercase flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+              <span>Infrastructure</span>
+            </div>
+            <div id="count-arb-infra" class="text-xl font-bold font-mono text-cyan-300">0</div>
+            <div class="text-[9px] text-slate-500">Env / Timeout / OOM</div>
+          </div>
+          <div class="p-3 rounded-xl bg-purple-950/30 border border-purple-900/60 space-y-1">
+            <div class="text-[10px] text-purple-300 font-semibold uppercase flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+              <span>Test Defect</span>
+            </div>
+            <div id="count-arb-testdefect" class="text-xl font-bold font-mono text-purple-300">0</div>
+            <div class="text-[9px] text-slate-500">Faulty test assertion</div>
+          </div>
+          <div class="p-3 rounded-xl bg-orange-950/30 border border-orange-900/60 space-y-1">
+            <div class="text-[10px] text-orange-300 font-semibold uppercase flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+              <span>Uncertain</span>
+            </div>
+            <div id="count-arb-uncertain" class="text-xl font-bold font-mono text-orange-300">0</div>
+            <div class="text-[9px] text-slate-500">Needs review</div>
+          </div>
+        </div>
+
+        <!-- Interactive Filter Bar -->
+        <div id="arbiter-filter-bar" class="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <span class="text-slate-400 font-medium flex items-center space-x-1">
+              <i data-lucide="filter" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span>Filter Category:</span>
+            </span>
+            <button onclick="filterArbitrationCategory('ALL')" id="arb-filter-all"
+              class="arb-filter-btn px-2.5 py-1 rounded-lg bg-purple-950 text-purple-300 border border-purple-800 text-[11px] font-medium transition">
+              ALL (<span id="arb-filter-cnt-all">0</span>)
+            </button>
+            <button onclick="filterArbitrationCategory('REGRESSION')" id="arb-filter-regression"
+              class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 text-[11px] font-medium transition">
+              REGRESSION (<span id="arb-filter-cnt-regression">0</span>)
+            </button>
+            <button onclick="filterArbitrationCategory('PRE_EXISTING')" id="arb-filter-preexisting"
+              class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[11px] font-medium transition">
+              PRE_EXISTING (<span id="arb-filter-cnt-preexisting">0</span>)
+            </button>
+            <button onclick="filterArbitrationCategory('FLAKY')" id="arb-filter-flaky"
+              class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-amber-950 text-slate-300 hover:text-amber-300 border border-slate-700 text-[11px] font-medium transition">
+              FLAKY (<span id="arb-filter-cnt-flaky">0</span>)
+            </button>
+            <button onclick="filterArbitrationCategory('INFRASTRUCTURE')" id="arb-filter-infra"
+              class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-cyan-950 text-slate-300 hover:text-cyan-300 border border-slate-700 text-[11px] font-medium transition">
+              INFRA (<span id="arb-filter-cnt-infra">0</span>)
+            </button>
+            <button onclick="filterArbitrationCategory('TEST_DEFECT')" id="arb-filter-testdefect"
+              class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-purple-950 text-slate-300 hover:text-purple-300 border border-slate-700 text-[11px] font-medium transition">
+              TEST_DEFECT (<span id="arb-filter-cnt-testdefect">0</span>)
+            </button>
+            <button onclick="filterArbitrationCategory('UNCERTAIN')" id="arb-filter-uncertain"
+              class="arb-filter-btn px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-orange-950 text-slate-300 hover:text-orange-300 border border-slate-700 text-[11px] font-medium transition">
+              UNCERTAIN (<span id="arb-filter-cnt-uncertain">0</span>)
+            </button>
+          </div>
+          <div class="text-[11px] text-slate-400 flex items-center space-x-1.5 font-mono">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Base-vs-Target Verified</span>
+          </div>
+        </div>
+
+        <!-- Arbitration Items Container -->
+        <div id="arbiter-table-container" class="space-y-4">
+          <div class="p-8 text-center text-slate-500 text-xs bg-slate-900/40 rounded-xl border border-slate-800/60">
+            <i data-lucide="scale" class="w-8 h-8 mx-auto text-slate-600 mb-2"></i>
+            <span>Click "Run Arbitration" to categorize test execution failures and inspect root cause evidence.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- SUBTAB 2: FLAKINESS WATCHLIST & PROBES                              -->
+      <!-- =================================================================== -->
+      <div id="intel-panel-flakiness" class="intel-subpanel hidden space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 text-xs">
+          <div>
+            <span class="font-semibold text-white">Empirical Flakiness Detection</span>
+            <p class="text-slate-400 text-[11px]">Strict credibility enforced: Flakiness score separates failure rate and sample confidence. Duration variance is secondary context.</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="refreshFlakyWatchlist()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 text-xs font-mono">
+              Refresh Watchlist
+            </button>
+          </div>
+        </div>
+
+        <div id="flaky-watchlist-table-container" class="space-y-3">
+          <div class="p-8 text-center text-slate-500 text-xs bg-slate-900/40 rounded-xl border border-slate-800/60">
+            <i data-lucide="shuffle" class="w-8 h-8 mx-auto text-slate-600 mb-2"></i>
+            <span>No flaky tests scanned yet. Click "Refresh Watchlist" to evaluate historical executions.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- SUBTAB 3: FAILURE INVESTIGATOR & AI GROUNDING                       -->
+      <!-- =================================================================== -->
+      <div id="intel-panel-investigator" class="intel-subpanel hidden space-y-4">
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <h4 class="font-semibold text-sm text-white flex items-center space-x-2">
+                <i data-lucide="microscope" class="w-4 h-4 text-cyan-400"></i>
+                <span>Deep Failure Diagnostic Investigation</span>
+              </h4>
+              <p class="text-xs text-slate-400">Strictly grounded in concrete stack traces, AST diffs, and execution evidence. Zero hallucinated causes.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <input type="text" id="investigate-test-id-input" placeholder="tests/test_x.py::test_func"
+                class="bg-slate-950 border border-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg font-mono w-64 focus:outline-none focus:border-cyan-500" />
+              <button onclick="triggerManualInvestigation()"
+                class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium transition">
+                Investigate
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Investigation Result Display Panel -->
+        <div id="investigation-result-container" class="space-y-4">
+          <div class="p-8 text-center text-slate-500 text-xs bg-slate-900/40 rounded-xl border border-slate-800/60">
+            <i data-lucide="search-code" class="w-8 h-8 mx-auto text-slate-600 mb-2"></i>
+            <span>Select any test from the Arbitration table or Flakiness Watchlist to run a complete 5-point grounded investigation.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- SUBTAB 4: HISTORICAL TELEMETRY                                      -->
+      <!-- =================================================================== -->
+      <div id="intel-panel-history" class="intel-subpanel hidden space-y-4">
+        <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 text-xs flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="database" class="w-4 h-4 text-purple-400"></i>
+            <span class="text-slate-300">SQLite Execution Store: <code class="text-purple-300 font-mono">.testpilot/test_history.db</code></span>
+          </div>
+          <button onclick="loadRecentHistoryTable()" class="text-xs text-cyan-400 hover:underline font-mono">Refresh Records</button>
+        </div>
+
+        <div id="intel-history-table-container">
+          <div class="p-8 text-center text-slate-500 text-xs bg-slate-900/40 rounded-xl border border-slate-800/60">
+            <i data-lucide="history" class="w-8 h-8 mx-auto text-slate-600 mb-2"></i>
+            <span>Click "Refresh Records" to view chronological test runs.</span>
+          </div>
         </div>
       </div>
     </div>
+
 
     <!-- ===================================================================== -->
     <!-- TAB 6: EMPIRICAL BENCHMARK                                            -->
@@ -3755,6 +3935,7 @@
       }
       if (tabId === 'arbiter') {
         checkWorkflowPrereqs('arbitration');
+        refreshTestIntelligence();
       }
 
       lucide.createIcons();
@@ -4996,6 +5177,12 @@
             <td class="py-3 px-4">${reviewBadge}</td>
             <td class="py-3 px-4">
               <div class="flex items-center space-x-1.5 font-sans">
+                <button onclick="investigateFromArbitration('${item.item_id}')"
+                  class="px-2 py-1 rounded bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 text-[10px] font-bold transition flex items-center space-x-1"
+                  title="Run deep 5-point failure investigation">
+                  <i data-lucide="search" class="w-3 h-3"></i>
+                  <span>Investigate</span>
+                </button>
                 <button onclick="submitArbitrationReview('${item.item_id}', 'CONFIRMED')"
                   class="px-2 py-1 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 text-[10px] font-bold transition"
                   title="Confirm classification verdict">
@@ -5086,6 +5273,521 @@
         alert(`Review error: ${err.message}`);
       }
     }
+
+    // =========================================================================
+    // TEST INTELLIGENCE & FLAKINESS CONTROLLERS (Phases 1-5)
+    // =========================================================================
+    function switchIntelSubTab(subTab) {
+      document.querySelectorAll('.intel-subtab-btn').forEach(btn => {
+        btn.classList.remove('border-purple-500', 'text-purple-300');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+      const activeBtn = document.getElementById(`intel-subtab-btn-${subTab}`);
+      if (activeBtn) {
+        activeBtn.classList.add('border-purple-500', 'text-purple-300');
+        activeBtn.classList.remove('border-transparent', 'text-slate-400');
+      }
+
+      document.querySelectorAll('.intel-subpanel').forEach(panel => panel.classList.add('hidden'));
+      const activePanel = document.getElementById(`intel-panel-${subTab}`);
+      if (activePanel) activePanel.classList.remove('hidden');
+
+      if (subTab === 'flakiness') refreshFlakyWatchlist();
+      if (subTab === 'history') loadRecentHistoryTable();
+      lucide.createIcons();
+    }
+
+    async function refreshTestIntelligence() {
+      try {
+        const res = await fetch('/api/intelligence/summary');
+        if (!res.ok) return;
+        const summary = await res.json();
+
+        // Update KPI Cards
+        const passRateEl = document.getElementById('intel-kpi-passrate');
+        if (passRateEl) passRateEl.textContent = `${summary.pass_rate_pct}%`;
+        const passedCntEl = document.getElementById('intel-kpi-passed-cnt');
+        if (passedCntEl) passedCntEl.textContent = summary.passed_count;
+        const failedCntEl = document.getElementById('intel-kpi-failed-cnt');
+        if (failedCntEl) failedCntEl.textContent = summary.failed_count + summary.error_count;
+
+        const regrEl = document.getElementById('intel-kpi-regression');
+        if (regrEl) regrEl.textContent = (summary.category_counts && summary.category_counts.REGRESSION) || 0;
+
+        const flakyConfEl = document.getElementById('intel-kpi-flaky-confirmed');
+        if (flakyConfEl) flakyConfEl.textContent = summary.confirmed_flakes_count || 0;
+        const flakySuspEl = document.getElementById('intel-kpi-flaky-suspected');
+        if (flakySuspEl) flakySuspEl.textContent = summary.suspected_flakes_count || 0;
+
+        const quarEl = document.getElementById('intel-kpi-quarantined');
+        if (quarEl) quarEl.textContent = summary.quarantined_count || 0;
+
+        const execEl = document.getElementById('intel-kpi-executions');
+        if (execEl) execEl.textContent = summary.total_executions || 0;
+        const testsEl = document.getElementById('intel-kpi-tests-count');
+        if (testsEl) testsEl.textContent = summary.total_tracked_tests || 0;
+
+        // Render Alerts Banner
+        const alertsContainer = document.getElementById('intelligence-alerts-container');
+        if (alertsContainer) {
+          const alerts = summary.reliability_alerts || [];
+          if (alerts.length > 0) {
+            alertsContainer.classList.remove('hidden');
+            alertsContainer.innerHTML = alerts.map(a => {
+              const borderCol = a.severity === 'high' ? 'border-rose-800 bg-rose-950/40 text-rose-300' : (a.severity === 'medium' ? 'border-amber-800 bg-amber-950/40 text-amber-300' : 'border-purple-800 bg-purple-950/40 text-purple-300');
+              const icon = a.severity === 'high' ? 'alert-triangle' : (a.severity === 'medium' ? 'shuffle' : 'info');
+              return `
+                <div class="p-3 rounded-xl border ${borderCol} text-xs flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <i data-lucide="${icon}" class="w-4 h-4 shrink-0"></i>
+                    <span>${escapeHtml(a.message)}</span>
+                  </div>
+                  ${a.test_id ? `<button onclick="investigateItem('${escapeHtml(a.test_id)}')" class="text-[11px] underline font-mono shrink-0 ml-2">Investigate</button>` : ''}
+                </div>
+              `;
+            }).join('');
+            lucide.createIcons();
+          } else {
+            alertsContainer.classList.add('hidden');
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to refresh test intelligence:', e);
+      }
+    }
+
+    async function refreshFlakyWatchlist() {
+      const container = document.getElementById('flaky-watchlist-table-container');
+      if (!container) return;
+      container.innerHTML = `<div class="p-6 text-center text-slate-400"><i data-lucide="loader" class="w-5 h-5 animate-spin mx-auto text-amber-400 mb-2"></i>Scanning historical executions and calculating flakiness confidence...</div>`;
+      lucide.createIcons();
+
+      try {
+        const res = await fetch('/api/intelligence/flaky-tests');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const reports = await res.json();
+        renderFlakyWatchlist(reports);
+      } catch (e) {
+        container.innerHTML = `<div class="p-4 text-xs text-rose-400 bg-rose-950/30 border border-rose-800 rounded-xl">Error scanning tests: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    function renderFlakyWatchlist(reports) {
+      const container = document.getElementById('flaky-watchlist-table-container');
+      if (!container) return;
+      if (!reports || reports.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-400 text-xs bg-slate-900/60 border border-slate-800 rounded-xl">
+            <i data-lucide="check-circle" class="w-8 h-8 mx-auto text-emerald-400 mb-2"></i>
+            <span class="font-bold text-white">No Test Execution Records Yet</span>
+            <p class="text-slate-500 mt-1">Execute tests in Stage 3 or run the Flakiness Probe to track historical reliability.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      let html = `
+        <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/70 shadow-lg font-mono">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4">Test Identifier</th>
+                <th class="py-3 px-4">Classification</th>
+                <th class="py-3 px-4">Flakiness Score</th>
+                <th class="py-3 px-4">Confidence (Sample N)</th>
+                <th class="py-3 px-4">Observed Failure Rate</th>
+                <th class="py-3 px-4">Outcome Sparkline</th>
+                <th class="py-3 px-4">Duration Context</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/60 text-[11px]">
+      `;
+
+      reports.forEach(r => {
+        let badge = '<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-bold">STABLE</span>';
+        if (r.classification === 'CONFIRMED_FLAKE') {
+          badge = '<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 font-bold flex items-center space-x-1"><i data-lucide="alert-triangle" class="w-3 h-3 text-amber-400"></i><span>CONFIRMED FLAKE</span></span>';
+        } else if (r.classification === 'SUSPECTED_FLAKE') {
+          badge = '<span class="px-2 py-0.5 rounded bg-yellow-950 text-yellow-300 border border-yellow-800 font-bold">SUSPECTED FLAKE</span>';
+        } else if (r.classification === 'CONSISTENT_FAIL') {
+          badge = '<span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-bold">FAILING</span>';
+        } else if (r.classification === 'CONSISTENT_PASS') {
+          badge = '<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold">PASSING</span>';
+        }
+
+        const scorePct = Math.round(r.flakiness_score * 100);
+        const confPct = Math.round(r.confidence * 100);
+        const failRatePct = Math.round(r.observed_failure_rate * 100);
+
+        // Render sparkline dots
+        const sparklineHtml = (r.status_sequence || []).slice(-8).map(outcome => {
+          if (outcome === 'PASSED') return '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block" title="PASSED"></span>';
+          if (outcome === 'FAILED' || outcome === 'ERROR') return '<span class="w-2 h-2 rounded-full bg-rose-400 inline-block" title="FAILED"></span>';
+          return '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block" title="SKIPPED"></span>';
+        }).join('<span class="text-slate-700 mx-0.5">-</span>');
+
+        html += `
+          <tr class="hover:bg-slate-850/50 transition">
+            <td class="py-3 px-4">
+              <div class="text-white font-bold">${escapeHtml(r.test_name)}</div>
+              <div class="text-[10px] text-slate-400">${escapeHtml(r.test_file)}</div>
+            </td>
+            <td class="py-3 px-4">${badge}</td>
+            <td class="py-3 px-4">
+              <div class="flex items-center space-x-2">
+                <div class="w-16 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-amber-400 h-1.5 rounded-full" style="width: ${scorePct}%"></div>
+                </div>
+                <span class="font-bold text-slate-200">${scorePct}%</span>
+              </div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-200">${confPct}%</div>
+              <div class="text-[9px] text-slate-500">N = ${r.total_runs} runs</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="text-rose-400 font-bold">${failRatePct}%</div>
+              <div class="text-[9px] text-slate-500">${r.failed_runs}F / ${r.passed_runs}P</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex items-center">${sparklineHtml || '<span class="text-slate-600">-</span>'}</div>
+            </td>
+            <td class="py-3 px-4 text-[10px] text-slate-400">
+              <div>${r.avg_duration_ms > 0 ? `${r.avg_duration_ms.toFixed(1)}ms` : '-'}</div>
+              ${r.duration_alert ? `<div class="text-amber-400 text-[9px] truncate max-w-[130px]" title="${escapeHtml(r.duration_alert)}">Timing Jitter</div>` : ''}
+            </td>
+            <td class="py-3 px-4 text-right">
+              <div class="flex items-center justify-end space-x-1.5">
+                <button onclick="runOnDemandProbe('${escapeHtml(r.test_file)}', '${escapeHtml(r.test_name)}', 5)"
+                  class="px-2 py-1 rounded bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-800 text-[10px] font-bold transition flex items-center space-x-1"
+                  title="Run test 5 times consecutively to empirically verify flakiness">
+                  <i data-lucide="play" class="w-3 h-3"></i>
+                  <span>5x Probe</span>
+                </button>
+                <button onclick="investigateItem('${escapeHtml(r.test_id)}', '${escapeHtml(r.test_file)}', '${escapeHtml(r.test_name)}', '', '${r.classification}')"
+                  class="px-2 py-1 rounded bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 text-[10px] font-bold transition flex items-center space-x-1">
+                  <i data-lucide="search" class="w-3 h-3"></i>
+                  <span>Investigate</span>
+                </button>
+                <button onclick="toggleTestQuarantine('${escapeHtml(r.test_id)}', true)"
+                  class="px-2 py-1 rounded bg-purple-950 hover:bg-purple-900 text-purple-300 border border-purple-800 text-[10px] font-bold transition"
+                  title="Quarantine test from blocking pipeline">
+                  Quarantine
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    async function runOnDemandProbe(testFile, testName, iterations = 5) {
+      logTerminal('INFO', `POST /api/intelligence/rerun - Running ${iterations}x empirical probe for ${testFile}::${testName}...`);
+      try {
+        const res = await fetch('/api/intelligence/rerun', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            test_file: testFile,
+            test_name: testName,
+            iterations: iterations
+          })
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `Server returned HTTP ${res.status}`);
+        }
+        const updatedReport = await res.json();
+        logTerminal('SUCCESS', `Probe completed for ${testName}: ${updatedReport.classification} (Score: ${Math.round(updatedReport.flakiness_score * 100)}%, Conf: ${Math.round(updatedReport.confidence * 100)}%, Runs: ${updatedReport.total_runs})`);
+        refreshFlakyWatchlist();
+        refreshTestIntelligence();
+      } catch (err) {
+        logTerminal('ERROR', `Flakiness probe failed: ${err.message}`);
+        alert(`Probe failed: ${err.message}`);
+      }
+    }
+
+    async function toggleTestQuarantine(testId, isQuarantined) {
+      try {
+        const res = await fetch('/api/intelligence/quarantine', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            test_id: testId,
+            is_quarantined: isQuarantined,
+            reason: isQuarantined ? 'Quarantined via Test Intelligence Dashboard' : ''
+          })
+        });
+        if (res.ok) {
+          logTerminal('SUCCESS', `Test quarantine updated for ${testId}: ${isQuarantined ? 'QUARANTINED' : 'ACTIVE'}`);
+          refreshTestIntelligence();
+          refreshFlakyWatchlist();
+        }
+      } catch (e) {
+        logTerminal('ERROR', `Quarantine toggle error: ${e.message}`);
+      }
+    }
+
+    function investigateFromArbitration(itemId) {
+      if (!currentArbitrationData || !currentArbitrationData.items) return;
+      const it = currentArbitrationData.items.find(i => i.item_id === itemId);
+      if (it) {
+        const testId = `${it.test_file}::${it.test_name}`;
+        investigateItem(testId, it.test_file, it.test_name, it.failure_signature, it.category);
+      }
+    }
+
+    function triggerManualInvestigation() {
+      const input = document.getElementById('investigate-test-id-input');
+      const val = (input && input.value || '').trim();
+      if (!val) {
+        alert('Please enter a test identifier (e.g., tests/test_orders.py::test_boundary)');
+        return;
+      }
+      investigateItem(val);
+    }
+
+    async function investigateItem(testId, testFile = null, testName = null, errorMsg = '', category = null) {
+      switchIntelSubTab('investigator');
+      const container = document.getElementById('investigation-result-container');
+      container.innerHTML = `<div class="p-8 text-center text-slate-400"><i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto text-cyan-400 mb-2"></i>Synthesizing 5-point grounded diagnosis for ${escapeHtml(testId)}...</div>`;
+      lucide.createIcons();
+
+      try {
+        logTerminal('INFO', `POST /api/intelligence/investigate - Analyzing failure: ${testId}...`);
+        const res = await fetch('/api/intelligence/investigate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            test_id: testId,
+            test_file: testFile,
+            test_name: testName,
+            error_message: errorMsg,
+            category: category,
+            check_pollution: true
+          })
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `Server returned HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        renderInvestigationResult(data);
+        logTerminal('SUCCESS', `Investigation complete for ${testId}: ${data.category} (Confidence: ${Math.round(data.category_confidence * 100)}%)`);
+      } catch (err) {
+        logTerminal('ERROR', `Investigation failed: ${err.message}`);
+        container.innerHTML = `<div class="p-4 text-xs text-rose-400 bg-rose-950/30 border border-rose-800 rounded-xl">Investigation Error: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function renderInvestigationResult(data) {
+      const container = document.getElementById('investigation-result-container');
+      if (!container) return;
+
+      const confPct = Math.round((data.category_confidence || 0.8) * 100);
+      let catBadge = `<span class="px-2.5 py-1 rounded bg-purple-950 text-purple-300 border border-purple-800 font-bold">${escapeHtml(data.category)} (${confPct}%)</span>`;
+
+      // Order pollution badge
+      let pollutionHtml = '';
+      if (data.order_pollution_detected) {
+        pollutionHtml = `
+          <div class="p-3.5 rounded-xl bg-amber-950/30 border border-amber-800 text-xs space-y-1">
+            <div class="font-bold text-amber-300 flex items-center space-x-1.5">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+              <span>Test Order Pollution Confirmed (Phase 5)</span>
+            </div>
+            <p class="text-slate-300">${escapeHtml(data.order_pollution_details || 'Test passed in isolation but failed in the test suite.')}</p>
+          </div>
+        `;
+      } else {
+        pollutionHtml = `
+          <div class="p-2.5 rounded-xl bg-slate-900/40 border border-slate-800 text-[11px] text-slate-400 flex items-center space-x-2 font-mono">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+            <span>No Order Pollution: Test outcome reproduced in isolated execution.</span>
+          </div>
+        `;
+      }
+
+      const evidenceList = (data.evidence_trail || []).map(e => `<li class="flex items-start space-x-1.5"><span class="text-cyan-400 shrink-0">&bull;</span><span>${escapeHtml(e)}</span></li>`).join('');
+      const stepsList = (data.investigate_next || []).map((s, idx) => `<li class="flex items-start space-x-2"><span class="text-slate-500 font-mono">${idx+1}.</span><span>${escapeHtml(s)}</span></li>`).join('');
+
+      html = `
+        <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-5">
+          <!-- Investigation Title & Verdict Bar -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+            <div>
+              <div class="flex items-center space-x-2 text-xs text-slate-400 mb-1">
+                <span class="font-mono text-cyan-400">${escapeHtml(data.test_file)}</span>
+                <span>::</span>
+                <span class="font-mono text-white font-bold">${escapeHtml(data.test_name)}</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                ${catBadge}
+                ${data.is_quarantined ? '<span class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">QUARANTINED</span>' : ''}
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="runOnDemandProbe('${escapeHtml(data.test_file)}', '${escapeHtml(data.test_name)}', 5)"
+                class="px-3 py-1.5 rounded-lg bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-800 text-xs font-medium transition flex items-center space-x-1">
+                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                <span>5x Rerun Probe</span>
+              </button>
+              <button onclick="toggleTestQuarantine('${escapeHtml(data.test_id)}', ${!data.is_quarantined})"
+                class="px-3 py-1.5 rounded-lg ${data.is_quarantined ? 'bg-slate-800 hover:bg-slate-750 text-slate-300' : 'bg-purple-950 hover:bg-purple-900 text-purple-300 border border-purple-800'} text-xs font-medium transition">
+                ${data.is_quarantined ? 'Un-Quarantine' : 'Quarantine Test'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Order Pollution Alert Banner -->
+          ${pollutionHtml}
+
+          <!-- 5 Questions Answers Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Box 1: What Exactly Went Wrong? -->
+            <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
+              <div class="text-[11px] font-semibold text-rose-300 uppercase tracking-wide flex items-center space-x-1.5">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-rose-400"></i>
+                <span>1. What exactly went wrong?</span>
+              </div>
+              <div class="p-2.5 rounded bg-rose-950/20 border border-rose-900/50 font-mono text-rose-300 text-[11px] break-words">
+                ${escapeHtml(data.what_went_wrong)}
+              </div>
+            </div>
+
+            <!-- Box 2: Why Did It Fail? -->
+            <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
+              <div class="text-[11px] font-semibold text-cyan-300 uppercase tracking-wide flex items-center space-x-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>2. Why did the test fail?</span>
+              </div>
+              <p class="text-slate-300 leading-relaxed">${escapeHtml(data.why_it_failed)}</p>
+            </div>
+
+            <!-- Box 3: Evidence Trail -->
+            <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
+              <div class="text-[11px] font-semibold text-purple-300 uppercase tracking-wide flex items-center space-x-1.5">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-purple-400"></i>
+                <span>3. Supporting Evidence Trail</span>
+              </div>
+              <ul class="space-y-1.5 text-slate-300 font-mono text-[11px]">
+                ${evidenceList || '<li class="text-slate-500">No traceframes available.</li>'}
+              </ul>
+            </div>
+
+            <!-- Box 4: Developer Next Steps -->
+            <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
+              <div class="text-[11px] font-semibold text-emerald-300 uppercase tracking-wide flex items-center space-x-1.5">
+                <i data-lucide="list-checks" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>4. What should you investigate next?</span>
+              </div>
+              <ul class="space-y-1.5 text-slate-300">
+                ${stepsList || '<li class="text-slate-500">Manual review recommended.</li>'}
+              </ul>
+            </div>
+          </div>
+
+          <!-- Box 5: Grounded AI Proposed Repair -->
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="text-[11px] font-semibold text-amber-300 uppercase tracking-wide flex items-center space-x-1.5">
+                <i data-lucide="wrench" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>5. Grounded Repair Proposal (Zero Hallucination Guarantee)</span>
+              </div>
+              ${data.is_grounded ? `<span class="text-[10px] text-emerald-400 font-mono">Grounded (${Math.round((data.repair_confidence || 0.8) * 100)}% match)</span>` : '<span class="text-[10px] text-amber-400 font-mono">Conservative Fallback</span>'}
+            </div>
+            <div class="p-3.5 rounded-lg bg-slate-900 border border-slate-800 font-mono text-xs text-slate-200 whitespace-pre-wrap leading-relaxed">
+              ${escapeHtml(data.suggested_repair)}
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    async function loadRecentHistoryTable() {
+      const container = document.getElementById('intel-history-table-container');
+      if (!container) return;
+      container.innerHTML = `<div class="p-6 text-center text-slate-400"><i data-lucide="loader" class="w-5 h-5 animate-spin mx-auto text-purple-400 mb-2"></i>Loading execution history...</div>`;
+      lucide.createIcons();
+
+      try {
+        const res = await fetch('/api/intelligence/summary');
+        const summary = await res.json();
+        const testRes = await fetch('/api/intelligence/flaky-tests');
+        const allTests = await testRes.json();
+
+        if (!allTests || allTests.length === 0) {
+          container.innerHTML = `
+            <div class="p-8 text-center text-slate-400 text-xs bg-slate-900/60 border border-slate-800 rounded-xl">
+              <i data-lucide="history" class="w-8 h-8 mx-auto text-slate-600 mb-2"></i>
+              <span class="font-bold text-white">No Test Execution Records Stored</span>
+              <p class="text-slate-500 mt-1">Run tests in Stage 3 or execute flakiness probes to record execution telemetry.</p>
+            </div>
+          `;
+          lucide.createIcons();
+          return;
+        }
+
+        let html = `
+          <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/70 shadow-lg font-mono">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-4">Test Identifier</th>
+                  <th class="py-3 px-4">Total Runs</th>
+                  <th class="py-3 px-4">Pass / Fail Ratio</th>
+                  <th class="py-3 px-4">Average Duration</th>
+                  <th class="py-3 px-4">Flakiness Score</th>
+                  <th class="py-3 px-4">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60 text-[11px]">
+        `;
+
+        allTests.forEach(t => {
+          html += `
+            <tr class="hover:bg-slate-850/50 transition">
+              <td class="py-3 px-4">
+                <div class="text-white font-bold">${escapeHtml(t.test_name)}</div>
+                <div class="text-[10px] text-slate-400">${escapeHtml(t.test_file)}</div>
+              </td>
+              <td class="py-3 px-4 font-bold text-slate-200">${t.total_runs}</td>
+              <td class="py-3 px-4">
+                <span class="text-emerald-400 font-bold">${t.passed_runs}P</span> / <span class="text-rose-400 font-bold">${t.failed_runs}F</span>
+              </td>
+              <td class="py-3 px-4 text-slate-400">${t.avg_duration_ms > 0 ? `${t.avg_duration_ms.toFixed(1)}ms` : '-'}</td>
+              <td class="py-3 px-4 text-amber-300 font-bold">${Math.round(t.flakiness_score * 100)}%</td>
+              <td class="py-3 px-4">
+                <button onclick="investigateItem('${escapeHtml(t.test_id)}')" class="px-2 py-1 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 text-[10px] font-bold">Investigate</button>
+              </td>
+            </tr>
+          `;
+        });
+
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+        container.innerHTML = html;
+        lucide.createIcons();
+      } catch (e) {
+        container.innerHTML = `<div class="p-4 text-xs text-rose-400 bg-rose-950/30 border border-rose-800 rounded-xl">Error: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
 
     function openSpecModal(title, clause, explanation, fix, verdict) {
       const modal = document.getElementById('spec-modal');

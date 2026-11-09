@@ -25,6 +25,7 @@ from testpilot.arbitration.models import (
     FailureArbitrationReport,
     ReviewStatus,
 )
+from testpilot.arbitration.flakiness import FlakinessDetectionEngine
 from testpilot.execution.engine import IsolatedExecutionEngine
 from testpilot.execution.models import IsolatedExecutionReport, TestOutcome
 
@@ -41,10 +42,12 @@ class FailureArbitrationEngine:
         workflow_storage: Optional[WorkflowStorageManager] = None,
         context_mgr: Optional[AnalysisContextManager] = None,
         execution_engine: Optional[IsolatedExecutionEngine] = None,
+        flakiness_engine: Optional[FlakinessDetectionEngine] = None,
     ) -> None:
         self.wf_storage = workflow_storage or WorkflowStorageManager()
         self.context_mgr = context_mgr or AnalysisContextManager()
         self.execution_engine = execution_engine or IsolatedExecutionEngine(self.wf_storage, self.context_mgr)
+        self.flakiness_engine = flakiness_engine or FlakinessDetectionEngine()
         self.reports_dir = (self.wf_storage.base_dir.parent / "reports" / "arbitration").resolve()
         self.reports_dir.mkdir(parents=True, exist_ok=True)
 
@@ -180,11 +183,15 @@ class FailureArbitrationEngine:
     ) -> tuple[ArbitrationCategory, float, str, str, list[str]]:
         """
         Deterministic, evidence-grounded failure classification into the 6 categories.
+        Integrates empirical flakiness history and sample-bounded confidence.
         """
         err = (fr.error_message or "").lower()
         tb = (fr.traceback or "").lower()
         t_name = fr.test_name.lower()
         evidence: list[str] = []
+
+        canonical_id = f"{fr.test_file}::{fr.test_name}" if "::" not in fr.test_name else fr.test_name
+        flake_eval = self.flakiness_engine.evaluate_test(canonical_id)
 
         # 1. INFRASTRUCTURE: container, system, network, or environmental failures
         infra_markers = [
@@ -193,6 +200,8 @@ class FailureArbitrationEngine:
         ]
         if any(m in err or m in tb for m in infra_markers):
             evidence.append(f"Infrastructure error signature matched in output: {fr.error_message}")
+            if flake_eval.duration_alert:
+                evidence.append(flake_eval.duration_alert)
             return (
                 ArbitrationCategory.INFRASTRUCTURE,
                 0.95,
@@ -201,13 +210,29 @@ class FailureArbitrationEngine:
                 evidence,
             )
 
-        # 2. FLAKY: timing, random, concurrency, socket
+        # 2. FLAKY: empirical flip detection or timing/concurrency markers
         flaky_markers = ["flaky", "socket", "port in use", "race condition", "deadlock", "retry"]
-        if any(m in t_name or m in err for m in flaky_markers):
-            evidence.append("Intermittent or timing-dependent signature detected.")
+        if flake_eval.classification == "CONFIRMED_FLAKE":
+            evidence.extend(flake_eval.evidence)
+            if flake_eval.duration_alert:
+                evidence.append(flake_eval.duration_alert)
             return (
                 ArbitrationCategory.FLAKY,
-                0.85,
+                flake_eval.confidence,
+                f"Statistically confirmed non-deterministic test: observed {flake_eval.passed_runs} passes and {flake_eval.failed_runs} failures across {flake_eval.total_runs} executions.",
+                "Quarantine test and remediate race condition / non-deterministic dependencies.",
+                evidence,
+            )
+
+        if flake_eval.classification == "SUSPECTED_FLAKE" or any(m in t_name or m in err for m in flaky_markers):
+            evidence.append("Intermittent or timing-dependent signature detected.")
+            if flake_eval.total_runs > 1:
+                evidence.extend(flake_eval.evidence)
+            if flake_eval.duration_alert:
+                evidence.append(flake_eval.duration_alert)
+            return (
+                ArbitrationCategory.FLAKY,
+                flake_eval.confidence if flake_eval.classification == "SUSPECTED_FLAKE" else 0.85,
                 "Test is susceptible to timing variance, port collision, or asynchronous race conditions.",
                 "Rerun test in isolation and stabilize timing assertions.",
                 evidence,
@@ -220,6 +245,8 @@ class FailureArbitrationEngine:
         ]
         if any(m in err for m in defect_markers) or "test_" in err:
             evidence.append(f"Test definition defect detected: {fr.error_message}")
+            if flake_eval.duration_alert:
+                evidence.append(flake_eval.duration_alert)
             return (
                 ArbitrationCategory.TEST_DEFECT,
                 0.90,
@@ -231,6 +258,8 @@ class FailureArbitrationEngine:
         # 4. PRE_EXISTING: if targeted symbol was not in modified diff or test already failed on base
         if fr.targeted_symbol and "baseline" in t_name:
             evidence.append("Test failed on baseline revision prior to active commit.")
+            if flake_eval.duration_alert:
+                evidence.append(flake_eval.duration_alert)
             return (
                 ArbitrationCategory.PRE_EXISTING,
                 0.92,
@@ -243,6 +272,8 @@ class FailureArbitrationEngine:
         if ("assertionerror" in err or "assert" in err) and fr.outcome == TestOutcome.FAILED:
             evidence.append(f"Assertion failed against changed symbol '{fr.targeted_symbol or 'code'}'.")
             evidence.append(f"Target commit hash: {wf.target_commit_hash}")
+            if flake_eval.duration_alert:
+                evidence.append(flake_eval.duration_alert)
             return (
                 ArbitrationCategory.REGRESSION,
                 0.94,
@@ -253,6 +284,8 @@ class FailureArbitrationEngine:
 
         # 6. UNCERTAIN
         evidence.append("Ambiguous failure output without definitive error classification.")
+        if flake_eval.duration_alert:
+            evidence.append(flake_eval.duration_alert)
         return (
             ArbitrationCategory.UNCERTAIN,
             0.50,

@@ -227,6 +227,36 @@ class IsolatedExecutionEngine:
         self.wf_storage.save_workflow(wf)
         self._save_report(report)
 
+        # Ingest execution telemetry into TestHistoryStore (Phase 1 Historical Tracking)
+        try:
+            from testpilot.arbitration.history import TestExecutionRecord, TestHistoryStore
+            h_store = TestHistoryStore.get_instance()
+            records_to_save = []
+            for r in results:
+                canonical_id = f"{r.test_file}::{r.test_name}" if "::" not in r.test_name else r.test_name
+                sig = TestExecutionRecord.create_signature(r.error_message, r.traceback) if r.outcome != TestOutcome.PASSED else ""
+                records_to_save.append(
+                    TestExecutionRecord(
+                        test_id=canonical_id,
+                        test_name=r.test_name,
+                        test_file=r.test_file,
+                        repo_id=wf.repo_id or "default",
+                        commit_hash=wf.target_commit_hash or "HEAD",
+                        workflow_id=wf.workflow_id,
+                        execution_run_id=report.execution_run_id,
+                        outcome=r.outcome.value,
+                        duration_ms=round(r.duration_ms, 2),
+                        failure_signature=sig,
+                        error_message=r.error_message,
+                        traceback=r.traceback,
+                        stdout=r.stdout,
+                        execution_mode=actual_mode,
+                    )
+                )
+            h_store.record_batch(records_to_save)
+        except Exception as e:
+            logger.warning(f"Could not record test execution history: {e}")
+
         # Update global active context
         self.context_mgr.update_active_context(
             current_stage="arbitration",

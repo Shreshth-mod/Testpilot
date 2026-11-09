@@ -57,7 +57,10 @@ from testpilot.evolution import (
 from testpilot.arbitration import (
     ArbitrationCategory,
     FailureArbitrationEngine,
+    FailureInvestigator,
+    FlakinessDetectionEngine,
     ReviewStatus,
+    TestHistoryStore,
 )
 from testpilot.execution import (
     DockerUnavailableError,
@@ -93,7 +96,10 @@ workflow_storage = WorkflowStorageManager()
 impact_engine = ImpactAnalysisEngine(workflow_storage, context_mgr)
 selection_engine = TestSelectionEngine(workflow_storage, context_mgr, impact_engine)
 execution_engine = IsolatedExecutionEngine(workflow_storage, context_mgr, selection_engine)
-arbitration_engine = FailureArbitrationEngine(workflow_storage, context_mgr, execution_engine)
+test_history_store = TestHistoryStore.get_instance()
+flakiness_engine = FlakinessDetectionEngine(test_history_store)
+failure_investigator = FailureInvestigator(test_history_store, flakiness_engine)
+arbitration_engine = FailureArbitrationEngine(workflow_storage, context_mgr, execution_engine, flakiness_engine)
 
 
 # Request schemas
@@ -180,6 +186,34 @@ class ArbitrationReviewRequest(BaseModel):
     review_status: str
     reviewer_notes: Optional[str] = None
     overridden_category: Optional[str] = None
+
+
+class IntelligenceRerunRequest(BaseModel):
+    test_file: str
+    test_name: Optional[str] = None
+    iterations: Optional[int] = 5
+    repo_path: Optional[str] = None
+
+
+class IntelligenceInvestigateRequest(BaseModel):
+    test_id: str
+    test_name: Optional[str] = None
+    test_file: Optional[str] = None
+    error_message: Optional[str] = None
+    traceback: Optional[str] = None
+    category: Optional[str] = None
+    category_confidence: Optional[float] = None
+    targeted_symbol: Optional[str] = None
+    check_pollution: Optional[bool] = True
+    repo_path: Optional[str] = None
+
+
+class IntelligenceQuarantineRequest(BaseModel):
+    test_id: str
+    is_quarantined: bool = True
+    reason: Optional[str] = "Suspected flaky or non-deterministic test"
+    author: Optional[str] = "Developer"
+
 
 
 class ASTParseRequest(BaseModel):
@@ -871,6 +905,200 @@ def get_arbitration_report_endpoint(arbitration_run_id: str) -> dict[str, Any]:
     if not report:
         raise HTTPException(status_code=404, detail=f"Arbitration report '{arbitration_run_id}' not found.")
     return report.model_dump()
+
+
+# =========================================================================
+# 1h. Test Intelligence & Flakiness Detection Subsystem (Phases 1-5)
+# =========================================================================
+@app.get("/api/intelligence/summary")
+def get_intelligence_summary_endpoint() -> dict[str, Any]:
+    """
+    Centralized health dashboard summary aggregating total runs, pass consistency,
+    flakiness metrics, arbitration categories, and reliability alerts.
+    """
+    summaries = test_history_store.get_all_test_summaries()
+    quarantined = test_history_store.get_quarantined_tests()
+    flaky_reports = flakiness_engine.scan_all_tests()
+
+    total_runs = sum(s.total_runs for s in summaries)
+    total_passed = sum(s.passed_count for s in summaries)
+    total_failed = sum(s.failed_count for s in summaries)
+    total_errors = sum(s.error_count for s in summaries)
+    total_skipped = sum(s.skipped_count for s in summaries)
+
+    confirmed_flakes = [r for r in flaky_reports if r.classification == "CONFIRMED_FLAKE"]
+    suspected_flakes = [r for r in flaky_reports if r.classification == "SUSPECTED_FLAKE"]
+
+    pass_rate = round((total_passed / max(1, total_passed + total_failed + total_errors)) * 100, 1)
+
+    # Active workflow arbitration categories
+    active_wf = workflow_storage.get_active_workflow()
+    category_counts = {
+        ArbitrationCategory.REGRESSION.value: 0,
+        ArbitrationCategory.PRE_EXISTING.value: 0,
+        ArbitrationCategory.FLAKY.value: 0,
+        ArbitrationCategory.INFRASTRUCTURE.value: 0,
+        ArbitrationCategory.TEST_DEFECT.value: 0,
+        ArbitrationCategory.UNCERTAIN.value: 0,
+    }
+    if active_wf and active_wf.arbitration_run_id:
+        arb_report = arbitration_engine.get_report(active_wf.arbitration_run_id)
+        if arb_report:
+            category_counts = arb_report.category_counts
+
+    # Synthesize Reliability Degradation Alerts
+    alerts: list[dict[str, str]] = []
+    if pass_rate < 80.0 and (total_passed + total_failed) > 5:
+        alerts.append({
+            "type": "PASS_RATE_DEGRADATION",
+            "severity": "high",
+            "message": f"Global test suite pass rate has degraded to {pass_rate}%. Multiple regressions or test defects detected.",
+        })
+
+    for cf in confirmed_flakes:
+        alerts.append({
+            "type": "CONFIRMED_FLAKE",
+            "severity": "medium",
+            "message": f"Confirmed non-deterministic test '{cf.test_name}' has flakiness score {int(cf.flakiness_score*100)}% across {cf.total_runs} runs.",
+            "test_id": cf.test_id,
+        })
+
+    for sf in suspected_flakes:
+        if sf.total_runs >= 2:
+            alerts.append({
+                "type": "SUSPECTED_FLAKE",
+                "severity": "low",
+                "message": f"Suspected flaky test '{sf.test_name}' observed {sf.passed_runs} pass and {sf.failed_runs} fail ({sf.total_runs} runs, confidence {int(sf.confidence*100)}%). Run flakiness probe.",
+                "test_id": sf.test_id,
+            })
+
+    for r in flaky_reports:
+        if r.duration_alert:
+            alerts.append({
+                "type": "DURATION_VOLATILITY",
+                "severity": "low",
+                "message": f"{r.test_name}: {r.duration_alert}",
+                "test_id": r.test_id,
+            })
+
+    return {
+        "total_tracked_tests": len(summaries),
+        "total_executions": total_runs,
+        "passed_count": total_passed,
+        "failed_count": total_failed,
+        "error_count": total_errors,
+        "skipped_count": total_skipped,
+        "pass_rate_pct": pass_rate,
+        "confirmed_flakes_count": len(confirmed_flakes),
+        "suspected_flakes_count": len(suspected_flakes),
+        "quarantined_count": len(quarantined),
+        "category_counts": category_counts,
+        "reliability_alerts": alerts,
+        "active_workflow_id": active_wf.workflow_id if active_wf else None,
+    }
+
+
+@app.get("/api/intelligence/flaky-tests")
+def get_flaky_tests_endpoint() -> list[dict[str, Any]]:
+    """Returns all tracked tests evaluated for flakiness, ranked by flakiness score and confidence."""
+    reports = flakiness_engine.scan_all_tests()
+    return [r.model_dump() for r in reports]
+
+
+@app.post("/api/intelligence/rerun")
+def rerun_test_probe_endpoint(payload: IntelligenceRerunRequest) -> dict[str, Any]:
+    """
+    Empirical on-demand rerun probe: runs the test N consecutive times in isolation,
+    records every iteration into TestHistoryStore, and recomputes flakiness confidence.
+    """
+    active_ctx = context_mgr.get_active_context()
+    target_repo = payload.repo_path or active_ctx.repo_path or "."
+    active_wf = workflow_storage.get_active_workflow()
+
+    report = flakiness_engine.rerun_test_on_demand(
+        test_file=payload.test_file,
+        test_name=payload.test_name,
+        iterations=payload.iterations or 5,
+        repo_path=target_repo,
+        repo_id=active_wf.repo_id if active_wf else "default",
+        commit_hash=active_wf.target_commit_hash if active_wf else "HEAD",
+        workflow_id=active_wf.workflow_id if active_wf else None,
+    )
+    return report.model_dump()
+
+
+@app.get("/api/intelligence/history/{test_id:path}")
+def get_test_history_endpoint(test_id: str) -> dict[str, Any]:
+    """Returns chronological execution records and statistical summary for a specific test."""
+    history = test_history_store.get_history(test_id, limit=50)
+    stats = test_history_store.get_test_stats(test_id)
+    flakiness = flakiness_engine.evaluate_test(test_id)
+    is_quarantined = test_history_store.is_quarantined(test_id)
+
+    return {
+        "test_id": test_id,
+        "summary": stats.model_dump() if stats else None,
+        "flakiness": flakiness.model_dump(),
+        "is_quarantined": is_quarantined,
+        "history": [r.model_dump() for r in history],
+    }
+
+
+@app.post("/api/intelligence/investigate")
+def investigate_failure_endpoint(payload: IntelligenceInvestigateRequest) -> dict[str, Any]:
+    """
+    Deep failure investigation answering the 5 core developer questions:
+    1. What went wrong?
+    2. Why did it fail?
+    3. Failure category & evidence trail?
+    4. Actionable next steps?
+    5. Grounded repair suggestions (strictly returns 'Insufficient evidence' if uncertain).
+    Includes Test Order Pollution detection.
+    """
+    active_ctx = context_mgr.get_active_context()
+    active_wf = workflow_storage.get_active_workflow()
+    repo_p = payload.repo_path or active_ctx.repo_path or "."
+
+    result = failure_investigator.investigate(
+        test_id=payload.test_id,
+        test_name=payload.test_name,
+        test_file=payload.test_file,
+        error_message=payload.error_message,
+        traceback=payload.traceback,
+        category=payload.category,
+        category_confidence=payload.category_confidence,
+        targeted_symbol=payload.targeted_symbol,
+        target_commit_hash=active_wf.target_commit_hash if active_wf else None,
+        repo_path=repo_p,
+        check_pollution=payload.check_pollution if payload.check_pollution is not None else True,
+    )
+    return result.model_dump()
+
+
+@app.post("/api/intelligence/quarantine")
+def toggle_quarantine_endpoint(payload: IntelligenceQuarantineRequest) -> dict[str, Any]:
+    """Toggles quarantine status for a test to prevent flaky tests from breaking CI."""
+    if payload.is_quarantined:
+        test_history_store.quarantine_test(
+            test_id=payload.test_id,
+            reason=payload.reason or "Quarantined via Test Intelligence Dashboard",
+            author=payload.author or "Developer",
+        )
+    else:
+        test_history_store.unquarantine_test(payload.test_id)
+
+    return {
+        "test_id": payload.test_id,
+        "is_quarantined": payload.is_quarantined,
+        "status": "success",
+    }
+
+
+@app.get("/api/intelligence/quarantined")
+def get_quarantined_tests_endpoint() -> dict[str, Any]:
+    """Returns all currently quarantined tests."""
+    return {"quarantined_tests": test_history_store.get_quarantined_tests()}
+
 
 
 # 2. AST Diff & Boundary Parsing
