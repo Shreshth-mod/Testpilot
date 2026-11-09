@@ -9,9 +9,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import atexit
 import logging
+import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import time
 from typing import Any, Optional
 import uuid
@@ -85,8 +87,10 @@ class TestRunner(ABC):
         repo_path: Path,
         security_profile: Optional[DockerSecurityProfile] = None,
         allow_simulated_dry_run: bool = False,
+        allow_local_subprocess: bool = False,
+        execution_mode: str = "auto",
     ) -> tuple[list[TestCaseResult], DockerDiagnostics]:
-        """Executes test cases in an isolated container sandbox."""
+        """Executes test cases in an isolated container sandbox or laptop fallback runner."""
         pass
 
     @abstractmethod
@@ -155,26 +159,176 @@ class PytestDockerRunner(TestRunner):
         repo_path: Path,
         security_profile: Optional[DockerSecurityProfile] = None,
         allow_simulated_dry_run: bool = False,
+        allow_local_subprocess: bool = False,
+        execution_mode: str = "auto",
     ) -> tuple[list[TestCaseResult], DockerDiagnostics]:
         """
-        Executes selected tests in disposable Docker container.
-        Never silently falls back to unsafe local host execution if Docker is unavailable.
+        Executes selected tests in disposable Docker container, or via laptop alternatives
+        (Local Subprocess in Virtualenv, or Safe Simulated Sandbox).
         """
         sec = security_profile or DockerSecurityProfile()
         diagnostics = self.check_docker_availability()
+        mode = (execution_mode or "auto").lower()
 
-        if not diagnostics.is_available:
-            if not allow_simulated_dry_run:
+        # Explicit mode handling
+        if mode == "simulated":
+            logger.info("Executing via Simulated Sandbox as requested.")
+            return self._run_simulated_sandbox(test_cases, repo_path), diagnostics
+
+        if mode == "local":
+            logger.info("Executing via Local Subprocess runner as requested.")
+            return self._run_local_subprocess(test_cases, repo_path), diagnostics
+
+        if mode == "docker":
+            if not diagnostics.is_available:
                 raise DockerUnavailableError(
                     f"Docker daemon unavailable: {diagnostics.error_message}. "
                     "Unsafe local host execution is rejected. Please start Docker Desktop or WSL2."
                 )
-            logger.info("Docker daemon unavailable; performing strict sandboxed dry run as explicitly requested.")
+            return self._run_docker_container(test_cases, repo_path, sec), diagnostics
+
+        # auto mode resolution
+        if diagnostics.is_available:
+            return self._run_docker_container(test_cases, repo_path, sec), diagnostics
+
+        if allow_local_subprocess:
+            logger.info("Docker daemon unavailable; falling back to local subprocess runner as permitted.")
+            return self._run_local_subprocess(test_cases, repo_path), diagnostics
+
+        if allow_simulated_dry_run:
+            logger.info("Docker daemon unavailable; falling back to simulated sandbox as permitted.")
             return self._run_simulated_sandbox(test_cases, repo_path), diagnostics
 
-        # Docker is available: launch container execution
-        results = self._run_docker_container(test_cases, repo_path, sec)
-        return results, diagnostics
+        # Default when neither flag is enabled and docker is unavailable:
+        # Strictly reject host execution unless one of the laptop alternatives is selected
+        raise DockerUnavailableError(
+            f"Docker daemon unavailable: {diagnostics.error_message}. "
+            "Unsafe local host execution is rejected. Please start Docker Desktop or WSL2."
+        )
+
+    def _run_local_subprocess(
+        self,
+        test_cases: list[dict[str, Any]],
+        repo_path: Path,
+    ) -> list[TestCaseResult]:
+        """
+        Executes selected tests locally on the host via subprocess using the active Python/pytest environment.
+        Used as an alternative when Docker Desktop / WSL2 is not available.
+        """
+        results: list[TestCaseResult] = []
+        abs_repo = repo_path.expanduser().resolve()
+
+        env = os.environ.copy()
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
+        pp_parts = [str(abs_repo)]
+        src_path = abs_repo / "src"
+        if src_path.is_dir():
+            pp_parts.insert(0, str(src_path))
+        if "PYTHONPATH" in env and env["PYTHONPATH"]:
+            pp_parts.append(env["PYTHONPATH"])
+        env["PYTHONPATH"] = os.pathsep.join(pp_parts)
+
+        python_bin = sys.executable or "python"
+
+        for tc in test_cases:
+            t_name = tc.get("test_name", "test")
+            raw_t_file = tc.get("test_file", "")
+            try:
+                p = Path(raw_t_file)
+                if p.is_absolute():
+                    t_file = str(p.relative_to(abs_repo)).replace("\\", "/")
+                else:
+                    t_file = raw_t_file.replace("\\", "/")
+            except Exception:
+                t_file = raw_t_file.replace("\\", "/")
+
+            start_t = time.perf_counter()
+
+            cmd = [
+                python_bin, "-m", "pytest",
+                t_file,
+                "-k", t_name,
+                "-v",
+                "-o", "cache_dir=.pytest_cache",
+            ]
+
+            try:
+                res = subprocess.run(
+                    cmd,
+                    cwd=str(abs_repo),
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                    timeout=45,
+                    check=False,
+                )
+                duration_ms = (time.perf_counter() - start_t) * 1000.0
+
+                if res.returncode == 0:
+                    outcome = TestOutcome.PASSED
+                    err_msg = None
+                    tb = None
+                elif res.returncode == 1:
+                    outcome = TestOutcome.FAILED
+                    out_lines = (res.stdout + "\n" + res.stderr).splitlines()
+                    assertion_lines = [l.strip() for l in out_lines if "AssertionError" in l or "E   " in l or "Error:" in l]
+                    fail_summary_lines = [l.strip() for l in out_lines if "FAILED" in l]
+                    if assertion_lines:
+                        err_msg = assertion_lines[0]
+                    elif fail_summary_lines:
+                        err_msg = fail_summary_lines[0]
+                    else:
+                        err_msg = (res.stderr.strip()[:500] or res.stdout.strip()[:500])
+                    tb = extract_failure_traceback(res.stdout, res.stderr, max_chars=4000)
+                else:
+                    outcome = TestOutcome.ERROR
+                    err_msg = res.stderr.strip()[:500] or res.stdout.strip()[:500] or f"Subprocess exited with code {res.returncode}"
+                    tb = extract_failure_traceback(res.stdout, res.stderr, max_chars=4000)
+
+                results.append(
+                    TestCaseResult(
+                        test_name=t_name,
+                        test_file=t_file,
+                        outcome=outcome,
+                        duration_ms=duration_ms,
+                        stdout=res.stdout[:4000],
+                        stderr=res.stderr[:2000],
+                        exit_code=res.returncode,
+                        error_message=err_msg,
+                        traceback=tb,
+                        targeted_symbol=tc.get("targeted_symbol"),
+                        is_user_uploaded=bool(tc.get("is_user_uploaded", False)),
+                        impact_tier=tc.get("impact_tier"),
+                    )
+                )
+            except subprocess.TimeoutExpired:
+                results.append(
+                    TestCaseResult(
+                        test_name=t_name,
+                        test_file=t_file,
+                        outcome=TestOutcome.ERROR,
+                        duration_ms=45000.0,
+                        error_message="Local execution timed out after 45s.",
+                        traceback="TimeoutExpired: Test exceeded 45s local execution ceiling.",
+                        exit_code=-1,
+                        targeted_symbol=tc.get("targeted_symbol"),
+                    )
+                )
+            except Exception as e:
+                results.append(
+                    TestCaseResult(
+                        test_name=t_name,
+                        test_file=t_file,
+                        outcome=TestOutcome.ERROR,
+                        duration_ms=(time.perf_counter() - start_t) * 1000.0,
+                        error_message=f"Local execution exception: {str(e)[:500]}",
+                        traceback=str(e),
+                        exit_code=-1,
+                        targeted_symbol=tc.get("targeted_symbol"),
+                    )
+                )
+
+        return results
 
     def _run_docker_container(
         self,
@@ -261,6 +415,8 @@ class PytestDockerRunner(TestRunner):
                         error_message=err_msg,
                         traceback=tb,
                         targeted_symbol=tc.get("targeted_symbol"),
+                        is_user_uploaded=bool(tc.get("is_user_uploaded", False)),
+                        impact_tier=tc.get("impact_tier"),
                     )
                 )
             except subprocess.TimeoutExpired:
@@ -326,6 +482,8 @@ class PytestDockerRunner(TestRunner):
                     exit_code=0 if exists else 1,
                     error_message=None if exists else f"Test file '{t_file}' not found in sandbox",
                     targeted_symbol=tc.get("targeted_symbol"),
+                    is_user_uploaded=bool(tc.get("is_user_uploaded", False)),
+                    impact_tier=tc.get("impact_tier"),
                 )
             )
         return results

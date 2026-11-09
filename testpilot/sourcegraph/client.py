@@ -534,6 +534,10 @@ class LocalCodeGraphFallback:
             candidate_paths.append(s_root / file_path)
 
         for external_dir in [
+            Path.home() / ".testpilot_repos" / "django",
+            Path.home() / ".testpilot_repos" / "flask",
+            Path.home() / "testpilot-external-test" / "django",
+            Path.home() / "testpilot-external-test" / "flask",
             Path("/Users/sourabh/testpilot-external-test/django"),
             Path("/Users/sourabh/testpilot-external-test/flask"),
         ]:
@@ -922,6 +926,10 @@ class SourcegraphClient:
 
         if q and not fallback.find_definitions(q):
             for cand in [
+                str(Path.home() / ".testpilot_repos" / "django"),
+                str(Path.home() / ".testpilot_repos" / "flask"),
+                str(Path.home() / "testpilot-external-test" / "django"),
+                str(Path.home() / "testpilot-external-test" / "flask"),
                 "/Users/sourabh/testpilot-external-test/django",
                 "/Users/sourabh/testpilot-external-test/flask",
             ]:

@@ -51,6 +51,10 @@ class ActiveAnalysisContext(BaseModel):
     workflow_id: Optional[str] = Field(default=None, description="Linked multi-stage workflow ID")
     base_commit_hash: Optional[str] = Field(default=None, description="Immutable 40-char base commit SHA")
     target_commit_hash: Optional[str] = Field(default=None, description="Immutable 40-char target commit SHA")
+    target_scope: Optional[str] = Field(default="entire_repo", description="Target scope mode (entire_repo, commits, folder, file, class, function, feature, symbols)")
+    target_scope_query: Optional[str] = Field(default="", description="Target query or path from Targeted Test Studio")
+    scoped_symbols: list[dict[str, Any]] = Field(default_factory=list, description="Symbols discovered in Targeted Test Studio")
+    scoped_files: list[str] = Field(default_factory=list, description="Source files discovered in Targeted Test Studio")
     completed_stages: list[str] = Field(default_factory=list, description="List of completed stage names")
     current_stage: str = Field(default="evolution", description="Active workflow stage")
     created_at: str = Field(
@@ -232,6 +236,15 @@ class AnalysisContextManager:
             primary_file = "testbed/app/services/order_service.py"
             primary_symbol = "calculate_order_totals"
 
+        # Fallback to studio scoped targets if available
+        if not primary_file and self._context.scoped_files:
+            primary_file = self._context.scoped_files[0]
+        if not primary_symbol and self._context.scoped_symbols:
+            first_sym = self._context.scoped_symbols[0]
+            c_name = first_sym.get("class_name")
+            s_name = first_sym.get("name", "")
+            primary_symbol = f"{c_name}.{s_name}" if c_name else s_name
+
         # Construct candidate tests & impacts
         prioritized_tests = report_data.get("prioritized_tests", [])
         direct_impacts = report_data.get("direct_impacts", [])
@@ -261,9 +274,11 @@ class AnalysisContextManager:
 
         is_clean, _ = wf_mgr.check_working_tree_clean(repo_path)
         existing_wf = wf_mgr.get_active_workflow()
-        if existing_wf and (existing_wf.repo_id == canonical_repo_id or existing_wf.workflow_id == self._context.workflow_id):
+        if existing_wf and existing_wf.repo_id == canonical_repo_id:
             wf = existing_wf
             wf_id = wf.workflow_id
+            wf.repo_path = str(repo_path)
+            wf.repo_name = resolved_name
             wf.base_commit_hash = base_sha
             wf.target_commit_hash = target_sha
             wf.is_dirty = not is_clean
@@ -318,6 +333,10 @@ class AnalysisContextManager:
             generated_tests=[],
             execution_results=[],
             arbitration_results=[],
+            target_scope=self._context.target_scope,
+            target_scope_query=self._context.target_scope_query,
+            scoped_symbols=self._context.scoped_symbols,
+            scoped_files=self._context.scoped_files,
             workflow_id=wf_id,
             base_commit_hash=base_sha,
             target_commit_hash=target_sha,

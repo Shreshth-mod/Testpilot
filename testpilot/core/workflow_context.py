@@ -105,6 +105,9 @@ class WorkflowContext(BaseModel):
     execution_run_id: Optional[str] = None
     arbitration_run_id: Optional[str] = None
 
+    # User uploaded custom test cases with analyzed impact
+    uploaded_tests: list[dict[str, Any]] = Field(default_factory=list)
+
     stages: dict[str, StageMetadata] = Field(default_factory=dict)
     created_at: str = Field(default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     updated_at: str = Field(default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
@@ -575,6 +578,13 @@ class WorkflowStorageManager:
                     target_gf = ws_gen_dir / gf.name
                     if not target_gf.exists():
                         shutil.copy2(gf, target_gf)
+
+            # 4. Synchronize user uploaded test cases into workspace
+            for ut in getattr(context, "uploaded_tests", []):
+                rel_p = ut.get("relative_file_path") or f"tests/uploaded/{ut.get('file_name', 'test_custom.py')}"
+                ws_ut = ws_path / rel_p
+                ws_ut.parent.mkdir(parents=True, exist_ok=True)
+                ws_ut.write_text(ut.get("code", ""), encoding="utf-8")
 
             return ws_path, True
         except Exception as e:

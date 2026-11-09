@@ -62,6 +62,8 @@ class TestCaseResult(BaseModel):
     traceback: Optional[str] = None
     targeted_symbol: Optional[str] = None
     exit_code: int = 0
+    is_user_uploaded: bool = False
+    impact_tier: Optional[str] = None
 
 
 class IsolatedExecutionReport(BaseModel):
@@ -92,6 +94,7 @@ class IsolatedExecutionReport(BaseModel):
 
     # Security & Diagnostics
     is_docker_isolated: bool = True
+    execution_mode: str = "docker"
     security_profile: DockerSecurityProfile = Field(default_factory=DockerSecurityProfile)
     docker_diagnostics: DockerDiagnostics = Field(default_factory=DockerDiagnostics)
 

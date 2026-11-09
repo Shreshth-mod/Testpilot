@@ -37,7 +37,9 @@ class EvaluationStorage:
         self.cases: dict[str, BenchmarkCase] = {}
 
         # 1. Pallets Flask (Real-World)
-        flask_path = str(Path.home() / "testpilot-external-test" / "flask")
+        default_flask_path = Path.home() / ".testpilot_repos" / "flask"
+        alt_flask_path = Path.home() / "testpilot-external-test" / "flask"
+        flask_path = str(default_flask_path if default_flask_path.exists() else alt_flask_path)
         self.cases["flask_ipv6"] = BenchmarkCase(
             case_id="flask_ipv6",
             name="Flask IPv6 Server Name Parsing (#6096)",
@@ -65,7 +67,9 @@ class EvaluationStorage:
         )
 
         # 2. Django (Real-World)
-        django_path = str(Path.home() / "testpilot-external-test" / "django")
+        default_django_path = Path.home() / ".testpilot_repos" / "django"
+        alt_django_path = Path.home() / "testpilot-external-test" / "django"
+        django_path = str(default_django_path if default_django_path.exists() else alt_django_path)
         self.cases["django_model_rename"] = BenchmarkCase(
             case_id="django_model_rename",
             name="Django Chained RenameModel Permissions (#37361)",

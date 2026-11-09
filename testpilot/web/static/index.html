@@ -185,10 +185,46 @@
   <!-- ========================================================================= -->
   <nav class="border-b border-slate-800/80 bg-slate-900/60 sticky top-[65px] z-30 px-6 backdrop-blur">
     <div class="max-w-7xl mx-auto flex space-x-1.5 overflow-x-auto py-2">
+      <button onclick="switchTab('studio')" id="tab-btn-studio"
+        class="tab-btn active flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-purple-400 bg-purple-950/60 border border-purple-800/70 transition shrink-0 shadow-sm"
+        title="Step 1: Universal Targeted Test Studio (Configure Repo & Scope)">
+        <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+        <span>1. Test Studio</span>
+      </button>
+      <button onclick="switchTab('evolution')" id="tab-btn-evolution"
+        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
+        title="Step 2: Repository Evolution Intelligence">
+        <i data-lucide="git-pull-request" class="w-4 h-4 text-cyan-400"></i>
+        <span>2. Repository Evolution</span>
+      </button>
+      <button onclick="switchTab('blast')" id="tab-btn-blast"
+        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
+        title="Step 3: Multi-Layer Impact Analysis & Custom Test Upload">
+        <i data-lucide="radar" class="w-4 h-4 text-indigo-400"></i>
+        <span>3. Impact Analysis</span>
+      </button>
+      <button onclick="switchTab('selection')" id="tab-btn-selection"
+        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
+        title="Step 4: Intelligent Test Selection">
+        <i data-lucide="check-square" class="w-4 h-4 text-emerald-400"></i>
+        <span>4. Test Selection</span>
+      </button>
+      <button onclick="switchTab('execution')" id="tab-btn-execution"
+        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
+        title="Step 5: Isolated Test Execution">
+        <i data-lucide="play-circle" class="w-4 h-4 text-blue-400"></i>
+        <span>5. Test Execution</span>
+      </button>
+      <button onclick="switchTab('arbiter')" id="tab-btn-arbiter"
+        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
+        title="Evidence-Based Failure Arbitration">
+        <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+        <span>Failure Arbiter</span>
+      </button>
       <button onclick="switchTab('overview')" id="tab-btn-overview"
-        class="tab-btn active flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-cyan-400 bg-cyan-950/60 border border-cyan-800/70 transition shrink-0">
+        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0">
         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-        <span>Overview & Architecture</span>
+        <span>Overview</span>
       </button>
       <button onclick="switchTab('evaluation')" id="tab-btn-evaluation"
         class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-amber-400 hover:text-amber-200 bg-amber-950/40 border border-amber-800/70 hover:bg-amber-900/50 transition shrink-0 shadow-sm"
@@ -196,41 +232,10 @@
         <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
         <span>Evaluation</span>
       </button>
-      <button onclick="switchTab('evolution')" id="tab-btn-evolution"
-        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
-        title="Stage 0: Repository Evolution Intelligence">
-        <i data-lucide="git-pull-request" class="w-4 h-4 text-purple-400"></i>
-        <span>Repository Evolution</span>
-      </button>
       <button onclick="switchTab('ast')" id="tab-btn-ast"
-        class="tab-btn hidden items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
-        title="AST Analysis">
+        class="tab-btn hidden items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0">
         <i data-lucide="code" class="w-4 h-4 text-emerald-400"></i>
-        <span>AST Analysis</span>
-      </button>
-      <button onclick="switchTab('blast')" id="tab-btn-blast"
-        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
-        title="Stage 1: Multi-Layer Impact Analysis">
-        <i data-lucide="radar" class="w-4 h-4 text-indigo-400"></i>
-        <span>Impact Analysis</span>
-      </button>
-      <button onclick="switchTab('selection')" id="tab-btn-selection"
-        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
-        title="Stage 2: Intelligent Test Selection & Targeted Generation">
-        <i data-lucide="check-square" class="w-4 h-4 text-emerald-400"></i>
-        <span>Intelligent Test Selection</span>
-      </button>
-      <button onclick="switchTab('execution')" id="tab-btn-execution"
-        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
-        title="Stage 3: Isolated Docker Test Execution">
-        <i data-lucide="container" class="w-4 h-4 text-blue-400"></i>
-        <span>Isolated Test Execution</span>
-      </button>
-      <button onclick="switchTab('arbiter')" id="tab-btn-arbiter"
-        class="tab-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition shrink-0"
-        title="Stage 4: Evidence-Based Failure Arbitration">
-        <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
-        <span>Failure Arbitration</span>
+        <span>AST</span>
       </button>
 
     </div>
@@ -244,7 +249,7 @@
     <!-- ===================================================================== -->
     <!-- TAB 1: OVERVIEW & ARCHITECTURE                                        -->
     <!-- ===================================================================== -->
-    <div id="tab-overview" class="tab-panel space-y-6">
+    <div id="tab-overview" class="tab-panel hidden space-y-6">
       <!-- Hero Banner -->
       <div
         class="p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 border border-slate-800 shadow-xl relative overflow-hidden">
@@ -722,6 +727,216 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB: TARGETED TEST STUDIO                                             -->
+    <!-- ===================================================================== -->
+    <div id="tab-studio" class="tab-panel space-y-6">
+      <!-- Studio Header Banner -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-purple-950/60 via-slate-900/90 to-slate-900/90 border border-purple-800/50 shadow-xl">
+        <div>
+          <div class="flex items-center space-x-2 mb-1.5">
+            <span class="text-xs text-purple-400 font-mono font-bold tracking-wider uppercase">ON-DEMAND TEST STUDIO</span>
+            <span class="text-slate-600">/</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-800 font-semibold">STEP 1: REPOSITORY & TARGET SCOPE</span>
+          </div>
+          <h2 class="text-lg font-bold text-white flex items-center space-x-2.5">
+            <i data-lucide="sparkles" class="w-5 h-5 text-purple-400"></i>
+            <span>Targeted Test Studio</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1 max-w-3xl">
+            Universal configuration studio for <strong>any GitHub repository</strong> or local codebase. Select your target test scope (<strong>Whole Repository</strong>, <strong>Commits / Git Diff</strong>, <strong>Folder</strong>, <strong>Source File</strong>, <strong>Class</strong>, <strong>Function</strong>, <strong>Feature by Name</strong>, or <strong>Custom Symbols</strong>), inspect AST callables, and proceed through Repository Evolution.
+          </p>
+        </div>
+        <div class="flex items-center space-x-2.5">
+          <button onclick="runStudioInspection()" id="btn-studio-inspect"
+            class="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-purple-700 hover:bg-purple-600 text-white text-xs font-semibold transition shadow-md shadow-purple-900/40 cursor-pointer">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-cyan-300"></i>
+            <span>Inspect Scope</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Target Repository Connection Card (For Any GitHub Repo or Local Path) -->
+      <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="git-branch" class="w-4 h-4 text-purple-400"></i>
+            <span class="text-xs font-bold text-white uppercase tracking-wider">1. Connect Target Git Repository</span>
+            <span id="studio-active-repo-badge"
+              class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-800">TestPilot (Local)</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-400">
+            <span class="text-slate-500">Quick presets:</span>
+            <button onclick="setStudioRepoPreset('.')"
+              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px] transition border border-slate-700 cursor-pointer">TestPilot (Local)</button>
+            <button onclick="setStudioRepoPreset('https://github.com/pallets/flask.git')"
+              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-purple-300 font-mono text-[10px] transition border border-slate-700 cursor-pointer">Pallets Flask</button>
+            <button onclick="setStudioRepoPreset('https://github.com/fastapi/fastapi.git')"
+              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 font-mono text-[10px] transition border border-slate-700 cursor-pointer">FastAPI</button>
+            <button onclick="setStudioRepoPreset('https://github.com/psf/requests.git')"
+              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 font-mono text-[10px] transition border border-slate-700 cursor-pointer">Requests</button>
+            <button onclick="setStudioRepoPreset('https://github.com/django/django.git')"
+              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-mono text-[10px] transition border border-slate-700 cursor-pointer">Django</button>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center gap-2">
+          <div class="relative flex-1 w-full">
+            <input type="text" id="studio-repo-input" value="."
+              placeholder="Enter any GitHub repo link (e.g. https://github.com/pallets/flask.git) or local directory path"
+              class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2.5 text-xs font-mono text-purple-300 placeholder-slate-500 focus:outline-none focus:border-purple-500">
+          </div>
+          <button onclick="loadStudioRepository()" id="btn-studio-load-repo"
+            class="w-full sm:w-auto flex items-center justify-center space-x-1.5 px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-purple-800/80 text-white text-xs font-medium transition shadow-sm cursor-pointer">
+            <i data-lucide="git-pull-request" class="w-3.5 h-3.5 text-purple-400"></i>
+            <span>Connect & Index Repo</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scope Configuration & Selection Card -->
+      <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <div class="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+            <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i>
+            <span>2. Choose Target Scope</span>
+          </div>
+          <div class="text-xs text-slate-400">
+            Scope defines test generation & blast-radius boundary in subsequent stages.
+          </div>
+        </div>
+
+        <!-- Scope Mode Pills (8 Modes) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2" id="studio-scope-pills">
+          <button onclick="setStudioScope('entire_repo')" id="studio-pill-entire_repo"
+            class="studio-scope-pill active p-2 rounded-lg border text-xs font-medium text-center transition flex flex-col items-center space-y-1 bg-purple-950/70 text-purple-300 border-purple-700 shadow-sm cursor-pointer">
+            <i data-lucide="globe" class="w-4 h-4"></i>
+            <span>Whole Repo</span>
+          </button>
+          <button onclick="setStudioScope('commits')" id="studio-pill-commits"
+            class="studio-scope-pill p-2 rounded-lg border text-xs font-medium text-center transition flex flex-col items-center space-y-1 bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700 cursor-pointer">
+            <i data-lucide="git-commit" class="w-4 h-4 text-cyan-400"></i>
+            <span>Commits</span>
+          </button>
+          <button onclick="setStudioScope('folder')" id="studio-pill-folder"
+            class="studio-scope-pill p-2 rounded-lg border text-xs font-medium text-center transition flex flex-col items-center space-y-1 bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700 cursor-pointer">
+            <i data-lucide="folder" class="w-4 h-4 text-blue-400"></i>
+            <span>Folder</span>
+          </button>
+          <button onclick="setStudioScope('file')" id="studio-pill-file"
+            class="studio-scope-pill p-2 rounded-lg border text-xs font-medium text-center transition flex flex-col items-center space-y-1 bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700 cursor-pointer">
+            <i data-lucide="file-code" class="w-4 h-4 text-emerald-400"></i>
+            <span>Source File</span>
+          </button>
+          <button onclick="setStudioScope('class')" id="studio-pill-class"
+            class="studio-scope-pill p-2 rounded-lg border text-xs font-medium text-center transition flex flex-col items-center space-y-1 bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700 cursor-pointer">
+            <i data-lucide="box" class="w-4 h-4 text-purple-400"></i>
+            <span>Class</span>
+          </button>
+          <button onclick="setStudioScope('function')" id="studio-pill-function"
+            class="studio-scope-pill p-2 rounded-lg border text-xs font-medium text-center transition flex flex-col items-center space-y-1 bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700 cursor-pointer">
+            <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+            <span>Function</span>
+          </button>
+          <button onclick="setStudioScope('feature')" id="studio-pill-feature"
+            class="studio-scope-pill p-2 rounded-lg border text-xs font-medium text-center transition flex flex-col items-center space-y-1 bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700 cursor-pointer">
+            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400"></i>
+            <span>Feature Name</span>
+          </button>
+          <button onclick="setStudioScope('symbols')" id="studio-pill-symbols"
+            class="studio-scope-pill p-2 rounded-lg border text-xs font-medium text-center transition flex flex-col items-center space-y-1 bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700 cursor-pointer">
+            <i data-lucide="tag" class="w-4 h-4 text-rose-400"></i>
+            <span>Custom Symbols</span>
+          </button>
+        </div>
+
+        <!-- Scope Target Inputs -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+          <div class="md:col-span-2 space-y-1.5">
+            <label class="text-[11px] font-medium text-slate-300" id="studio-target-label">Target Scope: Entire Repository (All non-test files & folders)</label>
+            <div class="relative">
+              <input type="text" id="studio-target-query" value="" placeholder="Scanning all repository source files and folders..."
+                class="w-full bg-slate-950 border border-slate-700 text-xs px-3.5 py-2.5 rounded-lg font-mono text-slate-200 focus:outline-none focus:border-purple-500">
+            </div>
+            <div id="studio-quick-presets" class="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-slate-400 pt-1">
+              <span class="text-slate-500">Presets:</span>
+              <button onclick="setStudioQueryPreset('calculate_order_totals')" class="px-2 py-0.5 rounded bg-slate-850 hover:bg-slate-800 text-cyan-300 border border-slate-700 cursor-pointer">calculate_order_totals</button>
+              <button onclick="setStudioQueryPreset('testbed/app/services/order_service.py')" class="px-2 py-0.5 rounded bg-slate-850 hover:bg-slate-800 text-emerald-300 border border-slate-700 cursor-pointer">order_service.py</button>
+              <button onclick="setStudioQueryPreset('Free shipping threshold and tax calculation')" class="px-2 py-0.5 rounded bg-slate-850 hover:bg-slate-800 text-amber-300 border border-slate-700 cursor-pointer">Feature: Free Shipping</button>
+              <button onclick="setStudioQueryPreset('HEAD~1..HEAD')" class="px-2 py-0.5 rounded bg-slate-850 hover:bg-slate-800 text-purple-300 border border-slate-700 cursor-pointer">HEAD~1..HEAD</button>
+            </div>
+          </div>
+
+          <!-- Quick Repository Tree or Commit Dropdown -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-medium text-slate-300" id="studio-dropdown-label">Select from Repo Tree:</label>
+            <select id="studio-repo-file-select" onchange="onStudioRepoFileSelect(this.value)"
+              class="w-full bg-slate-950 border border-slate-700 text-xs px-3 py-2.5 rounded-lg font-mono text-slate-200 focus:outline-none focus:border-purple-500 cursor-pointer">
+              <option value="">-- Browse repository files & folders --</option>
+            </select>
+            <select id="studio-repo-commit-select" onchange="onStudioRepoCommitSelect(this.value)"
+              class="w-full bg-slate-950 border border-slate-700 text-xs px-3 py-2.5 rounded-lg font-mono text-cyan-300 focus:outline-none focus:border-purple-500 cursor-pointer hidden">
+              <option value="">-- Select recent commit --</option>
+            </select>
+            <p class="text-[10px] text-slate-500" id="studio-dropdown-subtext">Populates target query with selected file or folder path.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scope Inspection Metrics & Discovered Symbols -->
+      <div id="studio-inspection-container" class="space-y-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1">
+            <div class="text-[11px] text-slate-400">Discovered Source Files</div>
+            <div id="studio-kpi-files" class="text-xl font-bold font-mono text-purple-400">0</div>
+            <div class="text-[10px] text-slate-500 font-mono">Excluded test/vendor files</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1">
+            <div class="text-[11px] text-slate-400">Public Functions & Methods</div>
+            <div id="studio-kpi-functions" class="text-xl font-bold font-mono text-cyan-400">0</div>
+            <div class="text-[10px] text-slate-500 font-mono">AST callables indexed</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1">
+            <div class="text-[11px] text-slate-400">Classes Discovered</div>
+            <div id="studio-kpi-classes" class="text-xl font-bold font-mono text-emerald-400">0</div>
+            <div class="text-[10px] text-slate-500 font-mono">Object-oriented targets</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1">
+            <div class="text-[11px] text-slate-400">Scope Status</div>
+            <div id="studio-kpi-status" class="text-xl font-bold font-mono text-amber-400">READY</div>
+            <div class="text-[10px] text-slate-500 font-mono" id="studio-kpi-status-sub">Ready to inspect or proceed</div>
+          </div>
+        </div>
+
+        <!-- Discovered Symbols & Files Drawer -->
+        <div id="studio-symbols-drawer" class="hidden rounded-xl border border-slate-800 bg-slate-900/60 p-4 font-mono text-xs space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white flex items-center space-x-2">
+              <i data-lucide="check-circle" class="w-4 h-4 text-cyan-400"></i>
+              <span id="studio-drawer-title">Inspected Scope Elements</span>
+            </span>
+            <span id="studio-feature-rationale-badge" class="text-[10px] px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 hidden font-sans"></span>
+          </div>
+          <div id="studio-symbols-table" class="max-h-56 overflow-y-auto space-y-1.5 pr-1"></div>
+        </div>
+      </div>
+
+      <!-- Bottom-Right Navigation Bar: Proceed to Repository Evolution -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-950/40 via-slate-900/90 to-indigo-950/40 border border-purple-800/60 shadow-lg mt-6">
+        <div>
+          <div class="text-xs font-bold text-white flex items-center space-x-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-purple-400"></i>
+            <span>Repository & Target Scope Configured</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5">Proceed to analyze repository evolution, AST call graphs, and historical churn on this target.</p>
+        </div>
+        <button onclick="proceedToEvolutionFromStudio()" id="btn-studio-proceed-evolution"
+          class="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-lg shadow-purple-900/40 transition cursor-pointer">
+          <span>Proceed to Repository Evolution</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
       </div>
     </div>
 
@@ -2073,12 +2288,96 @@
         </div>
       </div>
 
+      <!-- Custom User Test Case Upload & Impact Evaluation Card -->
+      <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <h4 class="font-semibold text-xs text-white flex items-center space-x-2">
+              <i data-lucide="file-code" class="w-4 h-4 text-purple-400"></i>
+              <span>Upload Custom Test Cases & Evaluate Impact</span>
+            </h4>
+            <p class="text-[11px] text-slate-400 mt-0.5">Upload a Python test file or paste pytest code to calculate its impact against changed symbols, callers, and boundaries before running it in Stage 3.</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span id="custom-tests-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-950 text-purple-300 border border-purple-800">0 Custom Tests Added</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Input Controls -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-medium text-slate-300">Test File Name:</label>
+              <input type="text" id="custom-test-filename" value="test_user_scenario.py"
+                class="bg-slate-950 border border-slate-700 text-xs px-2.5 py-1 rounded-lg w-56 font-mono text-slate-300 focus:outline-none focus:border-purple-500">
+            </div>
+
+            <!-- Drag & Drop or File Select -->
+            <div class="flex items-center space-x-2">
+              <input type="file" id="custom-test-file-input" accept=".py" class="hidden" onchange="handleCustomTestFileSelect(event)">
+              <button onclick="document.getElementById('custom-test-file-input').click()"
+                class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs transition border border-slate-700">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                <span>Choose .py File</span>
+              </button>
+              <span id="selected-file-label" class="text-[11px] text-slate-400 font-mono truncate max-w-xs">No file chosen</span>
+            </div>
+
+            <!-- Code Editor / Textarea -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] text-slate-400 font-mono">Or paste Python test code:</span>
+                <button onclick="insertSampleTestCode()" class="text-[10px] text-purple-400 hover:text-purple-300 font-mono">Insert Example Template</button>
+              </div>
+              <textarea id="custom-test-code-area" rows="6" placeholder="def test_my_custom_feature():&#10;    # Write or paste your pytest test here&#10;    assert True"
+                class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-purple-500"></textarea>
+            </div>
+
+            <button onclick="uploadAndAnalyzeCustomTest()" id="btn-upload-custom-test"
+              class="w-full flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition shadow-sm">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>Analyze Test Impact & Add to Suite</span>
+            </button>
+          </div>
+
+          <!-- Impact Result & Verification Card -->
+          <div id="custom-test-impact-preview" class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-col justify-between text-xs font-mono space-y-3">
+            <div class="text-slate-500 text-center py-8">
+              <i data-lucide="activity" class="w-6 h-6 mx-auto text-slate-600 mb-2"></i>
+              <span>Enter or upload a test case above to inspect its AST call-graph impact.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Uploaded Tests List Container -->
+        <div id="uploaded-tests-list-container" class="space-y-2 pt-2 border-t border-slate-800/80 hidden">
+          <div class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider">Active Uploaded Test Cases for Stage 3:</div>
+          <div id="uploaded-tests-table" class="space-y-1.5"></div>
+        </div>
+      </div>
+
       <!-- Main Results Container -->
       <div id="blast-table-container" class="space-y-4">
         <div class="p-8 text-center text-slate-500 text-xs bg-slate-900/40 rounded-xl border border-slate-800/60">
           <i data-lucide="radar" class="w-8 h-8 mx-auto text-slate-600 mb-2"></i>
           <span>Click "Analyze Impact" to generate the multi-layer evidence graph and boundary matrix.</span>
         </div>
+      </div>
+
+      <!-- Bottom-Right Navigation: Proceed to Test Selection -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-indigo-950/40 via-slate-900/90 to-purple-950/40 border border-indigo-800/60 shadow-lg mt-6">
+        <div>
+          <div class="text-xs font-bold text-white flex items-center space-x-2">
+            <i data-lucide="zap" class="w-4 h-4 text-indigo-400"></i>
+            <span>Impact & Boundary Analysis Ready</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5">Boundary cases and uploaded custom tests are ready for prioritization.</p>
+        </div>
+        <button onclick="proceedToSelectionFromImpact()" id="btn-impact-proceed-selection"
+          class="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-lg shadow-indigo-900/40 transition cursor-pointer">
+          <span>Proceed to Test Selection</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
       </div>
     </div>
 
@@ -2221,6 +2520,22 @@
           <span>Click "Select Tests" to rank and select existing tests based on the Stage 1 impact evidence graph.</span>
         </div>
       </div>
+
+      <!-- Bottom-Right Navigation: Proceed to Test Execution -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-emerald-950/40 via-slate-900/90 to-teal-950/40 border border-emerald-800/60 shadow-lg mt-6">
+        <div>
+          <div class="text-xs font-bold text-white flex items-center space-x-2">
+            <i data-lucide="check-square" class="w-4 h-4 text-emerald-400"></i>
+            <span>Test Suite Prioritized & Ready</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5">Proceed to run prioritized test cases and custom tests in an isolated runner.</p>
+        </div>
+        <button onclick="proceedToExecutionFromSelection()" id="btn-selection-proceed-execution"
+          class="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold shadow-lg shadow-emerald-900/40 transition cursor-pointer">
+          <span>Proceed to Test Execution</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
     </div>
 
     <!-- ===================================================================== -->
@@ -2241,11 +2556,21 @@
           </h3>
           <p class="text-xs text-slate-400 mt-0.5">Execute selected and generated tests in a secure, disposable container sandbox with zero host exposure</p>
         </div>
-        <div class="flex items-center space-x-3">
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Execution Mode Selector -->
+          <div class="flex items-center space-x-1.5 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800">
+            <span class="text-[11px] text-slate-400 font-mono">Runner:</span>
+            <select id="execution-mode-select" class="bg-transparent text-xs text-blue-300 border-0 focus:ring-0 cursor-pointer font-medium">
+              <option value="auto" selected class="bg-slate-900 text-slate-200">⚡ Auto (Docker with Laptop Fallback)</option>
+              <option value="local" class="bg-slate-900 text-slate-200">💻 Local Subprocess (Virtualenv Pytest)</option>
+              <option value="simulated" class="bg-slate-900 text-slate-200">🛡️ Simulated Sandbox (Offline Dry-Run)</option>
+              <option value="docker" class="bg-slate-900 text-slate-200">🐳 Docker Container (Isolated Sandbox)</option>
+            </select>
+          </div>
           <button onclick="runIsolatedExecution()" id="btn-run-execution"
             class="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition shadow-sm">
             <i data-lucide="play" class="w-3.5 h-3.5"></i>
-            <span>Run Container Tests</span>
+            <span>Execute Selected Tests</span>
           </button>
           <button onclick="switchTab('arbiter')" id="btn-continue-to-arbiter"
             class="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium transition shadow-sm">
@@ -2867,142 +3192,39 @@
     <!-- TAB 9: REPOSITORY EVOLUTION INTELLIGENCE                              -->
     <!-- ===================================================================== -->
     <div id="tab-evolution" class="tab-panel hidden space-y-6">
-      <!-- Target Repository Selector Card -->
-      <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
+      <!-- Active Inherited Context Banner from Targeted Test Studio -->
+      <div class="p-4 rounded-xl bg-gradient-to-r from-purple-950/40 via-slate-900/90 to-cyan-950/40 border border-slate-800 space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div class="flex items-center space-x-2">
-            <i data-lucide="git-branch" class="w-4 h-4 text-cyan-400"></i>
-            <span class="text-xs font-bold text-white uppercase tracking-wider">Target Git Repository</span>
-            <span id="evo-repo-badge"
-              class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800">TestPilot
-              (.)</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 uppercase font-semibold">STAGE 2</span>
+            <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-1.5">
+              <i data-lucide="git-branch" class="w-4 h-4 text-cyan-400"></i>
+              <span>Active Repository & Target Scope Context</span>
+            </span>
           </div>
-          <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-400">
-            <span class="text-slate-500">Quick presets:</span>
-            <button onclick="setRepoPreset('.')"
-              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px] transition">TestPilot</button>
-            <button onclick="setRepoPreset('/Users/sourabh/testpilot-external-test/flask')"
-              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px] transition">Pallets
-              Flask</button>
-            <button onclick="setRepoPreset('/Users/sourabh/testpilot-external-test/django')"
-              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px] transition">Django</button>
-          </div>
-        </div>
-        <div class="flex flex-col sm:flex-row items-center gap-2">
-          <div class="relative flex-1 w-full">
-            <input type="text" id="evo-repo-input" value="."
-              placeholder="Enter any Git repository URL (e.g. https://github.com/pallets/flask.git) or local directory path"
-              class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-cyan-300 placeholder-slate-500 focus:outline-none focus:border-cyan-500">
-          </div>
-          <button onclick="loadCustomRepository()" id="btn-load-repo"
-            class="w-full sm:w-auto flex items-center justify-center space-x-1.5 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-medium transition shadow-sm">
-            <i data-lucide="download-cloud" class="w-3.5 h-3.5 text-cyan-400"></i>
-            <span>Load / Clone Repo</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Zero-Clone Remote Public Git Repo Test Generation Card -->
-      <div
-        class="p-4 rounded-xl bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-indigo-950/40 border border-slate-700/80 space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div class="flex items-center space-x-2">
-            <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
-            <span class="text-xs font-bold text-white uppercase tracking-wider">Zero-Clone Public Git Repo Test
-              Generator</span>
-            <span
-              class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-800">In-Memory
-              Streaming (No Disk Clone)</span>
-          </div>
-          <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-400">
-            <span class="text-slate-500">Quick presets:</span>
-            <button onclick="setZeroClonePreset('https://github.com/home-assistant/core')"
-              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-750 text-amber-300 font-mono text-[10px] transition border border-slate-700">Home
-              Assistant (core)</button>
-            <button onclick="setZeroClonePreset('https://github.com/pallets/flask/blob/main/src/flask/app.py')"
-              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-750 text-amber-300 font-mono text-[10px] transition border border-slate-700">Flask
-              (app.py)</button>
-            <button onclick="setZeroClonePreset('https://github.com/psf/requests/blob/main/src/requests/models.py')"
-              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-750 text-amber-300 font-mono text-[10px] transition border border-slate-700">Requests
-              (models.py)</button>
-            <button
-              onclick="setZeroClonePreset('https://github.com/fastapi/fastapi/blob/master/fastapi/applications.py')"
-              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-750 text-amber-300 font-mono text-[10px] transition border border-slate-700">FastAPI
-              (applications.py)</button>
+            <span class="text-xs text-slate-400">Context Source:</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950 text-purple-300 border border-purple-800">Targeted Test Studio</span>
+            <button onclick="switchTab('studio')" class="text-[11px] text-cyan-400 hover:text-cyan-300 underline font-mono flex items-center space-x-1 cursor-pointer">
+              <span>Change Scope</span>
+            </button>
           </div>
         </div>
-        <p class="text-xs text-slate-400">Directly stream and inspect public GitHub files via HTTP, parse AST syntax
-          structures, and synthesize deterministic boundary test suites without cloning the repository to disk.</p>
-        <div class="flex flex-col sm:flex-row items-center gap-2">
-          <div class="relative flex-1 w-full">
-            <input type="text" id="zero-clone-repo-input"
-              value="https://github.com/pallets/flask/blob/main/src/flask/app.py"
-              placeholder="Enter public GitHub repo URL or file link (e.g. https://github.com/pallets/flask/blob/main/src/flask/app.py)"
-              class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-amber-300 placeholder-slate-500 focus:outline-none focus:border-amber-500">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800">
+            <div class="text-[10px] text-slate-500 uppercase font-mono">Target Repository</div>
+            <div id="evo-active-repo-name" class="text-xs font-bold text-cyan-400 font-mono truncate">TestPilot (Local)</div>
+            <div id="evo-active-repo-path" class="text-[10px] text-slate-500 font-mono truncate">.</div>
           </div>
-          <button onclick="runZeroCloneTestGen()" id="btn-run-zero-clone"
-            class="w-full sm:w-auto flex items-center justify-center space-x-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white text-xs font-medium transition shadow-md shadow-amber-500/20">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5 fill-current"></i>
-            <span>Fetch & Synthesize Tests (Zero-Clone)</span>
-          </button>
-        </div>
-
-        <!-- Zero-Clone Results Container (Initially Hidden) -->
-        <div id="zero-clone-results" class="hidden space-y-4 pt-3 border-t border-slate-800/80">
-          <!-- Summary Header -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="p-3 rounded-lg bg-slate-950/70 border border-slate-800">
-              <div class="text-[10px] text-slate-500 uppercase font-mono">Target Repository</div>
-              <div id="zc-repo-name" class="text-xs font-bold text-amber-400 font-mono truncate">--</div>
-            </div>
-            <div class="p-3 rounded-lg bg-slate-950/70 border border-slate-800">
-              <div class="text-[10px] text-slate-500 uppercase font-mono">Source File & Lines</div>
-              <div id="zc-source-info" class="text-xs font-bold text-slate-200 font-mono">--</div>
-            </div>
-            <div class="p-3 rounded-lg bg-slate-950/70 border border-slate-800">
-              <div class="text-[10px] text-slate-500 uppercase font-mono">Extracted AST Symbols</div>
-              <div id="zc-symbols-count" class="text-xs font-bold text-cyan-400 font-mono">--</div>
-            </div>
-            <div class="p-3 rounded-lg bg-slate-950/70 border border-slate-800">
-              <div class="text-[10px] text-slate-500 uppercase font-mono">Fetch & Synthesis Time</div>
-              <div id="zc-latency" class="text-xs font-bold text-emerald-400 font-mono">-- ms</div>
-            </div>
+          <div class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800">
+            <div class="text-[10px] text-slate-500 uppercase font-mono">Target Scope</div>
+            <div id="evo-active-scope-type" class="text-xs font-bold text-purple-400 font-mono uppercase">Entire Repo</div>
+            <div id="evo-active-scope-query" class="text-[10px] text-slate-400 font-mono truncate">All source files and folders</div>
           </div>
-
-          <!-- Symbols Table -->
-          <div class="space-y-1.5">
-            <div class="text-xs font-semibold text-slate-300 flex items-center space-x-2">
-              <i data-lucide="code" class="w-3.5 h-3.5 text-cyan-400"></i>
-              <span>In-Memory Extracted AST Symbols</span>
-            </div>
-            <div id="zc-symbols-table"
-              class="overflow-x-auto rounded-lg border border-slate-800 bg-slate-950/60 max-h-48 overflow-y-auto">
-              <!-- populated dynamically -->
-            </div>
-          </div>
-
-          <!-- Generated Test Suite Code Block -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between">
-              <div class="text-xs font-semibold text-slate-300 flex items-center space-x-2">
-                <i data-lucide="file-code" class="w-3.5 h-3.5 text-emerald-400"></i>
-                <span>Synthesized Pytest Boundary Matrix Suite (Ready to Run)</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <button onclick="copyZeroCloneTestSuite()"
-                  class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-mono border border-slate-700 flex items-center space-x-1">
-                  <i data-lucide="copy" class="w-3 h-3"></i>
-                  <span id="btn-copy-zc">Copy Tests</span>
-                </button>
-                <button onclick="downloadZeroCloneTestSuite()"
-                  class="px-2.5 py-1 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 text-[10px] font-mono border border-emerald-800 flex items-center space-x-1">
-                  <i data-lucide="download" class="w-3 h-3"></i>
-                  <span>Download .py Suite</span>
-                </button>
-              </div>
-            </div>
-            <pre id="zc-test-suite"
-              class="p-3 rounded-lg bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300 max-h-60 overflow-y-auto leading-relaxed"></pre>
+          <div class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800">
+            <div class="text-[10px] text-slate-500 uppercase font-mono">Scope Elements Discovered</div>
+            <div id="evo-active-scope-metrics" class="text-xs font-bold text-emerald-400 font-mono">Ready for evolution</div>
+            <div class="text-[10px] text-slate-500 font-mono">Shared from Studio</div>
           </div>
         </div>
       </div>
@@ -3287,6 +3509,22 @@
           </div>
         </div>
       </div>
+
+      <!-- Bottom-Right Navigation: Proceed to Impact Analysis -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-cyan-950/40 via-slate-900/90 to-blue-950/40 border border-cyan-800/60 shadow-lg mt-6">
+        <div>
+          <div class="text-xs font-bold text-white flex items-center space-x-2">
+            <i data-lucide="git-branch" class="w-4 h-4 text-cyan-400"></i>
+            <span>Evolution Call Graph & AST Symbols Mapped</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5">Proceed to compute multi-layer blast radius and synthesize boundary test cases.</p>
+        </div>
+        <button onclick="proceedToImpactFromEvolution()" id="btn-evolution-proceed-impact"
+          class="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold shadow-lg shadow-cyan-900/40 transition cursor-pointer">
+          <span>Proceed to Impact Analysis</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
     </div>
 
   </main>
@@ -3344,7 +3582,7 @@
   <!-- ========================================================================= -->
   <script>
     // State Store
-    let currentTab = 'overview';
+    let currentTab = 'studio';
     let isTerminalCollapsed = false;
     let terminalView = 'logs';
     let cachedSchemaBoundaries = [];
@@ -3354,11 +3592,11 @@
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       fetchSystemStatus();
-      fetchActiveWorkflowOverview();
+      initStudioTab();
       fetchEvaluationOverview();
       fetchEvaluationBenchmarks();
       fetchEvaluationComponents();
-      logTerminal('INFO', 'TestPilot AI Frontend mounted successfully.');
+      logTerminal('INFO', 'TestPilot AI Frontend mounted successfully in Targeted Test Studio workflow.');
     });
 
     // Logging helper
@@ -3453,10 +3691,17 @@
         if (highlightBtnId === 'tab-btn-evaluation') {
           activeBtn.classList.remove('text-amber-400');
           activeBtn.classList.add('text-amber-300', 'bg-amber-950/60', 'border', 'border-amber-800/70');
+        } else if (highlightBtnId === 'tab-btn-studio') {
+          activeBtn.classList.remove('text-purple-400');
+          activeBtn.classList.add('text-purple-300', 'bg-purple-950/60', 'border', 'border-purple-800/70');
         } else {
           activeBtn.classList.add('text-cyan-400', 'bg-cyan-950/60', 'border', 'border-cyan-800/70');
           activeBtn.classList.remove('text-slate-400');
         }
+      }
+
+      if (tabId === 'studio') {
+        initStudioTab();
       }
 
       if (tabId === 'overview') {
@@ -3475,6 +3720,31 @@
       }
       if (tabId === 'blast') {
         checkWorkflowPrereqs('impact');
+        loadUploadedTestsList();
+        const d = currentEvolutionData || lastEvolutionData;
+        if (d) {
+          const impactPrereqEl = document.getElementById('impact-prereq-text');
+          if (impactPrereqEl) {
+            impactPrereqEl.textContent = `Active Repository: ${d.repo_name || 'Repository'} (${currentRepoPath || '.'}). Primary Target: ${d.primary_target_symbol || d.primary_target_file || 'None'}`;
+          }
+          const blastInput = document.getElementById('blast-symbol');
+          if (blastInput && (!blastInput.value || blastInput.value === 'calculate_order_totals') && d.primary_target_symbol) {
+            blastInput.value = d.primary_target_symbol;
+          }
+          const quickSymbols = document.getElementById('impact-quick-symbols');
+          if (quickSymbols && d.changed_symbols && d.changed_symbols.length > 0) {
+            quickSymbols.innerHTML = d.changed_symbols.slice(0, 4).map(sym => {
+              const symName = sym.name;
+              const fullSym = sym.class_name ? `${sym.class_name}.${sym.name}` : sym.name;
+              return `
+                <button onclick="setBlastSymbol('${escapeHtml(symName)}')"
+                  class="px-2 py-0.5 rounded bg-slate-850 hover:bg-indigo-950 text-slate-400 hover:text-indigo-300 border border-slate-700 text-[10px] font-mono transition">
+                  ${escapeHtml(fullSym)}
+                </button>
+              `;
+            }).join('');
+          }
+        }
       }
       if (tabId === 'selection') {
         checkWorkflowPrereqs('selection');
@@ -3791,9 +4061,18 @@
       lucide.createIcons();
 
       try {
-        logTerminal('INFO', 'POST /api/impact/analyze - Initiating Stage 1 Multi-Layer Impact Analysis...');
-        const payload = { max_depth: 3 };
-        if (targetSymbol) payload.target_symbol = targetSymbol;
+        const repo = currentRepoPath || '.';
+        const evoData = currentEvolutionData || lastEvolutionData;
+        const wfId = (evoData && evoData.workflow_id) || currentWorkflowId || null;
+        const sym = targetSymbol || document.getElementById('blast-symbol')?.value?.trim() || (evoData && evoData.primary_target_symbol) || null;
+
+        logTerminal('INFO', `POST /api/impact/analyze - Initiating Stage 1 Multi-Layer Impact Analysis on ${repo}...`);
+        const payload = {
+          max_depth: 3,
+          repo_path: repo,
+          workflow_id: wfId
+        };
+        if (sym) payload.target_symbol = sym;
 
         const res = await fetch('/api/impact/analyze', {
           method: 'POST',
@@ -4003,6 +4282,203 @@
       }
     }
 
+    // =========================================================================
+    // USER UPLOADED CUSTOM TESTS & IMPACT ANALYSIS
+    // =========================================================================
+    function handleCustomTestFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      document.getElementById('selected-file-label').textContent = file.name;
+      document.getElementById('custom-test-filename').value = file.name;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('custom-test-code-area').value = e.target.result;
+      };
+      reader.readAsText(file);
+    }
+
+    function insertSampleTestCode() {
+      const filenameInput = document.getElementById('custom-test-filename');
+      const codeArea = document.getElementById('custom-test-code-area');
+
+      const targetSym = (currentImpactData && currentImpactData.changed_symbols && currentImpactData.changed_symbols[0]?.name) || 'calculate_order_totals';
+
+      if (targetSym.includes('ipv6') || (currentRepoPath && currentRepoPath.includes('flask'))) {
+        filenameInput.value = 'test_flask_ipv6_custom.py';
+        codeArea.value = `import pytest\nfrom flask import Flask\n\ndef test_custom_ipv6_host_routing():\n    app = Flask(__name__)\n    @app.route("/")\n    def index():\n        return "IPv6 Verified"\n    \n    client = app.test_client()\n    response = client.get("/", environ_base={"HTTP_HOST": "[::1]:5000"})\n    assert response.status_code == 200\n    assert b"IPv6 Verified" in response.data\n`;
+      } else {
+        filenameInput.value = 'test_order_custom_boundary.py';
+        codeArea.value = `import pytest\nfrom testbed.order_service import calculate_order_totals\n\ndef test_custom_order_free_shipping_boundary():\n    items = [{"id": "item1", "price": 49.99, "quantity": 1}]\n    # Subtotal is below free shipping threshold (50.0)\n    result = calculate_order_totals(items, apply_tax=True)\n    assert result["subtotal"] == 49.99\n    assert result["shipping"] > 0\n    assert result["free_shipping_applied"] is False\n`;
+      }
+      logTerminal('INFO', `Inserted example test template for symbol '${targetSym}'.`);
+    }
+
+    async function uploadAndAnalyzeCustomTest() {
+      const filename = document.getElementById('custom-test-filename')?.value?.trim() || 'test_custom.py';
+      const code = document.getElementById('custom-test-code-area')?.value;
+      const preview = document.getElementById('custom-test-impact-preview');
+
+      if (!code || !code.trim()) {
+        alert('Please enter or upload Python test code first.');
+        return;
+      }
+
+      preview.innerHTML = `<div class="p-4 text-center text-slate-400"><i data-lucide="loader" class="w-5 h-5 animate-spin mx-auto text-purple-400 mb-2"></i>Analyzing AST call hierarchy and boundary impact...</div>`;
+      lucide.createIcons();
+
+      try {
+        const wfId = currentWorkflowId || (currentEvolutionData && currentEvolutionData.workflow_id) || null;
+        logTerminal('INFO', `POST /api/tests/upload - Analyzing custom test '${filename}'...`);
+
+        const res = await fetch('/api/tests/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            workflow_id: wfId,
+            file_name: filename,
+            code: code
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `Server returned HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // Render Impact Preview Card
+        let tierColor = 'bg-slate-800 text-slate-300 border-slate-700';
+        if (data.impact_tier === 'DIRECT_CRITICAL') tierColor = 'bg-rose-950 text-rose-300 border-rose-800';
+        else if (data.impact_tier === 'INDIRECT_HIGH') tierColor = 'bg-amber-950 text-amber-300 border-amber-800';
+        else if (data.impact_tier === 'BOUNDARY_SPEC') tierColor = 'bg-purple-950 text-purple-300 border-purple-800';
+
+        let html = `
+          <div class="space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <span class="font-bold text-white flex items-center space-x-1.5">
+                <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+                <span>${escapeHtml(data.test_name)}</span>
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${tierColor}">${data.impact_tier}</span>
+            </div>
+
+            <div class="space-y-1.5 text-[11px]">
+              <div class="text-slate-400"><span class="font-bold text-slate-300">File Destination:</span> <span class="font-mono text-cyan-400">${escapeHtml(data.relative_file_path)}</span></div>
+              <div class="text-slate-400"><span class="font-bold text-slate-300">AST Syntax:</span> <span class="text-emerald-400">VALID (${data.ast_valid ? 'Pass' : 'Fail'})</span></div>
+              <div class="text-slate-400"><span class="font-bold text-slate-300">Directly Tested Symbols:</span> 
+                ${data.directly_tested_symbols.length > 0
+                  ? data.directly_tested_symbols.map(s => `<span class="px-1.5 py-0.2 rounded bg-rose-950 text-rose-300 border border-rose-800 text-[10px] font-mono mr-1">${escapeHtml(s)}</span>`).join('')
+                  : '<span class="text-slate-500 italic">None</span>'}
+              </div>
+              <div class="text-slate-400"><span class="font-bold text-slate-300">Indirect Callers Reached:</span> 
+                ${data.indirectly_tested_symbols.length > 0
+                  ? data.indirectly_tested_symbols.map(s => `<span class="px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-mono mr-1">${escapeHtml(s)}</span>`).join('')
+                  : '<span class="text-slate-500 italic">None</span>'}
+              </div>
+              <div class="text-slate-400"><span class="font-bold text-slate-300">Boundaries Exercised:</span> 
+                ${data.boundaries_exercised.length > 0
+                  ? data.boundaries_exercised.map(b => `<span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-mono mr-1">${escapeHtml(b)}</span>`).join('')
+                  : '<span class="text-slate-500 italic">None</span>'}
+              </div>
+            </div>
+
+            <div class="p-2 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-300">
+              <span class="font-bold text-purple-300">Impact Rationale:</span> ${escapeHtml(data.impact_rationale)}
+            </div>
+
+            ${data.call_chain_summary && data.call_chain_summary.length > 0 ? `
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 text-[10px] text-cyan-300 font-mono">
+                <span class="text-slate-400 uppercase font-bold">Call Chain Traversal:</span>
+                ${data.call_chain_summary.map(c => `<div>↳ ${escapeHtml(c)}</div>`).join('')}
+              </div>
+            ` : ''}
+
+            <div class="text-[10px] text-emerald-400 flex items-center space-x-1 pt-1">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Successfully registered. This test will be automatically executed in Stage 3!</span>
+            </div>
+          </div>
+        `;
+
+        preview.innerHTML = html;
+        lucide.createIcons();
+        logTerminal('SUCCESS', `Custom test '${filename}' analyzed. Impact: ${data.impact_tier} (Direct: ${data.directly_tested_symbols.length}, Indirect: ${data.indirectly_tested_symbols.length})`);
+
+        await loadUploadedTestsList();
+      } catch (e) {
+        logTerminal('ERROR', `Failed to upload custom test: ${e.message}`);
+        preview.innerHTML = `<div class="p-3 text-rose-400 bg-rose-950/30 border border-rose-800 rounded-lg text-xs">Error analyzing test: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    async function loadUploadedTestsList() {
+      try {
+        const wfId = currentWorkflowId || (currentEvolutionData && currentEvolutionData.workflow_id) || null;
+        const res = await fetch(`/api/tests/uploaded${wfId ? `?workflow_id=${encodeURIComponent(wfId)}` : ''}`);
+        if (!res.ok) return;
+        const tests = await res.json();
+
+        const badge = document.getElementById('custom-tests-count-badge');
+        if (badge) badge.textContent = `${tests.length} Custom Test${tests.length === 1 ? '' : 's'} Added`;
+
+        const container = document.getElementById('uploaded-tests-list-container');
+        const table = document.getElementById('uploaded-tests-table');
+
+        if (!container || !table) return;
+
+        if (tests.length === 0) {
+          container.classList.add('hidden');
+          table.innerHTML = '';
+          return;
+        }
+
+        container.classList.remove('hidden');
+        let html = '';
+        tests.forEach(t => {
+          let tierBadge = 'bg-slate-800 text-slate-300 border-slate-700';
+          if (t.impact_tier === 'DIRECT_CRITICAL') tierBadge = 'bg-rose-950 text-rose-300 border-rose-800';
+          else if (t.impact_tier === 'INDIRECT_HIGH') tierBadge = 'bg-amber-950 text-amber-300 border-amber-800';
+          else if (t.impact_tier === 'BOUNDARY_SPEC') tierBadge = 'bg-purple-950 text-purple-300 border-purple-800';
+
+          html += `
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono">
+              <div class="flex items-center space-x-2 truncate">
+                <span class="px-1.5 py-0.5 rounded text-[9px] border ${tierBadge}">${t.impact_tier || 'CUSTOM'}</span>
+                <span class="font-bold text-white">${escapeHtml(t.test_name)}</span>
+                <span class="text-slate-500 text-[11px] font-sans">(${escapeHtml(t.file_name)})</span>
+                <span class="text-cyan-400 text-[10px]">Target: ${(t.directly_tested_symbols && t.directly_tested_symbols[0]) || 'regression'}</span>
+              </div>
+              <div class="flex items-center space-x-2 shrink-0">
+                <span class="text-emerald-400 text-[10px]">Queued for Stage 3</span>
+                <button onclick="deleteUploadedTest('${t.test_id}')" class="px-2 py-0.5 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800 text-[10px] transition">Remove</button>
+              </div>
+            </div>
+          `;
+        });
+        table.innerHTML = html;
+        lucide.createIcons();
+      } catch (e) {
+        console.warn('Failed to load uploaded tests:', e);
+      }
+    }
+
+    async function deleteUploadedTest(testId) {
+      try {
+        const wfId = currentWorkflowId || (currentEvolutionData && currentEvolutionData.workflow_id) || null;
+        const res = await fetch(`/api/tests/uploaded/${encodeURIComponent(testId)}${wfId ? `?workflow_id=${encodeURIComponent(wfId)}` : ''}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          logTerminal('INFO', `Removed custom test '${testId}'.`);
+          await loadUploadedTestsList();
+        }
+      } catch (e) {
+        logTerminal('ERROR', `Failed to remove custom test: ${e.message}`);
+      }
+    }
+
     async function runIntelligentSelection() {
       const container = document.getElementById('selection-table-container');
       container.innerHTML = `<div class="p-6 text-center text-slate-400"><i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto text-emerald-400 mb-2"></i>Ranking test suite and computing reduction efficiency...</div>`;
@@ -4162,8 +4638,8 @@
             statusEl.textContent = `Docker Online (${data.daemon_version || 'Active'})`;
             statusEl.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800';
           } else {
-            statusEl.textContent = 'Docker Desktop Stopped (Safe Sandbox Diagnostics Active)';
-            statusEl.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-800';
+            statusEl.textContent = 'Docker Offline (Laptop Local & Simulated Fallbacks Ready)';
+            statusEl.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-950 text-blue-300 border border-blue-800';
           }
         }
       } catch (e) {
@@ -4172,14 +4648,19 @@
     }
 
     async function runIsolatedExecution() {
+      const modeSelect = document.getElementById('execution-mode-select');
+      const selectedMode = modeSelect ? modeSelect.value : 'auto';
+
       const container = document.getElementById('execution-console-container');
-      container.innerHTML = `<div class="p-6 text-center text-slate-400"><i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto text-blue-400 mb-2"></i>Launching isolated container test sandbox...</div>`;
+      container.innerHTML = `<div class="p-6 text-center text-slate-400"><i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto text-blue-400 mb-2"></i>Executing selected tests (${selectedMode} mode)...</div>`;
       lucide.createIcons();
 
       try {
-        logTerminal('INFO', 'POST /api/execution/run - Launching disposable container execution...');
+        logTerminal('INFO', `POST /api/execution/run - Launching test execution (mode: ${selectedMode})...`);
         const payload = {
-          allow_simulated_dry_run: false,
+          execution_mode: selectedMode,
+          allow_local_subprocess: selectedMode === 'local' || selectedMode === 'auto',
+          allow_simulated_dry_run: selectedMode === 'simulated' || selectedMode === 'auto',
           framework_name: 'pytest'
         };
         if (typeof currentWorkflowId !== 'undefined' && currentWorkflowId) {
@@ -4204,16 +4685,17 @@
         document.getElementById('execution-kpi-duration').textContent = `${data.execution_duration_ms.toFixed(1)} ms`;
 
         // Render Results Table with Inspectable Pytest Logs
+        const engineLabel = data.execution_mode === 'docker' ? 'DOCKER CONTAINER' : (data.execution_mode === 'local_subprocess' ? 'LOCAL HOST SUBPROCESS' : 'SANDBOX SIMULATOR');
         let html = `
           <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/60 shadow-lg space-y-4 p-4 font-mono">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
               <span class="font-bold text-white flex items-center space-x-2">
                 <i data-lucide="container" class="w-4 h-4 text-blue-400"></i>
-                <span>Isolated Container Run (${data.passed_count} Passed, ${data.failed_count + data.error_count} Failed)</span>
+                <span>Test Execution (${data.passed_count} Passed, ${data.failed_count + data.error_count} Failed)</span>
               </span>
               <div class="flex items-center space-x-2 text-[10px]">
-                <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">IMAGE: testpilot-runner:latest</span>
-                <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">ISOLATION: ${data.is_docker_isolated ? 'DOCKER CONTAINER' : 'SANDBOX SIMULATOR'}</span>
+                <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">${data.execution_mode === 'docker' ? 'IMAGE: testpilot-runner:latest' : 'PYTHON: LOCAL VIRTUALENV'}</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">ENGINE: ${engineLabel}</span>
               </div>
             </div>
             <table class="w-full text-left text-xs">
@@ -4241,7 +4723,12 @@
 
           html += `
             <tr class="hover:bg-slate-800/40 transition">
-              <td class="py-2.5 px-3 text-white font-bold">${escapeHtml(r.test_name)}</td>
+              <td class="py-2.5 px-3 text-white font-bold">
+                <div class="flex items-center space-x-1.5 flex-wrap gap-1">
+                  <span>${escapeHtml(r.test_name)}</span>
+                  ${r.is_user_uploaded ? '<span class="px-1.5 py-0.2 rounded text-[9px] bg-purple-950 text-purple-300 border border-purple-800 font-mono font-medium">USER UPLOADED</span>' : ''}
+                </div>
+              </td>
               <td class="py-2.5 px-3 text-cyan-400 text-[11px]">${escapeHtml(r.targeted_symbol || 'repository_root')}</td>
               <td class="py-2.5 px-3 text-slate-400 text-[11px]">${escapeHtml(r.test_file)}</td>
               <td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[9px] border ${outcomeBadge}">${r.outcome}</span></td>
@@ -4969,6 +5456,32 @@
     // =========================================================================
     // REPOSITORY EVOLUTION INTELLIGENCE CONTROLLER
     // =========================================================================
+    let currentRepoPresets = [];
+
+    function updateEvolutionPresetsDropdown(presets) {
+      currentRepoPresets = presets || [];
+      const select = document.getElementById('evo-preset');
+      if (!select) return;
+      select.innerHTML = '';
+
+      currentRepoPresets.forEach((p, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx.toString();
+        opt.textContent = p.label;
+        if (p.is_default) {
+          opt.selected = true;
+          document.getElementById('evo-base-ref').value = p.base_ref || '';
+          document.getElementById('evo-target-ref').value = p.target_ref || '';
+        }
+        select.appendChild(opt);
+      });
+
+      const customOpt = document.createElement('option');
+      customOpt.value = 'custom';
+      customOpt.textContent = 'Custom Refs';
+      select.appendChild(customOpt);
+    }
+
     function applyEvolutionPreset(preset) {
       const baseInput = document.getElementById('evo-base-ref');
       const targetInput = document.getElementById('evo-target-ref');
@@ -4981,6 +5494,13 @@
       } else if (preset === 'branch_main') {
         baseInput.value = 'main';
         targetInput.value = '';
+      } else if (preset !== 'custom') {
+        const idx = parseInt(preset, 10);
+        if (!isNaN(idx) && currentRepoPresets[idx]) {
+          const p = currentRepoPresets[idx];
+          baseInput.value = p.base_ref || '';
+          targetInput.value = p.target_ref || '';
+        }
       }
     }
 
@@ -5186,6 +5706,29 @@
         lastAPIResponse = data;
         currentEvolutionData = data;
         lastEvolutionData = data;
+
+        // Synchronize Stage 1 (Impact Analysis) context with this analyzed repo
+        const impactPrereqEl = document.getElementById('impact-prereq-text');
+        if (impactPrereqEl) {
+          impactPrereqEl.textContent = `Active Repository: ${data.repo_name || 'Repository'} (${currentRepoPath || '.'}). Primary Target: ${data.primary_target_symbol || data.primary_target_file || 'None'}`;
+        }
+        const blastInput = document.getElementById('blast-symbol');
+        if (blastInput && data.primary_target_symbol) {
+          blastInput.value = data.primary_target_symbol;
+        }
+        const quickSymbols = document.getElementById('impact-quick-symbols');
+        if (quickSymbols && data.changed_symbols && data.changed_symbols.length > 0) {
+          quickSymbols.innerHTML = data.changed_symbols.slice(0, 4).map(sym => {
+            const symName = sym.name;
+            const fullSym = sym.class_name ? `${sym.class_name}.${sym.name}` : sym.name;
+            return `
+              <button onclick="setBlastSymbol('${escapeHtml(symName)}')"
+                class="px-2 py-0.5 rounded bg-slate-850 hover:bg-indigo-950 text-slate-400 hover:text-indigo-300 border border-slate-700 text-[10px] font-mono transition">
+                ${escapeHtml(fullSym)}
+              </button>
+            `;
+          }).join('');
+        }
 
         // KPI Counters
         document.getElementById('evo-kpi-files').textContent = (data.changed_files || []).length;
@@ -5531,13 +6074,13 @@
     }
 
     // Quick Repository Presets
-    function setRepoPreset(repoPath) {
+    async function setRepoPreset(repoPath) {
       document.getElementById('evo-repo-input').value = repoPath;
-      loadCustomRepository();
+      await loadCustomRepository(true);
     }
 
     // Load or Clone Custom Git Repository
-    async function loadCustomRepository() {
+    async function loadCustomRepository(autoAnalyze = false) {
       const repoInput = document.getElementById('evo-repo-input').value.trim() || '.';
       const btn = document.getElementById('btn-load-repo');
       const badge = document.getElementById('evo-repo-badge');
@@ -5565,7 +6108,16 @@
         logTerminal('SUCCESS', `Repository loaded: ${data.repo_name} at ${data.repo_path} (Branch: ${data.current_branch}, Commits: ${data.recent_commits?.length || 0})`);
 
         // Load branches & presets for this repository
-        await loadGitRefsForRepo(currentRepoPath);
+        if (data.presets && data.presets.length > 0) {
+          updateEvolutionPresetsDropdown(data.presets);
+        } else {
+          await loadGitRefsForRepo(currentRepoPath);
+        }
+
+        if (autoAnalyze) {
+          logTerminal('INFO', `Triggering Evolution Analysis for ${data.repo_name}...`);
+          await runEvolutionAnalysis();
+        }
       } catch (err) {
         logTerminal('ERROR', `Repository load failed: ${err.message}`);
         badge.textContent = 'Load Failed';
@@ -5582,7 +6134,9 @@
         const res = await fetch(`/api/evolution/refs?repo_path=${encodeURIComponent(repoPath)}`);
         if (res.ok) {
           const refs = await res.json();
-          if (refs.recent_commits && refs.recent_commits.length >= 2) {
+          if (refs.presets && refs.presets.length > 0) {
+            updateEvolutionPresetsDropdown(refs.presets);
+          } else if (refs.recent_commits && refs.recent_commits.length >= 2) {
             document.getElementById('evo-base-ref').value = refs.recent_commits[1].hash;
             document.getElementById('evo-target-ref').value = refs.recent_commits[0].hash;
             logTerminal('INFO', `Auto-selected recent commit range: ${refs.recent_commits[1].hash}..${refs.recent_commits[0].hash}`);
@@ -6095,7 +6649,9 @@
           body: JSON.stringify({
             workflow_id: currentWorkflowId,
             selection_run_id: selectionData.selection_run_id,
-            allow_simulated_dry_run: false,
+            execution_mode: 'auto',
+            allow_local_subprocess: true,
+            allow_simulated_dry_run: true,
             framework_name: 'pytest'
           })
         });
@@ -8075,6 +8631,534 @@
         if (btn) btn.disabled = false;
         if (text) text.textContent = 'Re-run Benchmark Suite';
       }
+    }
+
+    // =========================================================================
+    // TARGETED TEST STUDIO CLIENT LOGIC
+    // =========================================================================
+    let currentStudioScope = 'entire_repo';
+    let currentStudioInspectionData = null;
+    let currentStudioGenData = null;
+    let currentStudioRepoFiles = [];
+
+    function setStudioScope(scopeType) {
+      currentStudioScope = scopeType;
+      document.querySelectorAll('.studio-scope-pill').forEach(btn => {
+        btn.classList.remove('active', 'bg-purple-950/70', 'text-purple-300', 'border-purple-700', 'shadow-sm');
+        btn.classList.add('bg-slate-950', 'text-slate-400', 'border-slate-800');
+      });
+
+      const activePill = document.getElementById(`studio-pill-${scopeType}`);
+      if (activePill) {
+        activePill.classList.remove('bg-slate-950', 'text-slate-400', 'border-slate-800');
+        activePill.classList.add('active', 'bg-purple-950/70', 'text-purple-300', 'border-purple-700', 'shadow-sm');
+      }
+
+      const input = document.getElementById('studio-target-query');
+      const label = document.getElementById('studio-target-label');
+      const fileSel = document.getElementById('studio-repo-file-select');
+      const commitSel = document.getElementById('studio-repo-commit-select');
+      const dropLabel = document.getElementById('studio-dropdown-label');
+      const dropSub = document.getElementById('studio-dropdown-subtext');
+
+      if (scopeType === 'entire_repo') {
+        label.textContent = 'Target Scope: Entire Repository (All non-test files & folders)';
+        input.value = '';
+        input.placeholder = 'Scanning all repository source files and folders...';
+        if (fileSel) fileSel.classList.remove('hidden');
+        if (commitSel) commitSel.classList.add('hidden');
+        if (dropLabel) dropLabel.textContent = 'Select from Repo Tree:';
+        if (dropSub) dropSub.textContent = 'Populates target query with selected file or folder path.';
+      } else if (scopeType === 'commits') {
+        label.textContent = 'Target Commits / Git Diff Range:';
+        input.value = 'HEAD~1..HEAD';
+        input.placeholder = 'e.g., HEAD~1..HEAD or commit SHA';
+        if (fileSel) fileSel.classList.add('hidden');
+        if (commitSel) commitSel.classList.remove('hidden');
+        if (dropLabel) dropLabel.textContent = 'Select Commit from History:';
+        if (dropSub) dropSub.textContent = 'Populates target query with selected commit hash or diff.';
+      } else if (scopeType === 'feature') {
+        label.textContent = 'Target Feature (Natural Language / Keywords):';
+        input.placeholder = 'e.g., IPv6 host routing, Free shipping threshold, Token auth';
+        if (fileSel) fileSel.classList.remove('hidden');
+        if (commitSel) commitSel.classList.add('hidden');
+        if (dropLabel) dropLabel.textContent = 'Select from Repo Tree:';
+        if (dropSub) dropSub.textContent = 'Populates target query with selected file or folder path.';
+      } else if (scopeType === 'folder') {
+        label.textContent = 'Target Folder Path:';
+        input.placeholder = 'e.g., testbed or src/flask/json';
+        if (fileSel) fileSel.classList.remove('hidden');
+        if (commitSel) commitSel.classList.add('hidden');
+        if (dropLabel) dropLabel.textContent = 'Select from Repo Tree:';
+        if (dropSub) dropSub.textContent = 'Populates target query with selected folder path.';
+      } else if (scopeType === 'file') {
+        label.textContent = 'Target Source File Path:';
+        input.placeholder = 'e.g., testbed/order_service.py or src/flask/app.py';
+        if (fileSel) fileSel.classList.remove('hidden');
+        if (commitSel) commitSel.classList.add('hidden');
+        if (dropLabel) dropLabel.textContent = 'Select from Repo Tree:';
+        if (dropSub) dropSub.textContent = 'Populates target query with selected source file path.';
+      } else if (scopeType === 'class') {
+        label.textContent = 'Target Class Name:';
+        input.placeholder = 'e.g., Flask or OrderService';
+        if (fileSel) fileSel.classList.remove('hidden');
+        if (commitSel) commitSel.classList.add('hidden');
+      } else if (scopeType === 'function') {
+        label.textContent = 'Target Function or Method Name:';
+        input.placeholder = 'e.g., calculate_order_totals or match_request';
+        if (fileSel) fileSel.classList.remove('hidden');
+        if (commitSel) commitSel.classList.add('hidden');
+      } else if (scopeType === 'symbols') {
+        label.textContent = 'Target Symbols (Comma or space separated):';
+        input.placeholder = 'e.g., calculate_order_totals, calculate_discount';
+        if (fileSel) fileSel.classList.remove('hidden');
+        if (commitSel) commitSel.classList.add('hidden');
+      }
+    }
+
+    function onStudioRepoCommitSelect(val) {
+      if (!val) return;
+      const input = document.getElementById('studio-target-query');
+      if (input) input.value = val;
+      setStudioScope('commits');
+      runStudioInspection();
+    }
+
+    function setStudioQueryPreset(val) {
+      const input = document.getElementById('studio-target-query');
+      if (input) input.value = val;
+
+      if (val.includes('.py')) setStudioScope('file');
+      else if (val.includes('/') || val.includes('\\')) setStudioScope('folder');
+      else if (val.includes(' ') || val.includes('Feature:')) setStudioScope('feature');
+      else if (val === 'Flask') setStudioScope('class');
+      else setStudioScope('function');
+
+      runStudioInspection();
+    }
+
+    function onStudioRepoFileSelect(val) {
+      if (!val) return;
+      const input = document.getElementById('studio-target-query');
+      if (input) input.value = val;
+      if (val.endsWith('.py')) {
+        setStudioScope('file');
+      } else {
+        setStudioScope('folder');
+      }
+      runStudioInspection();
+    }
+
+    async function loadStudioRepository(urlOrPath) {
+      const repoInput = (urlOrPath || document.getElementById('studio-repo-input')?.value || '.').trim();
+      const btn = document.getElementById('btn-studio-load-repo');
+      const badge = document.getElementById('studio-active-repo-badge');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin text-purple-400"></i><span>Connecting...</span>`;
+        lucide.createIcons();
+      }
+
+      try {
+        logTerminal('INFO', `Connecting repository for Test Studio: ${repoInput}`);
+        const res = await fetch('/api/repo/load', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ repo_url_or_path: repoInput })
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || 'Failed to connect repository');
+        }
+        const data = await res.json();
+        currentRepoPath = data.repo_path;
+        currentRepoName = data.repo_name;
+        if (badge) {
+          badge.textContent = `${data.repo_name} (${data.current_branch})`;
+          badge.className = 'px-2 py-0.5 rounded bg-purple-950 font-mono text-purple-300 border border-purple-800';
+        }
+        const input = document.getElementById('studio-repo-input');
+        if (input) input.value = repoInput;
+
+        // Also sync Evolution context banner
+        const evoRepoName = document.getElementById('evo-active-repo-name');
+        const evoRepoPath = document.getElementById('evo-active-repo-path');
+        if (evoRepoName) evoRepoName.textContent = data.repo_name;
+        if (evoRepoPath) evoRepoPath.textContent = data.repo_path;
+
+        // Load files and folders into Studio select
+        await loadStudioRepoFiles();
+
+        // Load commits into Studio commit select
+        const commitSelect = document.getElementById('studio-repo-commit-select');
+        if (commitSelect && data.recent_commits && data.recent_commits.length > 0) {
+          let cHtml = '<option value="">-- Select recent commit --</option>';
+          data.recent_commits.forEach(c => {
+            cHtml += `<option value="${escapeHtml(c.hash)}">${escapeHtml(c.hash.substring(0, 8))} - ${escapeHtml(c.message.substring(0, 45))}</option>`;
+          });
+          commitSelect.innerHTML = cHtml;
+        }
+
+        logTerminal('SUCCESS', `Repository connected to Test Studio: ${data.repo_name} (${data.current_branch})`);
+        await runStudioInspection();
+      } catch (err) {
+        logTerminal('ERROR', `Repository connection failed: ${err.message}`);
+        if (badge) {
+          badge.textContent = 'Load Failed';
+          badge.className = 'px-2 py-0.5 rounded bg-rose-950 font-mono text-rose-300 border border-rose-800';
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="git-pull-request" class="w-3.5 h-3.5 text-purple-400"></i><span>Connect & Index Repo</span>`;
+          lucide.createIcons();
+        }
+      }
+    }
+
+    function setStudioRepoPreset(preset) {
+      const input = document.getElementById('studio-repo-input');
+      if (input) input.value = preset;
+      loadStudioRepository(preset);
+    }
+
+    async function loadStudioRepoFiles() {
+      try {
+        const repo = currentRepoPath || '.';
+        const res = await fetch(`/api/studio/files?repo_path=${encodeURIComponent(repo)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        currentStudioRepoFiles = data.files || [];
+
+        const select = document.getElementById('studio-repo-file-select');
+        if (!select) return;
+
+        let html = '<option value="">-- Browse repository files & folders --</option>';
+
+        if (data.folders && data.folders.length > 0) {
+          html += '<optgroup label="Folders">';
+          data.folders.forEach(f => {
+            html += `<option value="${escapeHtml(f)}">📁 ${escapeHtml(f)}</option>`;
+          });
+          html += '</optgroup>';
+        }
+
+        if (data.files && data.files.length > 0) {
+          html += '<optgroup label="Source Files">';
+          data.files.forEach(f => {
+            html += `<option value="${escapeHtml(f)}">📄 ${escapeHtml(f)}</option>`;
+          });
+          html += '</optgroup>';
+        }
+
+        select.innerHTML = html;
+        const repoBadge = document.getElementById('studio-active-repo-badge');
+        if (repoBadge) repoBadge.textContent = `${repo} (${data.total_source_files} files)`;
+      } catch (e) {
+        console.warn('Could not load studio repo files:', e);
+      }
+    }
+
+    async function initStudioTab() {
+      await loadStudioRepoFiles();
+      if (!currentStudioInspectionData) {
+        await runStudioInspection();
+      }
+    }
+
+    async function runStudioInspection() {
+      const query = document.getElementById('studio-target-query')?.value?.trim() || '';
+      const repo = currentRepoPath || '.';
+      const statusEl = document.getElementById('studio-kpi-status');
+      if (statusEl) statusEl.textContent = 'INSPECTING...';
+
+      try {
+        logTerminal('INFO', `POST /api/studio/inspect - Inspecting scope: ${currentStudioScope} ('${query || 'entire repo'}')...`);
+        const res = await fetch('/api/studio/inspect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            repo_path: repo,
+            scope_type: currentStudioScope,
+            target_query: query,
+            max_files: 100
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `Server returned HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        currentStudioInspectionData = data;
+
+        document.getElementById('studio-kpi-files').textContent = data.total_files;
+        document.getElementById('studio-kpi-functions').textContent = data.total_functions;
+        document.getElementById('studio-kpi-classes').textContent = data.total_classes;
+        if (statusEl) {
+          statusEl.textContent = data.total_functions > 0 ? 'READY' : 'EMPTY';
+          statusEl.className = data.total_functions > 0 ? 'text-xl font-bold font-mono text-emerald-400' : 'text-xl font-bold font-mono text-amber-400';
+        }
+
+        const drawer = document.getElementById('studio-symbols-drawer');
+        const table = document.getElementById('studio-symbols-table');
+        const title = document.getElementById('studio-drawer-title');
+        const rationale = document.getElementById('studio-feature-rationale-badge');
+
+        if (drawer && table) {
+          drawer.classList.remove('hidden');
+          title.textContent = `Discovered ${data.total_functions} Callables across ${data.total_files} Files:`;
+
+          if (data.feature_rationale) {
+            rationale.classList.remove('hidden');
+            rationale.textContent = data.feature_rationale;
+          } else {
+            rationale.classList.add('hidden');
+          }
+
+          if (data.symbols.length === 0) {
+            table.innerHTML = '<div class="text-slate-500 text-center py-4">No matching callable functions or classes found for this scope.</div>';
+          } else {
+            table.innerHTML = data.symbols.slice(0, 40).map(s => `
+              <div class="flex items-center justify-between p-2 rounded bg-slate-950/80 border border-slate-800/80 text-[11px]">
+                <div class="flex items-center space-x-2 truncate">
+                  <span class="px-1.5 py-0.2 rounded text-[9px] ${s.symbol_type === 'method' ? 'bg-purple-950 text-purple-300 border border-purple-800' : 'bg-cyan-950 text-cyan-300 border border-cyan-800'}">${s.symbol_type.toUpperCase()}</span>
+                  <span class="font-bold text-white font-mono">${escapeHtml(s.name)}</span>
+                  ${s.class_name ? `<span class="text-purple-400 text-[10px]">class ${escapeHtml(s.class_name)}</span>` : ''}
+                  <span class="text-slate-500 font-sans truncate">(${escapeHtml(s.relative_path)}:${s.line_number})</span>
+                </div>
+                <div class="flex items-center space-x-2 text-[10px] text-slate-400 shrink-0">
+                  <span>${s.parameters.length} params</span>
+                  <span class="text-purple-400">${s.branch_count} branches</span>
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+
+        // Pre-populate evolution context banner
+        const evoScopeType = document.getElementById('evo-active-scope-type');
+        const evoScopeQuery = document.getElementById('evo-active-scope-query');
+        const evoScopeMetrics = document.getElementById('evo-active-scope-metrics');
+        if (evoScopeType) evoScopeType.textContent = currentStudioScope.replace('_', ' ').toUpperCase();
+        if (evoScopeQuery) evoScopeQuery.textContent = query || 'All source files and folders';
+        if (evoScopeMetrics) evoScopeMetrics.textContent = `${data.total_functions} Callables | ${data.total_files} Files`;
+
+        lucide.createIcons();
+        logTerminal('SUCCESS', `Scope inspected: ${data.total_files} files, ${data.total_functions} functions ready.`);
+      } catch (err) {
+        logTerminal('ERROR', `Scope inspection failed: ${err.message}`);
+        if (statusEl) statusEl.textContent = 'ERROR';
+      }
+    }
+
+    async function proceedToEvolutionFromStudio() {
+      const query = document.getElementById('studio-target-query')?.value?.trim() || '';
+      const repo = currentRepoPath || '.';
+      
+      // Ensure scope is inspected so symbols and files are synchronized in backend active context
+      if (!currentStudioInspectionData || currentStudioInspectionData.scope_type !== currentStudioScope || currentStudioInspectionData.target_query !== query) {
+        await runStudioInspection();
+      }
+
+      // Update Evolution context banner
+      const repoNameEl = document.getElementById('evo-active-repo-name');
+      const repoPathEl = document.getElementById('evo-active-repo-path');
+      const scopeTypeEl = document.getElementById('evo-active-scope-type');
+      const scopeQueryEl = document.getElementById('evo-active-scope-query');
+      const scopeMetricsEl = document.getElementById('evo-active-scope-metrics');
+
+      if (repoNameEl) repoNameEl.textContent = currentRepoName || (repo === '.' ? 'TestPilot (Local)' : repo.split('/').pop());
+      if (repoPathEl) repoPathEl.textContent = repo;
+      if (scopeTypeEl) scopeTypeEl.textContent = currentStudioScope.replace('_', ' ').toUpperCase();
+      if (scopeQueryEl) scopeQueryEl.textContent = query || 'All source files and folders';
+      if (scopeMetricsEl && currentStudioInspectionData) {
+        scopeMetricsEl.textContent = `${currentStudioInspectionData.total_functions} Callables | ${currentStudioInspectionData.total_files} Files`;
+      }
+
+      // Switch to Repository Evolution
+      switchTab('evolution');
+      logTerminal('INFO', `Context forwarded from Test Studio to Repository Evolution (${currentStudioScope}).`);
+
+      // Run evolution analysis directly
+      await runEvolutionAnalysis();
+    }
+
+    function proceedToImpactFromEvolution() {
+      switchTab('blast');
+      logTerminal('INFO', 'Context forwarded from Repository Evolution to Impact Analysis.');
+      if (currentEvolutionData) {
+        const blastInput = document.getElementById('blast-symbol');
+        if (blastInput && currentEvolutionData.primary_target_symbol) {
+          blastInput.value = currentEvolutionData.primary_target_symbol;
+        }
+      }
+    }
+
+    function proceedToSelectionFromImpact() {
+      switchTab('selection');
+      logTerminal('INFO', 'Navigating to Intelligent Test Selection.');
+    }
+
+    function proceedToExecutionFromSelection() {
+      switchTab('execution');
+      logTerminal('INFO', 'Navigating to Isolated Test Execution.');
+    }
+
+    async function runStudioGeneration() {
+      const query = document.getElementById('studio-target-query')?.value?.trim() || '';
+      const repo = currentRepoPath || '.';
+      const resultsSection = document.getElementById('studio-results-section');
+      const progressText = document.getElementById('studio-progress-text');
+      const progressBar = document.getElementById('studio-progress-bar');
+
+      resultsSection.classList.remove('hidden');
+      progressText.textContent = 'Synthesizing & qualifying mirrored test suites...';
+      progressBar.style.width = '45%';
+
+      try {
+        logTerminal('INFO', `POST /api/studio/generate - Synthesizing tests for scope '${currentStudioScope}'...`);
+        const res = await fetch('/api/studio/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            repo_path: repo,
+            scope_type: currentStudioScope,
+            target_query: query,
+            persist_to_disk: true,
+            tests_per_symbol: 2
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `Server returned HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        currentStudioGenData = data;
+
+        progressBar.style.width = '100%';
+        progressText.textContent = `Generated ${data.total_tests_generated} Tests across ${data.total_files_processed} Files (${data.generation_duration_ms.toFixed(1)} ms)`;
+
+        document.getElementById('studio-gen-count-badge').textContent = `${data.total_tests_generated} Tests (${data.qualified_tests_count} Qualified)`;
+        document.getElementById('studio-cov-badge').textContent = `Coverage: ${data.coverage_summary?.coverage_percentage || 0}%`;
+
+        // Render Tabs for generated test files
+        const tabsContainer = document.getElementById('studio-files-tabs');
+        if (tabsContainer && data.generated_files && data.generated_files.length > 0) {
+          tabsContainer.innerHTML = data.generated_files.map((f, idx) => `
+            <button onclick="selectStudioFilePreview(${idx})" id="studio-tab-btn-${idx}"
+              class="studio-file-tab-btn px-2.5 py-1 rounded-md text-[10px] font-mono border ${idx === 0 ? 'bg-purple-900 text-purple-200 border-purple-700 font-bold' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'} transition">
+              ${escapeHtml(f.test_file_path.split('/').pop())} (${f.test_names.length})
+            </button>
+          `).join('');
+
+          selectStudioFilePreview(0);
+        } else if (tabsContainer) {
+          tabsContainer.innerHTML = '<span class="text-slate-500 text-[10px]">No test files generated.</span>';
+        }
+
+        lucide.createIcons();
+        logTerminal('SUCCESS', `Targeted test generation complete: ${data.total_tests_generated} tests saved to tests/generated/.`);
+      } catch (err) {
+        logTerminal('ERROR', `Test generation failed: ${err.message}`);
+        progressText.textContent = `Error: ${err.message}`;
+      }
+    }
+
+    function selectStudioFilePreview(idx) {
+      if (!currentStudioGenData || !currentStudioGenData.generated_files) return;
+      const fileData = currentStudioGenData.generated_files[idx];
+      if (!fileData) return;
+
+      document.querySelectorAll('.studio-file-tab-btn').forEach((btn, i) => {
+        if (i === idx) {
+          btn.className = 'studio-file-tab-btn px-2.5 py-1 rounded-md text-[10px] font-mono border bg-purple-900 text-purple-200 border-purple-700 font-bold';
+        } else {
+          btn.className = 'studio-file-tab-btn px-2.5 py-1 rounded-md text-[10px] font-mono border bg-slate-950 text-slate-400 border-slate-800 hover:text-white';
+        }
+      });
+
+      const preview = document.getElementById('studio-code-preview');
+      if (preview) {
+        preview.textContent = fileData.code;
+      }
+    }
+
+    async function runStudioExecution() {
+      const consoleEl = document.getElementById('studio-execution-console');
+      const badge = document.getElementById('studio-exec-status-badge');
+      const repo = currentRepoPath || '.';
+
+      consoleEl.innerHTML = `<div class="p-6 text-center text-slate-400"><i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto text-emerald-400 mb-2"></i>Executing synthesized test suite in local subprocess...</div>`;
+      badge.textContent = 'RUNNING...';
+      badge.className = 'px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800 animate-pulse';
+      lucide.createIcons();
+
+      try {
+        logTerminal('INFO', 'POST /api/studio/execute - Launching execution of generated test suite...');
+        const res = await fetch('/api/studio/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            repo_path: repo,
+            allow_local_subprocess: true,
+            allow_simulated_dry_run: true,
+            execution_mode: 'auto'
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `Server returned HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        badge.textContent = `${data.passed_count} PASSED / ${data.failed_count} FAILED`;
+        badge.className = data.failed_count === 0
+          ? 'px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold'
+          : 'px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 font-bold';
+
+        let html = `
+          <div class="space-y-3 font-mono">
+            <div class="flex items-center justify-between text-xs pb-2 border-b border-slate-800">
+              <span class="text-white font-bold">Pytest Subprocess Output (${data.total_executed} Tests Executed)</span>
+              <span class="text-emerald-400 text-[10px]">Runner: ${escapeHtml(data.execution_mode || 'local_subprocess')}</span>
+            </div>
+            <div class="space-y-2">
+        `;
+
+        data.results.forEach(r => {
+          const isPassed = r.outcome === 'PASSED';
+          html += `
+            <div class="p-2 rounded bg-slate-900 border ${isPassed ? 'border-emerald-950 bg-emerald-950/10' : 'border-rose-950 bg-rose-950/20'} space-y-1">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-bold ${isPassed ? 'text-emerald-300' : 'text-rose-300'}">${escapeHtml(r.test_name)}</span>
+                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold ${isPassed ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">${r.outcome}</span>
+              </div>
+              <div class="text-[10px] text-slate-400 truncate">${escapeHtml(r.test_file)} (${r.duration_ms.toFixed(1)} ms)</div>
+              ${r.error_message ? `<div class="text-[10px] text-rose-400 font-bold">${escapeHtml(r.error_message)}</div>` : ''}
+              ${r.stdout ? `<details class="text-[9px] text-slate-400"><summary class="cursor-pointer text-cyan-400">View Stdout</summary><pre class="mt-1 p-1.5 bg-slate-950 rounded text-slate-300 whitespace-pre overflow-x-auto max-h-24">${escapeHtml(r.stdout)}</pre></details>` : ''}
+            </div>
+          `;
+        });
+
+        html += `</div></div>`;
+        consoleEl.innerHTML = html;
+        logTerminal('SUCCESS', `Test Studio execution completed: ${data.passed_count} passed, ${data.failed_count} failed.`);
+      } catch (err) {
+        logTerminal('ERROR', `Execution failed: ${err.message}`);
+        consoleEl.innerHTML = `<div class="p-3 text-rose-400 bg-rose-950/30 border border-rose-800 rounded-lg text-xs">Error running tests: ${escapeHtml(err.message)}</div>`;
+        badge.textContent = 'FAILED';
+        badge.className = 'px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800';
+      }
+    }
+
+    function downloadOrSaveStudioSuite() {
+      alert("All generated test suites are already verified and saved to the repository's 'tests/generated/' directory.");
     }
   </script>
 

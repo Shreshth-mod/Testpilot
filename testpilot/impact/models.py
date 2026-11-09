@@ -45,6 +45,25 @@ class BoundaryImpact(BaseModel):
     evidence_line: Optional[int] = None
 
 
+class CustomTestImpact(BaseModel):
+    """Impact analysis results and metadata for a user-uploaded test case."""
+    test_id: str = Field(default_factory=lambda: f"cust-{uuid.uuid4().hex[:6]}")
+    test_name: str
+    file_name: str
+    code: str
+    relative_file_path: str = ""
+    ast_valid: bool = True
+    syntax_error: Optional[str] = None
+    directly_tested_symbols: list[str] = Field(default_factory=list)
+    indirectly_tested_symbols: list[str] = Field(default_factory=list)
+    boundaries_exercised: list[str] = Field(default_factory=list)
+    risk_category: RiskCategory = RiskCategory.MEDIUM
+    impact_tier: str = "PERIPHERAL"  # "DIRECT_CRITICAL", "INDIRECT_HIGH", "BOUNDARY_SPEC", "PERIPHERAL"
+    impact_rationale: str = ""
+    call_chain_summary: list[str] = Field(default_factory=list)
+    created_at: str = Field(default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
+
+
 class ImpactGraphNode(BaseModel):
     """A node in the verifiable impact evidence graph."""
     node_id: str

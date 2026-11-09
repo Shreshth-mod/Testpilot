@@ -65,10 +65,12 @@ class IsolatedExecutionEngine:
         workflow_id: Optional[str] = None,
         selection_run_id: Optional[str] = None,
         allow_simulated_dry_run: bool = False,
+        allow_local_subprocess: bool = False,
+        execution_mode: str = "auto",
         framework_name: str = "pytest",
     ) -> IsolatedExecutionReport:
         """
-        Execute containerized tests for the specified workflow.
+        Execute containerized tests or laptop fallback tests for the specified workflow.
         """
         start_time = time.perf_counter()
 
@@ -113,6 +115,23 @@ class IsolatedExecutionEngine:
                         "targeted_symbol": tgt.target_symbol,
                     })
 
+        # Ingest user-uploaded test cases from workflow context
+        for ut in getattr(wf, "uploaded_tests", []):
+            if ut.get("ast_valid", True):
+                target_sym = "custom"
+                if ut.get("directly_tested_symbols"):
+                    target_sym = ut["directly_tested_symbols"][0]
+                elif ut.get("indirectly_tested_symbols"):
+                    target_sym = ut["indirectly_tested_symbols"][0]
+
+                test_cases_to_run.append({
+                    "test_name": ut.get("test_name", "test"),
+                    "test_file": ut.get("relative_file_path", f"tests/uploaded/{ut.get('file_name', 'test_custom.py')}"),
+                    "targeted_symbol": target_sym,
+                    "is_user_uploaded": True,
+                    "impact_tier": ut.get("impact_tier", "PERIPHERAL"),
+                })
+
         # Fallback to testbed if empty
         if not test_cases_to_run:
             active_ctx = self.context_mgr.get_active_context()
@@ -135,10 +154,26 @@ class IsolatedExecutionEngine:
                 repo_path=exec_ws,
                 security_profile=sec,
                 allow_simulated_dry_run=allow_simulated_dry_run,
+                allow_local_subprocess=allow_local_subprocess,
+                execution_mode=execution_mode,
             )
         finally:
             if is_disposable:
                 self.wf_storage.cleanup_execution_workspace(exec_ws)
+
+        mode_str = (execution_mode or "auto").lower()
+        if mode_str == "local" or (mode_str == "auto" and not diagnostics.is_available and allow_local_subprocess):
+            actual_mode = "local_subprocess"
+        elif mode_str == "simulated" or (mode_str == "auto" and not diagnostics.is_available and allow_simulated_dry_run):
+            actual_mode = "simulated_sandbox"
+        elif diagnostics.is_available and mode_str in ("auto", "docker"):
+            actual_mode = "docker"
+        elif allow_local_subprocess:
+            actual_mode = "local_subprocess"
+        elif allow_simulated_dry_run:
+            actual_mode = "simulated_sandbox"
+        else:
+            actual_mode = "docker"
 
         passed_count = sum(1 for r in results if r.outcome == TestOutcome.PASSED)
         failed_count = sum(1 for r in results if r.outcome == TestOutcome.FAILED)
@@ -163,7 +198,8 @@ class IsolatedExecutionEngine:
             skipped_count=skipped_count,
             results=results,
             failed_test_names=failed_names,
-            is_docker_isolated=diagnostics.is_available,
+            is_docker_isolated=diagnostics.is_available and actual_mode == "docker",
+            execution_mode=actual_mode,
             security_profile=sec,
             docker_diagnostics=diagnostics,
             execution_duration_ms=duration_ms,
@@ -180,7 +216,8 @@ class IsolatedExecutionEngine:
             "passed": passed_count,
             "failed": failed_count,
             "errors": error_count,
-            "is_docker_isolated": diagnostics.is_available,
+            "is_docker_isolated": diagnostics.is_available and actual_mode == "docker",
+            "execution_mode": actual_mode,
         }
 
         # Enable Stage 4 (Arbitration)

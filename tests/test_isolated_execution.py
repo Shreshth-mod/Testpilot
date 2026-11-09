@@ -183,3 +183,34 @@ def test_execution_api_endpoints():
     get_res = client.get(f"/api/execution/{exec_id}")
     assert get_res.status_code == 200
     assert get_res.json()["execution_run_id"] == exec_id
+
+
+def test_local_subprocess_execution_mode(tmp_path):
+    mgr = WorkflowStorageManager(base_dir=tmp_path / "workflows")
+    engine = IsolatedExecutionEngine(workflow_storage=mgr)
+
+    wf = WorkflowContext.create_initial(
+        repo_id="testbed_repo",
+        repo_path=".",
+        repo_name="Testbed",
+        base_commit_hash="1" * 40,
+        target_commit_hash="2" * 40,
+        workflow_id="wf-test-local-mode",
+    )
+    wf.stages["evolution"].status = StageStatus.COMPLETED
+    wf.stages["impact"].status = StageStatus.COMPLETED
+    wf.stages["selection"].status = StageStatus.COMPLETED
+    wf.selection_run_id = "sel-dummy"
+    mgr.save_workflow(wf)
+
+    # Test local execution mode
+    report = engine.execute(
+        workflow_id="wf-test-local-mode",
+        execution_mode="local",
+        allow_local_subprocess=True,
+    )
+    assert report.execution_run_id.startswith("exec-")
+    assert report.total_executed >= 1
+    assert report.execution_mode == "local_subprocess"
+    assert report.is_docker_isolated is False
+    assert len(report.results) >= 1

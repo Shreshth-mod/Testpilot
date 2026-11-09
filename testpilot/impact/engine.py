@@ -24,6 +24,7 @@ from testpilot.core.workflow_context import (
 )
 from testpilot.impact.models import (
     BoundaryImpact,
+    CustomTestImpact,
     EvidenceType,
     ImpactAnalysisReport,
     ImpactEvidenceGraph,
@@ -57,11 +58,14 @@ class ImpactAnalysisEngine:
         max_depth: int = 3,
         target_symbol: Optional[str] = None,
         force_refresh: bool = False,
+        repo_path: Optional[str] = None,
     ) -> ImpactAnalysisReport:
         """
         Execute multi-layer impact analysis for the active or specified workflow.
         """
         start_time = time.perf_counter()
+
+        active_ctx = self.context_mgr.get_active_context()
 
         # 1. Resolve & Validate Workflow Context
         if workflow_id:
@@ -70,25 +74,54 @@ class ImpactAnalysisEngine:
                 raise ValueError(f"Workflow '{workflow_id}' not found.")
         else:
             wf = self.wf_storage.get_active_workflow()
-            if not wf:
+
+        # Determine target repository path
+        resolved_repo_path: Path
+        if repo_path:
+            resolved_repo_path = Path(repo_path).expanduser().resolve()
+        elif active_ctx.repo_path and active_ctx.repo_path != ".":
+            resolved_repo_path = Path(active_ctx.repo_path).expanduser().resolve()
+        elif wf and wf.repo_path:
+            resolved_repo_path = Path(wf.repo_path).expanduser().resolve()
+        else:
+            resolved_repo_path = Path(".").resolve()
+
+        if not wf or (wf and Path(wf.repo_path).expanduser().resolve() != resolved_repo_path):
+            canonical_repo_id = self.wf_storage.sanitize_repo_id(
+                active_ctx.repo_name if active_ctx.repo_name else resolved_repo_path.name,
+                str(resolved_repo_path)
+            )
+            wf_candidates = [
+                cand for cand in [self.wf_storage.load_workflow(canonical_repo_id, w_id) for w_id in self.wf_storage.list_workflows(canonical_repo_id)]
+                if cand
+            ]
+            if wf_candidates:
+                wf = sorted(wf_candidates, key=lambda w: w.updated_at, reverse=True)[0]
+                self.wf_storage._set_active_pointer(canonical_repo_id, wf.workflow_id)
+            elif not wf:
                 raise ValueError("No active workflow context found. Please initialize Stage 0 (Evolution) first.")
 
         # Prerequisite Gate Validation
         allowed, reason = self.wf_storage.validate_stage_transition(wf, "impact")
         if not allowed:
-            raise PrerequisiteError(f"Prerequisite failure: {reason}")
+            if "evolution" in active_ctx.completed_stages or active_ctx.analysis_id:
+                wf.stages["evolution"].status = StageStatus.COMPLETED
+                wf.stages["evolution"].run_id = active_ctx.analysis_id
+                wf.stages["impact"].status = StageStatus.READY
+                self.wf_storage.save_workflow(wf)
+            else:
+                raise PrerequisiteError(f"Prerequisite failure: {reason}")
 
-        repo_path = Path(wf.repo_path).expanduser().resolve()
+        target_repo_path = resolved_repo_path
         evolution_run_id = wf.evolution_run_id or wf.stages["evolution"].run_id or "evo-default"
 
         # 2. Ingest Evolution Data (Changed Files & Symbols)
-        active_ctx = self.context_mgr.get_active_context()
         changed_files = list(active_ctx.changed_files)
         changed_symbols = list(active_ctx.changed_symbols)
 
         # Fallback if context symbols are empty: inspect target file or diff
         if not changed_symbols and active_ctx.primary_target_file:
-            tf = repo_path / active_ctx.primary_target_file
+            tf = target_repo_path / active_ctx.primary_target_file
             if tf.exists():
                 changed_files = [active_ctx.primary_target_file]
                 try:
@@ -96,6 +129,7 @@ class ImpactAnalysisEngine:
                     for fn in parsed_funcs:
                         changed_symbols.append({
                             "name": fn.name,
+                            "class_name": fn.class_name,
                             "file_path": active_ctx.primary_target_file,
                             "line_start": fn.line_start,
                             "line_end": fn.line_end,
@@ -105,8 +139,8 @@ class ImpactAnalysisEngine:
                 except Exception as e:
                     logger.warning("Fallback AST parse failed: %s", e)
 
-        # If still empty, provide fallback symbol for order service testbed
-        if not changed_symbols and (repo_path / "testbed" / "app" / "services" / "order_service.py").exists():
+        # If still empty, provide fallback symbol for order service testbed only if repo is actually testbed
+        if not changed_symbols and (target_repo_path / "testbed" / "app" / "services" / "order_service.py").exists() and (target_repo_path.name.lower() in ("testpilot", "testbed") or target_repo_path == Path(".").resolve()):
             changed_files = ["testbed/app/services/order_service.py"]
             changed_symbols = [
                 {
@@ -121,11 +155,26 @@ class ImpactAnalysisEngine:
 
         # Filter by target_symbol if requested
         if target_symbol:
-            changed_symbols = [s for s in changed_symbols if s.get("name") == target_symbol] or changed_symbols
+            ts_short = target_symbol.split(".")[-1]
+            changed_symbols = [
+                s for s in changed_symbols
+                if s.get("name") in (target_symbol, ts_short)
+                or f"{s.get('class_name', '')}.{s.get('name', '')}" == target_symbol
+            ] or changed_symbols
+        elif active_ctx.primary_target_symbol:
+            pts = active_ctx.primary_target_symbol
+            pts_short = pts.split(".")[-1]
+            matching = [
+                s for s in changed_symbols
+                if s.get("name") in (pts, pts_short)
+                or f"{s.get('class_name', '')}.{s.get('name', '')}" == pts
+            ]
+            if matching:
+                changed_symbols = matching
 
         # 3. Multi-Layer Caller Graph Resolution
         direct_callers, transitive_callers = self._resolve_call_hierarchy(
-            repo_path=repo_path,
+            repo_path=target_repo_path,
             changed_symbols=changed_symbols,
             max_depth=max(1, min(max_depth, 5)),
         )
@@ -134,14 +183,14 @@ class ImpactAnalysisEngine:
         spec_path = active_ctx.spec_path
         spec_avail = active_ctx.spec_available
         boundary_impacts = self._extract_boundary_impacts(
-            repo_path=repo_path,
+            repo_path=target_repo_path,
             changed_symbols=changed_symbols,
             spec_path=spec_path,
         )
 
         # 5. Test Impact Mapping
         impacted_tests = self._map_impacted_tests(
-            repo_path=repo_path,
+            repo_path=target_repo_path,
             changed_symbols=changed_symbols,
             direct_callers=direct_callers,
             transitive_callers=transitive_callers,
@@ -242,6 +291,156 @@ class ImpactAnalysisEngine:
         with open(target, "r", encoding="utf-8") as f:
             data = json.load(f)
         return ImpactAnalysisReport(**data)
+
+    def analyze_custom_test(
+        self,
+        code: str,
+        file_name: str = "test_custom.py",
+        workflow_id: Optional[str] = None,
+        save_to_workflow: bool = True,
+    ) -> CustomTestImpact:
+        """
+        Analyzes the impact of a user-uploaded test case against the active workflow's
+        changed symbols, call hierarchy, and boundary specifications.
+        """
+        clean_name = Path(file_name).name
+        if not clean_name.endswith(".py"):
+            clean_name += ".py"
+        if not clean_name.startswith("test_"):
+            clean_name = f"test_{clean_name}"
+
+        rel_path = f"tests/uploaded/{clean_name}"
+
+        # 1. AST Syntax Validation
+        try:
+            tree = ast.parse(code, filename=clean_name)
+            ast_valid = True
+            syntax_err = None
+        except SyntaxError as e:
+            return CustomTestImpact(
+                test_name="invalid_syntax",
+                file_name=clean_name,
+                code=code,
+                relative_file_path=rel_path,
+                ast_valid=False,
+                syntax_error=f"SyntaxError on line {e.lineno}: {e.msg}",
+                risk_category=RiskCategory.UNCERTAIN,
+                impact_tier="SYNTAX_ERROR",
+                impact_rationale=f"Python AST syntax error on line {e.lineno}: {e.msg}",
+            )
+
+        # 2. Extract Test Functions
+        test_fns: list[str] = []
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if node.name.startswith("test_") or not test_fns:
+                    test_fns.append(node.name)
+
+        primary_test_name = test_fns[0] if test_fns else "test_custom_execution"
+
+        # 3. Retrieve Context & Impact Baseline
+        wf: Optional[WorkflowContext] = None
+        if workflow_id:
+            wf = self._find_workflow(workflow_id)
+        if not wf:
+            wf = self.wf_storage.get_active_workflow()
+
+        active_ctx = self.context_mgr.get_active_context()
+
+        changed_symbols = list(active_ctx.changed_symbols or [])
+        direct_callers: list[dict[str, Any]] = []
+        transitive_callers: list[dict[str, Any]] = []
+        boundary_impacts: list[BoundaryImpact] = []
+
+        if wf and wf.impact_run_id:
+            impact_rep = self.get_report(wf.impact_run_id)
+            if impact_rep:
+                if not changed_symbols:
+                    changed_symbols = impact_rep.changed_symbols
+                direct_callers = impact_rep.direct_callers
+                transitive_callers = impact_rep.transitive_callers
+                boundary_impacts = impact_rep.boundary_impacts
+
+        target_names = {s.get("name") for s in changed_symbols if isinstance(s, dict) and s.get("name")}
+        caller_names = {c.get("symbol_name") for c in (direct_callers + transitive_callers) if isinstance(c, dict) and c.get("symbol_name")}
+        boundary_targets = {b.target_symbol for b in boundary_impacts}
+        boundary_exprs = [b.constraint_expression for b in boundary_impacts]
+
+        # 4. AST Call Traversal inside the test code
+        directly_tested: list[str] = []
+        indirectly_tested: list[str] = []
+        boundaries_exercised: list[str] = []
+        call_chains: list[str] = []
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                callee = self._extract_call_name(node)
+                if callee in target_names and callee not in directly_tested:
+                    directly_tested.append(callee)
+                    call_chains.append(f"{primary_test_name} -> {callee} (MODIFIED SYMBOL)")
+                elif callee in caller_names and callee not in indirectly_tested:
+                    indirectly_tested.append(callee)
+                    call_chains.append(f"{primary_test_name} -> {callee} -> [impacted caller]")
+                elif callee in boundary_targets and callee not in directly_tested:
+                    directly_tested.append(callee)
+
+            elif isinstance(node, ast.Assert):
+                assert_text = ast.unparse(node) if hasattr(ast, "unparse") else ""
+                for expr in boundary_exprs:
+                    if expr and (expr in assert_text or any(token in assert_text for token in expr.split() if len(token) > 3)):
+                        if expr not in boundaries_exercised:
+                            boundaries_exercised.append(expr)
+
+        # 5. Risk Category & Impact Tier Determination
+        if directly_tested:
+            risk = RiskCategory.CRITICAL
+            tier = "DIRECT_CRITICAL"
+            rationale = f"Direct AST invocation of modified symbol(s): {', '.join(directly_tested)}."
+        elif indirectly_tested:
+            risk = RiskCategory.HIGH
+            tier = "INDIRECT_HIGH"
+            rationale = f"Indirect invocation of caller(s) affected by change: {', '.join(indirectly_tested)}."
+        elif boundaries_exercised:
+            risk = RiskCategory.MEDIUM
+            tier = "BOUNDARY_SPEC"
+            rationale = f"Exercises boundary / spec constraint(s): {', '.join(boundaries_exercised)}."
+        else:
+            risk = RiskCategory.LOW
+            tier = "PERIPHERAL"
+            rationale = "General regression test; no direct coupling to detected modified symbols."
+
+        impact_result = CustomTestImpact(
+            test_name=primary_test_name,
+            file_name=clean_name,
+            code=code,
+            relative_file_path=rel_path,
+            ast_valid=True,
+            syntax_error=None,
+            directly_tested_symbols=directly_tested,
+            indirectly_tested_symbols=indirectly_tested,
+            boundaries_exercised=boundaries_exercised,
+            risk_category=risk,
+            impact_tier=tier,
+            impact_rationale=rationale,
+            call_chain_summary=call_chains,
+        )
+
+        # 6. Persist to workflow and workspace if enabled
+        if save_to_workflow and wf:
+            existing_tests = [t for t in getattr(wf, "uploaded_tests", []) if t.get("file_name") != clean_name]
+            existing_tests.append(impact_result.model_dump())
+            wf.uploaded_tests = existing_tests
+            self.wf_storage.save_workflow(wf)
+
+            try:
+                repo_p = Path(wf.repo_path).expanduser().resolve()
+                disk_target = repo_p / rel_path
+                disk_target.parent.mkdir(parents=True, exist_ok=True)
+                disk_target.write_text(code, encoding="utf-8")
+            except Exception as e:
+                logger.warning(f"Could not persist custom test to repo disk: {e}")
+
+        return impact_result
 
     def _find_workflow(self, workflow_id: str) -> Optional[WorkflowContext]:
         """Locate workflow by ID across repo directories."""

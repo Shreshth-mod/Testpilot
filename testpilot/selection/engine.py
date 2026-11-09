@@ -156,6 +156,32 @@ class TestSelectionEngine:
                     )
                 )
 
+        # Incorporate user-uploaded custom tests
+        for ut in getattr(wf, "uploaded_tests", []):
+            if ut.get("ast_valid", True):
+                u_name = ut.get("test_name", "test_user")
+                u_file = ut.get("relative_file_path", f"tests/uploaded/{ut.get('file_name', 'test_custom.py')}")
+                target_sym = "custom"
+                if ut.get("directly_tested_symbols"):
+                    target_sym = ut["directly_tested_symbols"][0]
+                elif ut.get("indirectly_tested_symbols"):
+                    target_sym = ut["indirectly_tested_symbols"][0]
+
+                selected_tests.append(
+                    SelectedTest(
+                        test_name=u_name,
+                        test_file=u_file,
+                        line_number=1,
+                        targeted_symbol=target_sym,
+                        selection_tier="USER_PROVIDED",
+                        selection_reason=ut.get("impact_rationale") or "User uploaded test case",
+                        selection_criteria=["USER_UPLOADED"] + (["DIRECT_AST_MATCH"] if ut.get("directly_tested_symbols") else []),
+                        execution_command=f"pytest {u_file} -k {u_name}",
+                        estimated_duration_ms=40.0,
+                        is_direct=bool(ut.get("directly_tested_symbols")),
+                    )
+                )
+
         # 5. Targeted Test Generation (Synthesize & Qualify via 5-Criterion Standard)
         targeted_tests: list[TargetedTest] = []
         uncovered_symbols: list[str] = []
