@@ -3767,6 +3767,9 @@
     let terminalView = 'logs';
     let cachedSchemaBoundaries = [];
     let lastAPIResponse = null;
+    let currentWorkflowId = null;
+    let currentCanonicalRepoId = null;
+    let lastExecutionData = null;
 
     // Initialize Lucide Icons on Load
     document.addEventListener('DOMContentLoaded', () => {

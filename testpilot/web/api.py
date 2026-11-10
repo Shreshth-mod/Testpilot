@@ -215,7 +215,6 @@ class IntelligenceQuarantineRequest(BaseModel):
     author: Optional[str] = "Developer"
 
 
-
 class ASTParseRequest(BaseModel):
     file_path: Optional[str] = None
     diff: Optional[str] = None
@@ -1052,7 +1051,7 @@ def investigate_failure_endpoint(payload: IntelligenceInvestigateRequest) -> dic
     2. Why did it fail?
     3. Failure category & evidence trail?
     4. Actionable next steps?
-    5. Grounded repair suggestions (strictly returns 'Insufficient evidence' if uncertain).
+    5. Evidence-based explanation and suggested developer investigation/fix.
     Includes Test Order Pollution detection.
     """
     active_ctx = context_mgr.get_active_context()
@@ -1098,7 +1097,6 @@ def toggle_quarantine_endpoint(payload: IntelligenceQuarantineRequest) -> dict[s
 def get_quarantined_tests_endpoint() -> dict[str, Any]:
     """Returns all currently quarantined tests."""
     return {"quarantined_tests": test_history_store.get_quarantined_tests()}
-
 
 
 # 2. AST Diff & Boundary Parsing
