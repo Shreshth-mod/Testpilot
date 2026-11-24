@@ -68,6 +68,7 @@ class IsolatedExecutionEngine:
         allow_local_subprocess: bool = False,
         execution_mode: str = "auto",
         framework_name: str = "pytest",
+        collect_coverage: bool = False,
     ) -> IsolatedExecutionReport:
         """
         Execute containerized tests or laptop fallback tests for the specified workflow.
@@ -205,6 +206,34 @@ class IsolatedExecutionEngine:
             execution_duration_ms=duration_ms,
         )
 
+        # Collect runtime coverage if requested (Phase 1)
+        cov_report = None
+        if collect_coverage:
+            try:
+                from testpilot.coverage.collector import CoverageCollector
+                collector = CoverageCollector()
+                cov_report = collector.collect(
+                    repo_path=repo_path,
+                    test_cases=test_cases_to_run,
+                    is_full_suite=False,
+                    repo_id=wf.repo_id or "default",
+                    commit_hash=wf.target_commit_hash or "HEAD",
+                    workflow_id=wf.workflow_id,
+                    execution_run_id=report.execution_run_id,
+                    execution_mode=actual_mode,
+                )
+                if cov_report:
+                    report.coverage_run_id = cov_report.coverage_run_id
+                    report.coverage_summary = {
+                        "coverage_run_id": cov_report.coverage_run_id,
+                        "line_coverage_pct": cov_report.line_coverage_pct,
+                        "total_statements": cov_report.total_statements,
+                        "covered_statements": cov_report.covered_statements,
+                        "status": cov_report.status.value,
+                    }
+            except Exception as e:
+                logger.warning(f"Could not collect test coverage: {e}")
+
         # 6. Update Workflow Context
         wf.execution_run_id = report.execution_run_id
         stage_meta = wf.stages["execution"]
@@ -219,6 +248,9 @@ class IsolatedExecutionEngine:
             "is_docker_isolated": diagnostics.is_available and actual_mode == "docker",
             "execution_mode": actual_mode,
         }
+        if cov_report:
+            stage_meta.summary["coverage_run_id"] = cov_report.coverage_run_id
+            stage_meta.summary["line_coverage_pct"] = cov_report.line_coverage_pct
 
         # Enable Stage 4 (Arbitration)
         wf.stages["arbitration"].status = StageStatus.READY

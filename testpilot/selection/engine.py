@@ -107,6 +107,21 @@ class TestSelectionEngine:
         if not candidates_pool and impact_report:
             candidates_pool = impact_report.impacted_test_candidates
 
+        # Check for empirical runtime coverage evidence (Phase 3)
+        runtime_confirmed_tests: dict[str, set[str]] = {}
+        try:
+            from testpilot.coverage.storage import CoverageStore
+            c_store = CoverageStore.get_instance()
+            latest_cov = c_store.get_latest_report(repo_id=wf.repo_id or "default")
+            if latest_cov and latest_cov.test_mappings:
+                for tm in latest_cov.test_mappings:
+                    for fn in tm.covered_functions:
+                        runtime_confirmed_tests.setdefault(fn, set()).add(tm.test_id)
+                        bare_fn = fn.split(".")[-1]
+                        runtime_confirmed_tests.setdefault(bare_fn, set()).add(tm.test_id)
+        except Exception as e:
+            logger.debug(f"Could not load coverage evidence for test selection: {e}")
+
         for cand in candidates_pool:
             test_file = cand.get("test_file", "")
             test_name = cand.get("test_name", "")
@@ -118,17 +133,25 @@ class TestSelectionEngine:
                 continue
             seen_tests.add(pair)
 
+            tgt_sym = cand.get("targeted_symbol", "unknown")
             is_direct = cand.get("is_direct", True)
             tier = "CRITICAL" if is_direct else "HIGH"
             criteria = ["DIRECT_AST_INVOCATION"] if is_direct else ["TRANSITIVE_CALL_REACHABILITY"]
-            reason = cand.get("evidence") or f"Directly tests impacted symbol {cand.get('targeted_symbol')}"
+            reason = cand.get("evidence") or f"Directly tests impacted symbol {tgt_sym}"
+
+            # Boost test to CRITICAL if empirical runtime coverage confirmed
+            t_canonical = f"{test_file}::{test_name}"
+            if tgt_sym in runtime_confirmed_tests and t_canonical in runtime_confirmed_tests[tgt_sym]:
+                tier = "CRITICAL"
+                criteria.insert(0, "RUNTIME_CONFIRMED_COVERAGE")
+                reason = f"[Runtime Confirmed] Empirically executes changed symbol '{tgt_sym}'"
 
             selected_tests.append(
                 SelectedTest(
                     test_name=test_name,
                     test_file=test_file,
                     line_number=cand.get("line_number"),
-                    targeted_symbol=cand.get("targeted_symbol", "unknown"),
+                    targeted_symbol=tgt_sym,
                     selection_tier=tier,
                     selection_reason=reason,
                     selection_criteria=criteria,

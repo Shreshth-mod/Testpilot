@@ -56,7 +56,7 @@ class OrderService:
             # BUG 1 (Discount Deficit Bug):
             # When fixed discount > subtotal, it returns full fixed value without clamping to subtotal,
             # which will propagate into negative net totals when calculating total payable amount!
-            return rule["value"]
+            return min(subtotal, rule["value"])
         return 0.0
 
     @staticmethod
@@ -90,7 +90,7 @@ class OrderService:
             shipping = 0.0 if subtotal >= FREE_SHIPPING_THRESHOLD else STANDARD_SHIPPING_FEE
 
         # Net calculation inherits BUG 1 when discount exceeds subtotal
-        total = round((subtotal - discount) + tax + shipping, 2)
+        total = max(0.0, round((subtotal - discount) + tax + shipping, 2))
 
         return OrderTotals(
             subtotal=subtotal,

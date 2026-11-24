@@ -16,7 +16,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -75,6 +75,19 @@ from testpilot.rag.deterministic_engine import DeterministicBoundaryEngine
 from testpilot.remediation.patcher import RemediationPatcher
 from testpilot.selection import TestSelectionEngine
 from testpilot.sourcegraph.client import SourcegraphClient
+from testpilot.coverage import (
+    CoverageCollector,
+    CoverageEvidenceType,
+    CoverageReport,
+    CoverageStatus,
+    CoverageStore,
+    CoverageSuggestionEngine,
+    FunctionCoverage,
+    FunctionCoverageAnalyzer,
+    FunctionStatus,
+    RevisionCoverageComparator,
+    TestToCodeMapper,
+)
 
 app = FastAPI(
     title="TestPilot AI API",
@@ -100,9 +113,28 @@ test_history_store = TestHistoryStore.get_instance()
 flakiness_engine = FlakinessDetectionEngine(test_history_store)
 failure_investigator = FailureInvestigator(test_history_store, flakiness_engine)
 arbitration_engine = FailureArbitrationEngine(workflow_storage, context_mgr, execution_engine, flakiness_engine)
+coverage_store = CoverageStore.get_instance()
+coverage_collector = CoverageCollector(store=coverage_store)
+test_to_code_mapper = TestToCodeMapper(store=coverage_store)
+revision_comparator = RevisionCoverageComparator(store=coverage_store)
+coverage_suggester = CoverageSuggestionEngine(store=coverage_store)
 
 
 # Request schemas
+class CoverageCollectRequest(BaseModel):
+    repo_path: Optional[str] = None
+    repo_id: Optional[str] = None
+    is_full_suite: bool = True
+    test_cases: Optional[list[dict[str, Any]]] = None
+    execution_mode: str = "local_subprocess"
+
+
+class CoverageSuggestionGenerateRequest(BaseModel):
+    function_name: str
+    file_path: str
+    repo_path: Optional[str] = "."
+    coverage_run_id: Optional[str] = None
+    custom_code: Optional[str] = None
 class WorkflowInitRequest(BaseModel):
     repo_path: Optional[str] = "."
     repo_name: Optional[str] = None
@@ -980,6 +1012,23 @@ def get_intelligence_summary_endpoint() -> dict[str, Any]:
                 "test_id": r.test_id,
             })
 
+    recent_runs = [
+        {
+            "id": r.id,
+            "test_id": r.test_id,
+            "test_name": r.test_name,
+            "test_file": r.test_file,
+            "repo_id": r.repo_id,
+            "commit_hash": (r.commit_hash or "")[:8],
+            "workflow_id": r.workflow_id,
+            "outcome": r.outcome,
+            "duration_ms": r.duration_ms,
+            "timestamp": r.timestamp,
+            "execution_mode": r.execution_mode,
+        }
+        for r in test_history_store.get_recent_runs(limit=10)
+    ]
+
     return {
         "total_tracked_tests": len(summaries),
         "total_executions": total_runs,
@@ -993,6 +1042,7 @@ def get_intelligence_summary_endpoint() -> dict[str, Any]:
         "quarantined_count": len(quarantined),
         "category_counts": category_counts,
         "reliability_alerts": alerts,
+        "recent_executions": recent_runs,
         "active_workflow_id": active_wf.workflow_id if active_wf else None,
     }
 
@@ -1097,6 +1147,359 @@ def toggle_quarantine_endpoint(payload: IntelligenceQuarantineRequest) -> dict[s
 def get_quarantined_tests_endpoint() -> dict[str, Any]:
     """Returns all currently quarantined tests."""
     return {"quarantined_tests": test_history_store.get_quarantined_tests()}
+
+
+# =========================================================================
+# TEST COVERAGE INTELLIGENCE ENDPOINTS (Phase 4)
+# =========================================================================
+
+@app.get("/api/coverage/summary")
+def get_coverage_summary_endpoint(
+    repo_id: Optional[str] = None,
+    commit_hash: Optional[str] = None,
+    workflow_id: Optional[str] = None,
+    coverage_run_id: Optional[str] = None,
+) -> dict[str, Any]:
+    """
+    Returns high-level Test Coverage Intelligence summary for the active or requested repository:
+    overall line coverage %, function coverage %, covered/uncovered breakdown, and execution metadata.
+    """
+    active_wf = workflow_storage.get_active_workflow()
+    effective_repo_id = repo_id or (active_wf.repo_id if active_wf else "default")
+
+    if coverage_run_id:
+        report = coverage_store.get_report(coverage_run_id)
+    else:
+        report = coverage_store.get_latest_report(repo_id=effective_repo_id, commit_hash=commit_hash, workflow_id=workflow_id)
+        if not report and repo_id is None:
+            report = coverage_store.get_latest_report(repo_id="default")
+
+    if not report:
+        return {
+            "has_coverage": False,
+            "status": "UNAVAILABLE",
+            "message": "No test coverage telemetry recorded yet. Run tests with coverage enabled.",
+            "overall_line_coverage_pct": 0.0,
+            "overall_function_coverage_pct": 0.0,
+            "total_statements": 0,
+            "covered_statements": 0,
+            "missing_statements": 0,
+            "total_functions": 0,
+            "covered_functions": 0,
+            "partially_covered_functions": 0,
+            "uncovered_functions": 0,
+            "total_files": 0,
+            "coverage_run_id": None,
+        }
+
+    return {
+        "has_coverage": True,
+        "status": report.status.value,
+        "coverage_run_id": report.coverage_run_id,
+        "repo_id": report.repo_id,
+        "repo_path": report.repo_path,
+        "commit_hash": report.commit_hash,
+        "execution_mode": report.execution_mode,
+        "overall_line_coverage_pct": report.line_coverage_pct,
+        "overall_function_coverage_pct": report.function_coverage_pct,
+        "total_statements": report.total_statements,
+        "covered_statements": report.covered_statements,
+        "missing_statements": report.missing_statements,
+        "total_functions": report.total_functions,
+        "covered_functions": report.covered_functions,
+        "partially_covered_functions": report.partially_covered_functions,
+        "uncovered_functions": report.uncovered_functions,
+        "total_files": len(report.files),
+        "created_at": report.created_at,
+    }
+
+
+@app.get("/api/coverage/files")
+def get_coverage_files_endpoint(
+    coverage_run_id: Optional[str] = None,
+    repo_id: Optional[str] = None,
+) -> list[dict[str, Any]]:
+    """Returns file-level coverage metrics and function summaries across tracked repository modules."""
+    active_wf = workflow_storage.get_active_workflow()
+    effective_repo_id = repo_id or (active_wf.repo_id if active_wf else "default")
+    report = coverage_store.get_report(coverage_run_id) if coverage_run_id else coverage_store.get_latest_report(effective_repo_id)
+    if not report:
+        return []
+
+    files_list = []
+    if report.file_summaries:
+        for fs in report.file_summaries:
+            files_list.append(fs.model_dump())
+    else:
+        for fpath, lcov in report.files.items():
+            files_list.append({
+                "file_path": fpath,
+                "total_statements": lcov.total_statements,
+                "covered_statements": lcov.covered_statements,
+                "missing_statements": len(lcov.missing_lines),
+                "line_coverage_pct": lcov.line_coverage_pct,
+                "total_functions": 0,
+                "covered_functions": 0,
+                "partially_covered_functions": 0,
+                "uncovered_functions": 0,
+                "function_coverage_pct": 0.0,
+                "functions": [],
+            })
+    return files_list
+
+
+@app.get("/api/coverage/file")
+def get_coverage_file_detail_endpoint(
+    file_path: str,
+    coverage_run_id: Optional[str] = None,
+    repo_id: Optional[str] = None,
+) -> dict[str, Any]:
+    """Returns line-by-line annotated source code with executed and missing status for a file."""
+    active_wf = workflow_storage.get_active_workflow()
+    effective_repo_id = repo_id or (active_wf.repo_id if active_wf else "default")
+    report = coverage_store.get_report(coverage_run_id) if coverage_run_id else coverage_store.get_latest_report(effective_repo_id)
+    if not report or file_path not in report.files:
+        raise HTTPException(status_code=404, detail=f"Coverage data for file '{file_path}' not found.")
+
+    lcov = report.files[file_path]
+    abs_p = Path(report.repo_path) / file_path
+    source_lines: list[dict[str, Any]] = []
+    if abs_p.exists():
+        try:
+            raw_lines = abs_p.read_text(encoding="utf-8").splitlines()
+            exec_set = set(lcov.executed_lines)
+            miss_set = set(lcov.missing_lines)
+            excl_set = set(lcov.excluded_lines)
+            for idx, text in enumerate(raw_lines, 1):
+                st = "neutral"
+                if idx in exec_set:
+                    st = "covered"
+                elif idx in miss_set:
+                    st = "missing"
+                elif idx in excl_set:
+                    st = "excluded"
+                source_lines.append({"line_number": idx, "code": text, "status": st})
+        except Exception:
+            pass
+
+    matching_fs = next((fs for fs in report.file_summaries if fs.file_path == file_path), None)
+
+    return {
+        "file_path": file_path,
+        "line_coverage": lcov.model_dump(),
+        "summary": matching_fs.model_dump() if matching_fs else None,
+        "source_lines": source_lines,
+    }
+
+
+@app.get("/api/coverage/functions")
+def get_coverage_functions_endpoint(
+    coverage_run_id: Optional[str] = None,
+    repo_id: Optional[str] = None,
+    status: Optional[str] = None,
+    file_path: Optional[str] = None,
+    search: Optional[str] = None,
+) -> list[dict[str, Any]]:
+    """Returns all functions and methods with coverage status, filterable by status, file, or search query."""
+    active_wf = workflow_storage.get_active_workflow()
+    effective_repo_id = repo_id or (active_wf.repo_id if active_wf else "default")
+    report = coverage_store.get_report(coverage_run_id) if coverage_run_id else coverage_store.get_latest_report(effective_repo_id)
+    if not report:
+        return []
+
+    functions: list[dict[str, Any]] = []
+    for fs in report.file_summaries:
+        if file_path and fs.file_path != file_path:
+            continue
+        for fn in fs.functions:
+            if status and fn.status.value != status.upper():
+                continue
+            if search and search.lower() not in fn.qualified_name.lower():
+                continue
+            functions.append(fn.model_dump())
+    return functions
+
+
+@app.get("/api/coverage/uncovered")
+def get_uncovered_code_endpoint(
+    coverage_run_id: Optional[str] = None,
+    repo_id: Optional[str] = None,
+    include_partial: bool = True,
+) -> list[dict[str, Any]]:
+    """Returns all uncovered and partially covered functions with exact missing statement lines."""
+    active_wf = workflow_storage.get_active_workflow()
+    effective_repo_id = repo_id or (active_wf.repo_id if active_wf else "default")
+    report = coverage_store.get_report(coverage_run_id) if coverage_run_id else coverage_store.get_latest_report(effective_repo_id)
+    if not report:
+        return []
+
+    funcs = coverage_store.get_uncovered_functions(report.coverage_run_id, include_partial=include_partial)
+    return [f.model_dump() for f in funcs]
+
+
+@app.get("/api/coverage/test-map")
+def get_coverage_test_map_endpoint(
+    coverage_run_id: Optional[str] = None,
+    repo_id: Optional[str] = None,
+    test_id: Optional[str] = None,
+) -> dict[str, Any]:
+    """Returns test-to-code mapping entries and integrated empirical evidence graph."""
+    active_wf = workflow_storage.get_active_workflow()
+    effective_repo_id = repo_id or (active_wf.repo_id if active_wf else "default")
+    report = coverage_store.get_report(coverage_run_id) if coverage_run_id else coverage_store.get_latest_report(effective_repo_id)
+    if not report:
+        return {"test_mappings": [], "graph": {"nodes": [], "edges": [], "evidence_breakdown": {}}}
+
+    mappings = coverage_store.get_test_mappings(report.coverage_run_id, test_id=test_id)
+    graph = test_to_code_mapper.build_integrated_impact_graph(report)
+    return {
+        "coverage_run_id": report.coverage_run_id,
+        "test_mappings": [m.model_dump() for m in mappings],
+        "graph": graph,
+    }
+
+
+@app.post("/api/coverage/collect")
+def collect_coverage_endpoint(payload: Optional[CoverageCollectRequest] = None) -> dict[str, Any]:
+    """Triggers empirical line coverage collection on the active workspace or target repository."""
+    req = payload or CoverageCollectRequest()
+    active_ctx = context_mgr.get_active_context()
+    active_wf = workflow_storage.get_active_workflow()
+
+    target_repo = req.repo_path or active_ctx.repo_path or (active_wf.repo_path if active_wf else ".")
+    target_repo_id = req.repo_id or (active_wf.repo_id if active_wf else "default")
+    commit_hash = (active_wf.target_commit_hash if active_wf else "HEAD")
+
+    report = coverage_collector.collect(
+        repo_path=target_repo,
+        test_cases=req.test_cases,
+        is_full_suite=req.is_full_suite,
+        repo_id=target_repo_id,
+        commit_hash=commit_hash,
+        workflow_id=active_wf.workflow_id if active_wf else None,
+        execution_mode=req.execution_mode,
+    )
+    return report.model_dump()
+
+
+@app.get("/api/coverage/report/download")
+def download_coverage_report_endpoint(
+    coverage_run_id: Optional[str] = None,
+    repo_id: Optional[str] = None,
+    format: str = "json",
+) -> Response:
+    """Exports and downloads authoritative Test Coverage report in JSON or Markdown format."""
+    active_wf = workflow_storage.get_active_workflow()
+    effective_repo_id = repo_id or (active_wf.repo_id if active_wf else "default")
+    report = coverage_store.get_report(coverage_run_id) if coverage_run_id else coverage_store.get_latest_report(effective_repo_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="No coverage report found to download.")
+
+    if format.lower() == "markdown":
+        md = f"# TestPilot Coverage Report: {report.coverage_run_id}\n\n"
+        md += f"- **Repository:** `{report.repo_id}` ({report.repo_path})\n"
+        md += f"- **Commit Hash:** `{report.commit_hash}`\n"
+        md += f"- **Status:** `{report.status.value}`\n"
+        md += f"- **Line Coverage:** **{report.line_coverage_pct}%** ({report.covered_statements}/{report.total_statements})\n"
+        md += f"- **Function Coverage:** **{report.function_coverage_pct}%** ({report.covered_functions}/{report.total_functions})\n"
+        md += f"- **Uncovered Functions:** {report.uncovered_functions} (Partial: {report.partially_covered_functions})\n\n"
+        md += "## File Summary\n\n| File | Statements | Covered | Missing | Line Cov | Functions | Func Cov |\n"
+        md += "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n"
+        for fs in report.file_summaries:
+            md += f"| `{fs.file_path}` | {fs.total_statements} | {fs.covered_statements} | {fs.missing_statements} | {fs.line_coverage_pct}% | {fs.total_functions} | {fs.function_coverage_pct}% |\n"
+        return Response(content=md, media_type="text/markdown", headers={"Content-Disposition": f"attachment; filename=coverage_{report.coverage_run_id}.md"})
+
+    return Response(content=report.model_dump_json(indent=2), media_type="application/json", headers={"Content-Disposition": f"attachment; filename=coverage_{report.coverage_run_id}.json"})
+
+
+@app.get("/api/coverage/compare")
+def compare_coverage_revisions_endpoint(
+    base_commit: Optional[str] = None,
+    target_commit: Optional[str] = None,
+    repo_id: Optional[str] = None,
+    repo_path: Optional[str] = None,
+) -> dict[str, Any]:
+    """Compares runtime line and function coverage between two Git revisions or runs."""
+    active_wf = workflow_storage.get_active_workflow()
+    effective_repo_id = repo_id or (active_wf.repo_id if active_wf else "default")
+    effective_target = target_commit or (active_wf.target_commit_hash if active_wf else "HEAD")
+    effective_base = base_commit or (active_wf.base_commit_hash if active_wf else None)
+    effective_path = repo_path or (active_wf.repo_path if active_wf else ".")
+
+    report = revision_comparator.compare_commits(
+        repo_id=effective_repo_id,
+        base_commit=effective_base,
+        target_commit=effective_target,
+        repo_path=effective_path,
+    )
+    return report.model_dump()
+
+
+@app.get("/api/coverage/suggestions")
+def get_coverage_suggestions_endpoint(
+    repo_id: Optional[str] = None,
+    coverage_run_id: Optional[str] = None,
+    function_name: Optional[str] = None,
+    file_path: Optional[str] = None,
+    repo_path: Optional[str] = None,
+) -> list[dict[str, Any]]:
+    """Analyzes uncovered/partially covered functions and produces grounded AI test proposals."""
+    active_wf = workflow_storage.get_active_workflow()
+    effective_repo_id = repo_id or (active_wf.repo_id if active_wf else "default")
+    effective_path = repo_path or (active_wf.repo_path if active_wf else ".")
+    report = coverage_store.get_report(coverage_run_id) if coverage_run_id else coverage_store.get_latest_report(effective_repo_id)
+    if not report:
+        return []
+
+    uncov_funcs = coverage_store.get_uncovered_functions(report.coverage_run_id, include_partial=True)
+    if function_name:
+        uncov_funcs = [f for f in uncov_funcs if f.function_name == function_name or f.qualified_name == function_name]
+    if file_path:
+        uncov_funcs = [f for f in uncov_funcs if f.file_path == file_path]
+
+    results = []
+    for fn in uncov_funcs[:15]:
+        suggestion = coverage_suggester.analyze_function(fn, repo_path=effective_path)
+        results.append(suggestion.model_dump())
+    return results
+
+
+@app.post("/api/coverage/suggestions/generate")
+def generate_and_verify_coverage_suggestion_endpoint(
+    payload: CoverageSuggestionGenerateRequest,
+) -> dict[str, Any]:
+    """Generates tests for uncovered function and verifies whether runtime coverage empirically increased."""
+    active_wf = workflow_storage.get_active_workflow()
+    effective_repo_id = active_wf.repo_id if active_wf else "default"
+    effective_path = payload.repo_path or (active_wf.repo_path if active_wf else ".")
+    report = coverage_store.get_report(payload.coverage_run_id) if payload.coverage_run_id else coverage_store.get_latest_report(effective_repo_id)
+
+    target_func = None
+    if report:
+        for fs in report.file_summaries:
+            if fs.file_path == payload.file_path:
+                for fn in fs.functions:
+                    if fn.function_name == payload.function_name or fn.qualified_name == payload.function_name:
+                        target_func = fn
+                        break
+
+    if not target_func:
+        target_func = FunctionCoverage(
+            function_name=payload.function_name,
+            qualified_name=payload.function_name,
+            file_path=payload.file_path,
+            start_line=1,
+            end_line=50,
+            status=FunctionStatus.UNCOVERED,
+        )
+
+    suggestion = coverage_suggester.analyze_function(target_func, repo_path=effective_path)
+    if payload.custom_code:
+        suggestion.synthesized_test_code = payload.custom_code
+
+    verification = coverage_suggester.verify_suggestion(suggestion, repo_path=effective_path)
+    return verification.model_dump()
+
 
 
 # 2. AST Diff & Boundary Parsing

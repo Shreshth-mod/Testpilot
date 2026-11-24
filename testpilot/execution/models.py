@@ -98,6 +98,10 @@ class IsolatedExecutionReport(BaseModel):
     security_profile: DockerSecurityProfile = Field(default_factory=DockerSecurityProfile)
     docker_diagnostics: DockerDiagnostics = Field(default_factory=DockerDiagnostics)
 
+    # Coverage Intelligence (Phase 1)
+    coverage_run_id: Optional[str] = None
+    coverage_summary: Optional[dict[str, Any]] = None
+
     # Lifecycle & Timing
     execution_duration_ms: float = 0.0
     created_at: str = Field(
