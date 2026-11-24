@@ -249,7 +249,14 @@ class TestHistoryStore:
         executed_count = passed_count + failed_count + error_count
         failure_rate = round((failed_count + error_count) / max(1, executed_count), 4)
 
-        durations = [r.duration_ms for r in chronological if r.duration_ms > 0]
+        # Prioritize real subprocess/docker execution durations over simulated sandbox placeholders
+        real_durations = [
+            r.duration_ms for r in chronological
+            if r.duration_ms > 0 and r.execution_mode != "simulated_sandbox"
+        ]
+        durations = real_durations if real_durations else [
+            r.duration_ms for r in chronological if r.duration_ms > 0
+        ]
         avg_dur = round(sum(durations) / max(1, len(durations)), 2) if durations else 0.0
 
         variance = (

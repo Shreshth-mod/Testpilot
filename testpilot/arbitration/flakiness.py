@@ -165,7 +165,8 @@ class FlakinessDetectionEngine:
 
         # 3. Credibility Constraint #2: Duration variance is ONLY secondary supporting context
         dur_alert: Optional[str] = None
-        if stats.avg_duration_ms > 0 and stats.duration_std_dev_ms > 0:
+        # Statistically valid duration variance requires at least 3 historical runs
+        if n >= 3 and stats.avg_duration_ms > 0 and stats.duration_std_dev_ms > 0:
             coefficient_of_variation = stats.duration_std_dev_ms / stats.avg_duration_ms
             if coefficient_of_variation > 0.60 and stats.duration_std_dev_ms > 200:
                 dur_alert = (

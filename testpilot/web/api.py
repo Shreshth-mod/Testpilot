@@ -58,6 +58,7 @@ from testpilot.arbitration import (
     ArbitrationCategory,
     FailureArbitrationEngine,
     FailureInvestigator,
+    FlakeClassification,
     FlakinessDetectionEngine,
     ReviewStatus,
     TestHistoryStore,
@@ -1004,7 +1005,8 @@ def get_intelligence_summary_endpoint() -> dict[str, Any]:
             })
 
     for r in flaky_reports:
-        if r.duration_alert:
+        # Only elevate duration volatility to top-level reliability alert if test also has failures/flakiness
+        if r.duration_alert and r.classification != FlakeClassification.CONSISTENT_PASS:
             alerts.append({
                 "type": "DURATION_VOLATILITY",
                 "severity": "low",
