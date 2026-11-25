@@ -1,0 +1,192 @@
+{
+  "benchmarks": {
+    "testbed_discount_deficit": {
+      "universe_tests": 133,
+      "ground_truth_tests": 7,
+      "full_regression": {
+        "tp": 7,
+        "fp": 126,
+        "fn": 0,
+        "precision": 0.0526,
+        "recall": 1.0,
+        "f1": 0.1,
+        "reduction_pct": 0.0,
+        "latency_ms": 0.0
+      },
+      "naive_baseline": {
+        "tp": 7,
+        "fp": 35,
+        "fn": 0,
+        "precision": 0.1667,
+        "recall": 1.0,
+        "f1": 0.2857,
+        "reduction_pct": 68.42,
+        "latency_ms": 30.24
+      },
+      "testpilot_ast": {
+        "tp": 7,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "reduction_pct": 94.74,
+        "latency_ms": 2104.35
+      },
+      "testpilot_rag": {
+        "tp": 7,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "reduction_pct": 94.74,
+        "latency_ms": 66169.48
+      }
+    },
+    "flask_ipv6": {
+      "universe_tests": 375,
+      "ground_truth_tests": 5,
+      "full_regression": {
+        "tp": 5,
+        "fp": 370,
+        "fn": 0,
+        "precision": 0.0133,
+        "recall": 1.0,
+        "f1": 0.0263,
+        "reduction_pct": 0.0,
+        "latency_ms": 0.0
+      },
+      "naive_baseline": {
+        "tp": 5,
+        "fp": 14,
+        "fn": 0,
+        "precision": 0.2632,
+        "recall": 1.0,
+        "f1": 0.4167,
+        "reduction_pct": 94.93,
+        "latency_ms": 99.2
+      },
+      "testpilot_ast": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 5,
+        "precision": null,
+        "recall": 0.0,
+        "f1": null,
+        "reduction_pct": 100.0,
+        "latency_ms": 489.36
+      },
+      "testpilot_rag": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 5,
+        "precision": null,
+        "recall": 0.0,
+        "f1": null,
+        "reduction_pct": 100.0,
+        "latency_ms": 3.5
+      }
+    },
+    "django_model_rename": {
+      "universe_tests": 10205,
+      "ground_truth_tests": 8,
+      "full_regression": {
+        "tp": 8,
+        "fp": 8236,
+        "fn": 0,
+        "precision": 0.001,
+        "recall": 1.0,
+        "f1": 0.002,
+        "reduction_pct": 0.0,
+        "latency_ms": 0.12
+      },
+      "naive_baseline": {
+        "tp": 1,
+        "fp": 50,
+        "fn": 7,
+        "precision": 0.0196,
+        "recall": 0.125,
+        "f1": 0.0339,
+        "reduction_pct": 99.4,
+        "latency_ms": 3484.34
+      },
+      "testpilot_ast": {
+        "tp": 8,
+        "fp": 83,
+        "fn": 0,
+        "precision": 0.0879,
+        "recall": 1.0,
+        "f1": 0.1616,
+        "reduction_pct": 99.09,
+        "latency_ms": 10169.83
+      },
+      "testpilot_rag": {
+        "tp": 8,
+        "fp": 30,
+        "fn": 0,
+        "precision": 0.2105,
+        "recall": 1.0,
+        "f1": 0.3478,
+        "reduction_pct": 99.63,
+        "latency_ms": 797810.0
+      }
+    }
+  },
+  "aggregate_benchmark_runs": [
+    {
+      "configuration": "Full Regression",
+      "tp": 20,
+      "fp": 8732,
+      "fn": 0,
+      "precision": 0.0023,
+      "recall": 1.0,
+      "f1": 0.0046,
+      "reduction_pct": 0.0,
+      "latency_ms": 2.5
+    },
+    {
+      "configuration": "Naive Baseline",
+      "tp": 13,
+      "fp": 99,
+      "fn": 7,
+      "precision": 0.1161,
+      "recall": 0.65,
+      "f1": 0.197,
+      "reduction_pct": 98.86,
+      "latency_ms": 48.2
+    },
+    {
+      "configuration": "TestPilot (AST Impact)",
+      "tp": 15,
+      "fp": 83,
+      "fn": 5,
+      "precision": 0.1531,
+      "recall": 0.75,
+      "f1": 0.2543,
+      "reduction_pct": 99.07,
+      "latency_ms": 1250.4
+    },
+    {
+      "configuration": "TestPilot + Repository RAG",
+      "tp": 15,
+      "fp": 30,
+      "fn": 5,
+      "precision": 0.3333,
+      "recall": 0.75,
+      "f1": 0.4615,
+      "reduction_pct": 99.58,
+      "latency_ms": 863982.98
+    }
+  ],
+  "sourcegraph_ablation": {
+    "status": "UNAVAILABLE",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": null,
+    "notes": "Sourcegraph quantitative evaluation could not be executed because Sourcegraph OSS endpoint was offline. TestPilot successfully executed graceful fallback to local AST parser."
+  }
+}

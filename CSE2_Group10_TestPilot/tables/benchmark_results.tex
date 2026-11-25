@@ -1,0 +1,35 @@
+\begin{table*}[t]
+\centering
+\caption{Empirical Regression Test Selection Results Across Benchmark Repositories}
+\label{tab:benchmark_results}
+\small
+\begin{tabular}{llrrrrrrrr}
+\toprule
+\textbf{Repository Case} & \textbf{Configuration} & \textbf{Universe} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{Reduction (\%)} \\
+\midrule
+\multirow{4}{*}{\textbf{Testbed Discount Deficit}} 
+  & Full Regression & 133 & 7 & 126 & 0 & 0.0526 & 1.0000 & 0.1000 & 0.0\% \\
+  & Naive Baseline & 133 & 7 & 35 & 0 & 0.1667 & 1.0000 & 0.2857 & 68.4\% \\
+  & TestPilot (AST) & 133 & 7 & 0 & 0 & \textbf{1.0000} & \textbf{1.0000} & \textbf{1.0000} & \textbf{94.7\%} \\
+  & TestPilot + RAG & 133 & 7 & 0 & 0 & \textbf{1.0000} & \textbf{1.0000} & \textbf{1.0000} & \textbf{94.7\%} \\
+\midrule
+\multirow{4}{*}{\textbf{Flask IPv6 Support}} 
+  & Full Regression & 375 & 5 & 370 & 0 & 0.0133 & 1.0000 & 0.0263 & 0.0\% \\
+  & Naive Baseline & 375 & 5 & 14 & 0 & \textbf{0.2632} & \textbf{1.0000} & \textbf{0.4167} & 94.9\% \\
+  & TestPilot (AST) & 375 & 0 & 0 & 5 & N/A & 0.0000 & N/A & \textbf{100.0\%} \\
+  & TestPilot + RAG & 375 & 0 & 0 & 5 & N/A & 0.0000 & N/A & \textbf{100.0\%} \\
+\midrule
+\multirow{4}{*}{\textbf{Django Model Rename}} 
+  & Full Regression & 10,205 & 8 & 8,236 & 0 & 0.0010 & 1.0000 & 0.0020 & 0.0\% \\
+  & Naive Baseline & 10,205 & 1 & 50 & 7 & 0.0196 & 0.1250 & 0.0339 & 99.4\% \\
+  & TestPilot (AST) & 10,205 & 8 & 83 & 0 & 0.0879 & \textbf{1.0000} & 0.1616 & 99.1\% \\
+  & TestPilot + RAG & 10,205 & 8 & 30 & 0 & \textbf{0.2105} & \textbf{1.0000} & \textbf{0.3478} & \textbf{99.6\%} \\
+\midrule
+\multirow{4}{*}{\textbf{Aggregate Benchmark Matrix}} 
+  & Full Regression & 10,713 & 20 & 8,732 & 0 & 0.0023 & \textbf{1.0000} & 0.0046 & 0.0\% \\
+  & Naive Baseline & 10,713 & 13 & 99 & 7 & 0.1161 & 0.6500 & 0.1970 & 98.9\% \\
+  & TestPilot (AST) & 10,713 & 15 & 83 & 5 & 0.1531 & 0.7500 & 0.2543 & 99.1\% \\
+  & TestPilot + RAG & 10,713 & 15 & 30 & 5 & \textbf{0.3333} & 0.7500 & \textbf{0.4615} & \textbf{99.6\%} \\
+\bottomrule
+\end{tabular}
+\end{table*}

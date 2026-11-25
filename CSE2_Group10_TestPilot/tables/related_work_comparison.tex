@@ -1,0 +1,27 @@
+\begin{table*}[t]
+\centering
+\caption{Systematic Comparison of TestPilot Against Related Regression Testing, API Fuzzing, and Test Generation Systems}
+\label{tab:related_work}
+\scriptsize
+\begin{tabular}{lp{2.2cm}p{2.8cm}p{2.4cm}p{2.2cm}p{2.2cm}p{2.5cm}}
+\toprule
+\textbf{System / Study} & \textbf{Core Problem} & \textbf{Underlying Approach} & \textbf{Evaluated Dataset} & \textbf{Reported Metrics} & \textbf{Key Limitation} & \textbf{Contrast with TestPilot} \\
+\midrule
+Rothermel \& Harrold~\cite{rothermel1996analyzing} & Formal RTS framework & Control-flow graph safe analysis & Small C benchmarks & Inclusiveness, precision, minimization & Does not handle modern dynamic call graphs & TestPilot operates on AST + RAG semantic reachability \\
+\addlinespace
+Ekstazi (Gligoric et al.)~\cite{gligoric2015practical} & File-level dynamic RTS & Dynamic bytecode dependency tracking & 32 Java open-source projects & Test selection time, regression speedup & Requires prior test execution traces & TestPilot uses static AST diff without prior execution traces \\
+\addlinespace
+Predictive RTS (Machalica et al.)~\cite{machalica2019predictive} & Large-scale commit selection & Gradient boosted decision trees & Meta production monorepo & Precision, recall, cost savings & Probabilistic: misses 0.1\%-5\% failures & TestPilot leverages deterministic call graphs for safety \\
+\addlinespace
+Taming Google Testing (Memon et al.)~\cite{memon2017taming} & Massive CI test execution & Code distance and change heuristics & Google internal monorepo & Failure likelihood, execution reduction & Heuristic only; lacks semantic grounding & TestPilot links AST syntax bounds with PRD semantic contracts \\
+\addlinespace
+Coverage Critique (Inozemtseva \& Holmes)~\cite{inozemtseva2014coverage} & Test suite adequacy validity & Mutation analysis vs. code coverage & 5 large Java applications & Mutant kill rate vs. branch/line coverage & Analytical study, not an execution tool & Reinforces TestPilot's focus on semantic assertions \\
+\addlinespace
+RESTler (Atlidakis et al.)~\cite{atlidakis2019restler} & Stateful REST API fuzzing & OpenAPI producer-consumer state inference & Cloud APIs \& GitLab & Discovered bugs, HTTP status codes & Black-box; ignores source AST and flakiness & TestPilot performs AST-guided white-box analysis + arbitration \\
+\addlinespace
+TestPilot-JS (Sch{\"a}fer et al.)~\cite{schafer2024empirical} & Unit test generation for npm & Prompting LLMs with code signatures & 25 npm JS packages & Statement/branch coverage, edit distance & Uses code-as-oracle; prone to specification debt & TestPilot treats spec-as-oracle and provides 6-way arbitration \\
+\addlinespace
+\textbf{TestPilot (This Work)} & Change-aware RTS, triage \& arbitration & 5-stage AST + Vector RAG + Failure Arbiter & Testbed, Flask, Django benchmarks & Precision, Recall, F1, Reduction \%, Latency & Static analysis misses dynamic URL routing (Flask) & Combines deterministic syntax, semantic RAG, and flakiness triage \\
+\bottomrule
+\end{tabular}
+\end{table*}

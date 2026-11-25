@@ -1,0 +1,26 @@
+\begin{table}[t]
+\centering
+\caption{Experimental Hardware, Environment, and Hyperparameter Configurations}
+\label{tab:experimental_parameters}
+\footnotesize
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter / Dimension} & \textbf{Configured Value / Specification} \\
+\midrule
+Host Operating System & Microsoft Windows 11 Enterprise (x86\_64) \\
+Python Execution Environment & CPython 3.11.5 \\
+Test Runner Framework & pytest 8.0.0+ with pytest-cov \\
+Execution Mode & Subprocess isolation with process timeout (60s) \\
+Local LLM Engine & Ollama Local Server (HTTP REST API) \\
+Primary LLM Model & Qwen2.5-Coder 7B Instruct (4-bit quantized) \\
+Secondary Comparison Model & CodeLlama 7B Python \\
+Vector Database Engine & ChromaDB v0.4.24 (Persistent local store) \\
+Embedding Model & SentenceTransformers \texttt{all-MiniLM-L6-v2} (384-d) \\
+Vector Chunk Size / Overlap & 512 tokens / 64 tokens \\
+RAG Similarity Metric & Cosine Similarity ($k = 5$ nearest neighbors) \\
+AST Parser Subsystem & Tree-sitter Python bindings + \texttt{ast} stdlib \\
+Telemetry Database & SQLite3 (\texttt{test\_history.db}) \\
+Flakiness Confidence Threshold & Minimum $N \ge 3$ repeated runs \\
+\bottomrule
+\end{tabular}
+\end{table}

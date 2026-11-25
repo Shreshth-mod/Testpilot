@@ -930,6 +930,17 @@ def review_arbitration_item_endpoint(payload: ArbitrationReviewRequest) -> dict[
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.get("/api/arbitration/active")
+def get_active_arbitration_report_endpoint() -> dict[str, Any]:
+    """Retrieve serialized Stage 4 Failure Arbitration Report for the currently active workflow."""
+    active_wf = workflow_storage.get_active_workflow()
+    if active_wf and active_wf.arbitration_run_id:
+        report = arbitration_engine.get_report(active_wf.arbitration_run_id)
+        if report:
+            return report.model_dump()
+    raise HTTPException(status_code=404, detail="No active arbitration report found for current workflow.")
+
+
 @app.get("/api/arbitration/{arbitration_run_id}")
 def get_arbitration_report_endpoint(arbitration_run_id: str) -> dict[str, Any]:
     """Retrieve serialized Stage 4 Failure Arbitration Report by ID."""
@@ -943,14 +954,25 @@ def get_arbitration_report_endpoint(arbitration_run_id: str) -> dict[str, Any]:
 # 1h. Test Intelligence & Flakiness Detection Subsystem (Phases 1-5)
 # =========================================================================
 @app.get("/api/intelligence/summary")
-def get_intelligence_summary_endpoint() -> dict[str, Any]:
+def get_intelligence_summary_endpoint(repo_id: Optional[str] = None) -> dict[str, Any]:
     """
     Centralized health dashboard summary aggregating total runs, pass consistency,
     flakiness metrics, arbitration categories, and reliability alerts.
+    Filters by repo_id, falling back to active workflow / active context repo.
+    Pass ?repo_id=all to view global across all repositories.
     """
-    summaries = test_history_store.get_all_test_summaries()
+    active_wf = workflow_storage.get_active_workflow()
+    active_ctx = context_mgr.get_active_context()
+
+    effective_repo_id = repo_id
+    if effective_repo_id != "all" and not effective_repo_id:
+        effective_repo_id = (active_wf.repo_id if active_wf else None) or active_ctx.repo_name
+    if effective_repo_id == "all":
+        effective_repo_id = None
+
+    summaries = test_history_store.get_all_test_summaries(repo_id=effective_repo_id)
     quarantined = test_history_store.get_quarantined_tests()
-    flaky_reports = flakiness_engine.scan_all_tests()
+    flaky_reports = flakiness_engine.scan_all_tests(repo_id=effective_repo_id)
 
     total_runs = sum(s.total_runs for s in summaries)
     total_passed = sum(s.passed_count for s in summaries)
@@ -964,7 +986,6 @@ def get_intelligence_summary_endpoint() -> dict[str, Any]:
     pass_rate = round((total_passed / max(1, total_passed + total_failed + total_errors)) * 100, 1)
 
     # Active workflow arbitration categories
-    active_wf = workflow_storage.get_active_workflow()
     category_counts = {
         ArbitrationCategory.REGRESSION.value: 0,
         ArbitrationCategory.PRE_EXISTING.value: 0,
@@ -1028,7 +1049,7 @@ def get_intelligence_summary_endpoint() -> dict[str, Any]:
             "timestamp": r.timestamp,
             "execution_mode": r.execution_mode,
         }
-        for r in test_history_store.get_recent_runs(limit=10)
+        for r in test_history_store.get_recent_runs(repo_id=effective_repo_id, limit=10)
     ]
 
     return {
@@ -1046,13 +1067,23 @@ def get_intelligence_summary_endpoint() -> dict[str, Any]:
         "reliability_alerts": alerts,
         "recent_executions": recent_runs,
         "active_workflow_id": active_wf.workflow_id if active_wf else None,
+        "scoped_repo_id": effective_repo_id,
     }
 
 
 @app.get("/api/intelligence/flaky-tests")
-def get_flaky_tests_endpoint() -> list[dict[str, Any]]:
-    """Returns all tracked tests evaluated for flakiness, ranked by flakiness score and confidence."""
-    reports = flakiness_engine.scan_all_tests()
+def get_flaky_tests_endpoint(repo_id: Optional[str] = None) -> list[dict[str, Any]]:
+    """Returns tracked tests evaluated for flakiness, filtered by repo_id (or active repo)."""
+    active_wf = workflow_storage.get_active_workflow()
+    active_ctx = context_mgr.get_active_context()
+
+    effective_repo_id = repo_id
+    if effective_repo_id != "all" and not effective_repo_id:
+        effective_repo_id = (active_wf.repo_id if active_wf else None) or active_ctx.repo_name
+    if effective_repo_id == "all":
+        effective_repo_id = None
+
+    reports = flakiness_engine.scan_all_tests(repo_id=effective_repo_id)
     return [r.model_dump() for r in reports]
 
 
@@ -2268,6 +2299,13 @@ def _get_repo_presets(repo_name: str) -> list[dict[str, Any]]:
             "target_ref": "7847227a3fecde4b2a169552b84c60c6286b6025",
             "is_default": True,
         })
+    elif "requests" in r_lower:
+        presets.append({
+            "label": "Requests Release Comparison (v2.34.0..v2.34.2)",
+            "base_ref": "v2.34.0",
+            "target_ref": "v2.34.2",
+            "is_default": True,
+        })
     presets.extend([
         {"label": "Last Commit (HEAD~1..HEAD)", "base_ref": "HEAD~1", "target_ref": "HEAD", "is_default": len(presets) == 0},
         {"label": "Working Tree vs HEAD", "base_ref": "HEAD", "target_ref": None},
@@ -2690,18 +2728,102 @@ def analyze_evolution(request: EvolutionRequest) -> dict[str, Any]:
         # bridge the scoped target symbols into report_data so downstream stages have full context
         if not report_data.get("changed_symbols") and active_ctx.scoped_symbols:
             report_data["changed_files"] = active_ctx.scoped_files[:30]
+            from testpilot.evolution.models import ChangedSymbol, ChangeType
+            synthetic_changed_models: list[ChangedSymbol] = []
             synthetic_changed = []
             for s in active_ctx.scoped_symbols[:30]:
-                synthetic_changed.append({
+                l_start = s.get("line_start") or s.get("line_number") or 1
+                l_end = s.get("line_end") or s.get("line_number") or l_start
+                params = s.get("parameters", [])
+                sym_dict = {
                     "name": s.get("name"),
                     "class_name": s.get("class_name"),
                     "file_path": s.get("relative_path") or s.get("file_path"),
+                    "line_start": l_start,
+                    "line_end": l_end,
                     "change_type": "scoped_target",
                     "lines_added": 1,
                     "lines_deleted": 0,
                     "complexity": s.get("branch_count", 1),
-                })
+                    "parameters": params,
+                }
+                synthetic_changed.append(sym_dict)
+                if len(synthetic_changed_models) < 10:
+                    synthetic_changed_models.append(
+                        ChangedSymbol(
+                            name=s.get("name"),
+                            class_name=s.get("class_name"),
+                            file_path=s.get("relative_path") or s.get("file_path"),
+                            line_start=l_start,
+                            line_end=l_end,
+                            change_type=ChangeType.MODIFIED,
+                            parameters=params,
+                        )
+                    )
             report_data["changed_symbols"] = synthetic_changed
+
+            # If report had 0 impacts because diff was empty, compute blast radius, semantic impacts, and prioritized tests
+            if not report_data.get("direct_impacts") and synthetic_changed_models:
+                try:
+                    direct, indirect = engine.build_transitive_impact_graph(
+                        changed_symbols=synthetic_changed_models,
+                        max_depth=request.max_depth,
+                    )
+                    report_data["direct_impacts"] = [d.model_dump() for d in direct]
+                    report_data["indirect_impacts"] = [i.model_dump() for i in indirect]
+                    report_data["total_impacted_symbols"] = len(direct) + len(indirect)
+
+                    # Evidence-grounded semantic analysis for scoped targets
+                    if getattr(request, "enable_semantic_analysis", True):
+                        from testpilot.evolution.semantic import SemanticImpactAnalyzer
+                        analyzer = SemanticImpactAnalyzer(
+                            repo_root=str(engine.repo_root),
+                            sourcegraph_client=engine.sourcegraph,
+                        )
+                        semantics = analyzer.analyze_impacts(
+                            changed_symbols=synthetic_changed_models,
+                            impact_nodes=direct + indirect,
+                            enable_llm=getattr(request, "enable_llm_semantic", False),
+                        )
+                        report_data["semantic_impacts"] = [sm.model_dump() for sm in semantics]
+                        report_data["semantic_summary"] = {
+                            "total_semantic_assessments": len(semantics),
+                            "direct_behavioral_count": sum(
+                                1 for s in semantics
+                                if str(getattr(s, "classification", "")).endswith("DIRECT_BEHAVIORAL_DEPENDENCY")
+                            ),
+                            "indirect_behavioral_count": sum(
+                                1 for s in semantics
+                                if str(getattr(s, "classification", "")).endswith("INDIRECT_BEHAVIORAL_DEPENDENCY")
+                            ),
+                            "structural_only_count": sum(
+                                1 for s in semantics
+                                if str(getattr(s, "classification", "")).endswith("STRUCTURAL_ONLY")
+                            ),
+                            "uncertain_count": sum(
+                                1 for s in semantics
+                                if str(getattr(s, "classification", "")).endswith("UNCERTAIN")
+                            ),
+                            "verified_evidence_count": sum(1 for s in semantics if getattr(s, "is_verified", False)),
+                        }
+
+                    prioritized = engine.prioritize_tests(
+                        changed_symbols=synthetic_changed_models,
+                        direct_impacts=direct,
+                        indirect_impacts=indirect,
+                        include_candidates=True,
+                        changed_files=report_data["changed_files"],
+                    )
+                    report_data["prioritized_tests"] = [
+                        p.model_dump() for p in prioritized
+                        if getattr(p, "match_classification", None) != "EVENT_TRIGGER_CANDIDATE"
+                    ]
+                    report_data["event_trigger_candidates"] = [
+                        p.model_dump() for p in prioritized
+                        if getattr(p, "match_classification", None) == "EVENT_TRIGGER_CANDIDATE"
+                    ]
+                except Exception as ex:
+                    logger.warning("Scoped symbol impact calculation notice: %s", ex)
 
         # Update and establish the unified analysis context
         ctx = context_mgr.establish_from_evolution(

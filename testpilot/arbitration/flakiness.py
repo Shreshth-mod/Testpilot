@@ -1,5 +1,5 @@
-"""
 TestPilot Flakiness Detection & Empirical Rerun Engine (Phase 2).
+"""
 Calculates mathematically grounded flakiness scores from repeated executions.
 Enforces rigorous credibility constraints:
 1. Never gives 100% confidence from just 2 runs (separates sample size, failure rate, and confidence).

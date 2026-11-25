@@ -3206,6 +3206,11 @@
               and sample confidence. Duration variance is secondary context.</p>
           </div>
           <div class="flex items-center space-x-2">
+            <select id="flaky-scope-select" onchange="refreshFlakyWatchlist()"
+              class="bg-slate-950 border border-slate-700 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 font-mono focus:outline-none">
+              <option value="current">Current Repository</option>
+              <option value="all">All Repositories</option>
+            </select>
             <button onclick="refreshFlakyWatchlist()"
               class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 text-xs font-mono">
               Refresh Watchlist
@@ -6127,6 +6132,56 @@
       lucide.createIcons();
     }
 
+    async function loadActiveArbitrationIfAvailable() {
+      try {
+        const res = await fetch('/api/arbitration/active');
+        if (res.ok) {
+          const data = await res.json();
+          currentArbitrationData = data;
+          currentArbitrationRunId = data.arbitration_run_id;
+
+          const counts = data.category_counts || {};
+          const regEl = document.getElementById('count-arb-regression');
+          if (regEl) regEl.textContent = counts.REGRESSION || 0;
+          const preEl = document.getElementById('count-arb-preexisting');
+          if (preEl) preEl.textContent = counts.PRE_EXISTING || 0;
+          const flkEl = document.getElementById('count-arb-flaky');
+          if (flkEl) flkEl.textContent = counts.FLAKY || 0;
+          const infEl = document.getElementById('count-arb-infra');
+          if (infEl) infEl.textContent = counts.INFRASTRUCTURE || 0;
+          const tstEl = document.getElementById('count-arb-testdefect');
+          if (tstEl) tstEl.textContent = counts.TEST_DEFECT || 0;
+          const uncEl = document.getElementById('count-arb-uncertain');
+          if (uncEl) uncEl.textContent = counts.UNCERTAIN || 0;
+
+          const fAll = document.getElementById('arb-filter-cnt-all');
+          if (fAll) fAll.textContent = data.items.length;
+          const fReg = document.getElementById('arb-filter-cnt-regression');
+          if (fReg) fReg.textContent = counts.REGRESSION || 0;
+          const fPre = document.getElementById('arb-filter-cnt-preexisting');
+          if (fPre) fPre.textContent = counts.PRE_EXISTING || 0;
+          const fFlk = document.getElementById('arb-filter-cnt-flaky');
+          if (fFlk) fFlk.textContent = counts.FLAKY || 0;
+          const fInf = document.getElementById('arb-filter-cnt-infra');
+          if (fInf) fInf.textContent = counts.INFRASTRUCTURE || 0;
+          const fTst = document.getElementById('arb-filter-cnt-testdefect');
+          if (fTst) fTst.textContent = counts.TEST_DEFECT || 0;
+          const fUnc = document.getElementById('arb-filter-cnt-uncertain');
+          if (fUnc) fUnc.textContent = counts.UNCERTAIN || 0;
+
+          const badge = document.getElementById('arbitration-status-badge');
+          if (badge) {
+            badge.textContent = 'COMPLETED';
+            badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800';
+          }
+
+          renderArbitrationTable(data.items);
+        }
+      } catch (e) {
+        // No active arbitration yet
+      }
+    }
+
     async function refreshTestIntelligence() {
       try {
         const res = await fetch('/api/intelligence/summary');
@@ -6181,6 +6236,9 @@
             alertsContainer.classList.add('hidden');
           }
         }
+
+        // Auto-load active arbitration report if present
+        await loadActiveArbitrationIfAvailable();
       } catch (e) {
         console.warn('Failed to refresh test intelligence:', e);
       }
@@ -6193,7 +6251,9 @@
       lucide.createIcons();
 
       try {
-        const res = await fetch('/api/intelligence/flaky-tests');
+        const scope = document.getElementById('flaky-scope-select')?.value || 'current';
+        const url = scope === 'all' ? '/api/intelligence/flaky-tests?repo_id=all' : '/api/intelligence/flaky-tests';
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const reports = await res.json();
         renderFlakyWatchlist(reports);
@@ -7296,7 +7356,7 @@
                     ${sym.class_name ? `<span class="text-[10px] text-slate-400">(${escapeHtml(sym.class_name)})</span>` : ''}
                     <span class="text-[9px] uppercase px-1.5 py-0.5 rounded font-mono border ${badgeBg}">${sym.change_type}</span>
                   </div>
-                  <div class="text-[11px] text-slate-400 font-mono">${escapeHtml(sym.file_path)} : L${sym.line_start}-L${sym.line_end}</div>
+                  <div class="text-[11px] text-slate-400 font-mono">${escapeHtml(sym.file_path)} : L${sym.line_start || sym.line_number || 1}${sym.line_end && sym.line_end !== (sym.line_start || sym.line_number || 1) ? '-L' + sym.line_end : ''}</div>
                 </div>
                 ${sym.parameters && sym.parameters.length > 0 ? `<div class="text-[10px] font-mono text-slate-500 hidden sm:block">(${sym.parameters.join(', ')})</div>` : ''}
               </div>
@@ -7480,18 +7540,35 @@
       const impacts = data.semantic_impacts || [];
       const summary = data.semantic_summary || {};
 
+      // Calculate counters directly from assessments array with summary fallback
+      const directCount = (summary.direct_behavioral_count !== undefined && summary.direct_behavioral_count !== null && summary.direct_behavioral_count > 0)
+        ? summary.direct_behavioral_count
+        : impacts.filter(i => (i.classification || '').includes('DIRECT_BEHAVIORAL_DEPENDENCY')).length;
+
+      const indirectCount = (summary.indirect_behavioral_count !== undefined && summary.indirect_behavioral_count !== null && summary.indirect_behavioral_count > 0)
+        ? summary.indirect_behavioral_count
+        : impacts.filter(i => (i.classification || '').includes('INDIRECT_BEHAVIORAL_DEPENDENCY')).length;
+
+      const structuralCount = (summary.structural_only_count !== undefined && summary.structural_only_count !== null && summary.structural_only_count > 0)
+        ? summary.structural_only_count
+        : impacts.filter(i => (i.classification || '').includes('STRUCTURAL_ONLY')).length;
+
+      const uncertainCount = (summary.uncertain_count !== undefined && summary.uncertain_count !== null && summary.uncertain_count > 0)
+        ? summary.uncertain_count
+        : impacts.filter(i => (i.classification || '').includes('UNCERTAIN')).length;
+
       // Update KPI counters
       if (document.getElementById('evo-sem-kpi-direct')) {
-        document.getElementById('evo-sem-kpi-direct').textContent = summary.direct_behavioral_count || 0;
+        document.getElementById('evo-sem-kpi-direct').textContent = directCount;
       }
       if (document.getElementById('evo-sem-kpi-indirect')) {
-        document.getElementById('evo-sem-kpi-indirect').textContent = summary.indirect_behavioral_count || 0;
+        document.getElementById('evo-sem-kpi-indirect').textContent = indirectCount;
       }
       if (document.getElementById('evo-sem-kpi-structural')) {
-        document.getElementById('evo-sem-kpi-structural').textContent = summary.structural_only_count || 0;
+        document.getElementById('evo-sem-kpi-structural').textContent = structuralCount;
       }
       if (document.getElementById('evo-sem-kpi-uncertain')) {
-        document.getElementById('evo-sem-kpi-uncertain').textContent = summary.uncertain_count || 0;
+        document.getElementById('evo-sem-kpi-uncertain').textContent = uncertainCount;
       }
       if (document.getElementById('evo-semantic-count')) {
         document.getElementById('evo-semantic-count').textContent = `${impacts.length} assessments`;
@@ -7723,7 +7800,8 @@
         md += `| Symbol | Enclosing Class | File Path | Lines | Change Type |\n`;
         md += `|---|---|---|---|---|\n`;
         d.changed_symbols.forEach(s => {
-          md += `| \`${s.name}\` | \`${s.class_name || '-'}\` | \`${s.file_path}\` | L${s.line_start}-L${s.line_end} | **${s.change_type}** |\n`;
+          const lStr = `L${s.line_start || s.line_number || 1}${s.line_end && s.line_end !== (s.line_start || s.line_number || 1) ? '-L' + s.line_end : ''}`;
+          md += `| \`${s.name}\` | \`${s.class_name || '-'}\` | \`${s.file_path}\` | ${lStr} | **${s.change_type}** |\n`;
         });
         md += `\n`;
       } else {
@@ -7993,7 +8071,7 @@
                 ${data.extracted_symbols.map(s => `
                   <tr class="hover:bg-slate-900/40">
                     <td class="py-2 px-3 font-bold text-amber-300">${escapeHtml(s.class_name ? s.class_name + '.' + s.name : s.name)}</td>
-                    <td class="py-2 px-3 text-cyan-400">L${s.line_start}-L${s.line_end}</td>
+                    <td class="py-2 px-3 text-cyan-400">L${s.line_start || s.line_number || 1}${s.line_end && s.line_end !== (s.line_start || s.line_number || 1) ? '-L' + s.line_end : ''}</td>
                     <td class="py-2 px-3 text-slate-300">${escapeHtml(s.parameters.join(', ') || 'none')}</td>
                     <td class="py-2 px-3 text-slate-400 italic">${escapeHtml(s.docstring || 'No docstring')}</td>
                   </tr>

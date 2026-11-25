@@ -1,0 +1,13 @@
+Configuration,Benchmark,TP,FP,FN,Precision,Recall,F1,Reduction_Pct,Latency_ms
+full_regression,testbed_discount_deficit,7,126,0,0.0526,1.0,0.1,0.0,0.0
+naive_baseline,testbed_discount_deficit,7,35,0,0.1667,1.0,0.2857,68.42,30.24
+testpilot_ast,testbed_discount_deficit,7,0,0,1.0,1.0,1.0,94.74,2104.35
+testpilot_rag,testbed_discount_deficit,7,0,0,1.0,1.0,1.0,94.74,66169.48
+full_regression,flask_ipv6,5,370,0,0.0133,1.0,0.0263,0.0,0.0
+naive_baseline,flask_ipv6,5,14,0,0.2632,1.0,0.4167,94.93,99.2
+testpilot_ast,flask_ipv6,0,0,5,,0.0,,100.0,489.36
+testpilot_rag,flask_ipv6,0,0,5,,0.0,,100.0,3.5
+full_regression,django_model_rename,8,8236,0,0.001,1.0,0.002,0.0,0.12
+naive_baseline,django_model_rename,1,50,7,0.0196,0.125,0.0339,99.4,3484.34
+testpilot_ast,django_model_rename,8,83,0,0.0879,1.0,0.1616,99.09,10169.83
+testpilot_rag,django_model_rename,8,30,0,0.2105,1.0,0.3478,99.63,797810.0
